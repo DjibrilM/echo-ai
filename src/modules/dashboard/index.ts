@@ -1,0 +1,8 @@
+export { DashboardScreen } from './screens/DashboardScreen'
+export * from './types'
+export * from './hooks/useDashboardState'
+export * from './services/dashboard-service'
+export * from './components/AudioStoriesCarousel'
+export * from './components/MusicGenerationCarousel'
+export * from './components/RecentActivities'
+export * from './components/FloatingMiniPlayer'

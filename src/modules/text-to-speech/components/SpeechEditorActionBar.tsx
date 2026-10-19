@@ -1,0 +1,75 @@
+import { ShieldCheck } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { ShimmeringText } from '@/components/ui/shimmering-text'
+import { cn } from '@/lib/utils'
+
+export interface SpeechEditorActionBarProps {
+  /** Total characters across active speech rounds */
+  totalCharacters: number
+  /** Total count of speaker dialogue rounds */
+  totalRounds?: number
+  /** Whether speech synthesis is in progress */
+  isSynthesizing: boolean
+  /** Trigger automated emotion/pace tag detection based on script sentiment */
+  onAutoTag: () => void
+  /** Trigger speech generation */
+  onGenerate: () => void
+}
+
+/**
+ * Bottom action bar for dialogue script editor.
+ * Houses script character statistics, auto-tagging action, and the primary Generate Speech button.
+ */
+export function SpeechEditorActionBar({
+  totalCharacters,
+  isSynthesizing,
+  onAutoTag,
+  onGenerate,
+}: SpeechEditorActionBarProps) {
+  return (
+    <div className="absolute bottom-16 left-0 right-0 z-10 flex items-center justify-between border-t border-[#1f1f23] bg-[#0f0f10]/95 px-6 py-3 backdrop-blur-md">
+      <div />
+
+      {/* Right action group: Counter, Auto-tag, Generate speech */}
+      <div className="flex items-center gap-3">
+        <span className="text-xs text-zinc-400 font-mono">
+          {totalCharacters.toLocaleString()} Characters
+        </span>
+
+        {/* Auto-tag button */}
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onAutoTag}
+          className="border-zinc-700 bg-white/[0.04] hover:bg-white/[0.08] hover:border-zinc-500 text-zinc-200 cursor-pointer shadow-xs font-semibold text-xs gap-1.5"
+          title="Automatically detect prosody tags (emotion, pace) based on punctuation and dialogue context"
+        >
+          <ShieldCheck className="size-3.5 text-zinc-300" />
+          <span>Auto-Tag</span>
+        </Button>
+
+        {/* Primary Generate speech button: clean text without icon */}
+        <Button
+          type="button"
+          disabled={isSynthesizing || totalCharacters === 0}
+          onClick={onGenerate}
+          className={cn(
+            'cursor-pointer shadow-md font-semibold text-xs',
+            isSynthesizing && 'opacity-90'
+          )}
+        >
+          {isSynthesizing ? (
+            <ShimmeringText
+              text="Synthesizing..."
+              startOnView={false}
+              duration={1.5}
+              className="text-black font-semibold text-xs"
+            />
+          ) : (
+            'Generate Speech'
+          )}
+        </Button>
+      </div>
+    </div>
+  )
+}
