@@ -17,6 +17,7 @@ import {
 import { useTextToSpeechState } from '../hooks/useTextToSpeechState'
 import { useSpeechPlayback } from '../hooks/useSpeechPlayback'
 import { useVoiceCloneRecording } from '../hooks/useVoiceCloneRecording'
+import { useVoicePreview } from '../hooks/useVoicePreview'
 
 import { TopSubHeader } from '../components/TopSubHeader'
 import { DialogueRoundCard } from '../components/DialogueRoundCard'
@@ -30,6 +31,12 @@ export function TextToSpeechScreen() {
   const [state, updateState] = useTextToSpeechState()
   const playback = useSpeechPlayback({ state, updateState })
   const recording = useVoiceCloneRecording({ state, updateState })
+  const voicePreview = useVoicePreview()
+
+  const handleTogglePlay = useCallback(() => {
+    voicePreview.stopPreview()
+    playback.togglePlayPause()
+  }, [playback, voicePreview])
 
   // Total character counter
   const totalCharacters = useMemo(() => {
@@ -56,9 +63,12 @@ export function TextToSpeechScreen() {
     [state.voices]
   )
 
+  // Focused round
+  const focusedRound = state.rounds[state.focusedRoundIndex] || state.rounds[0]
+
   const activeVoice = useMemo(
-    () => getVoice(state.selectedVoiceId),
-    [state.selectedVoiceId, getVoice]
+    () => getVoice(focusedRound?.voiceId || state.selectedVoiceId),
+    [focusedRound?.voiceId, state.selectedVoiceId, getVoice]
   )
 
   const activeLanguage = useMemo(
@@ -85,15 +95,21 @@ export function TextToSpeechScreen() {
     updateState({
       rounds: [...state.rounds, newRound],
       focusedRoundIndex: state.rounds.length,
+      selectedVoiceId: nextVoice.id,
     })
   }
 
   // Remove a speech round
   const handleRemoveRound = (roundId: string) => {
     if (state.rounds.length <= 1) return
+    const remainingRounds = state.rounds.filter((r) => r.id !== roundId)
+    const nextIndex = Math.min(state.focusedRoundIndex, remainingRounds.length - 1)
+    const nextVoiceId =
+      remainingRounds[nextIndex]?.voiceId || remainingRounds[0]?.voiceId || state.selectedVoiceId
     updateState({
-      rounds: state.rounds.filter((r) => r.id !== roundId),
-      focusedRoundIndex: 0,
+      rounds: remainingRounds,
+      focusedRoundIndex: nextIndex,
+      selectedVoiceId: nextVoiceId,
     })
   }
 
@@ -118,7 +134,8 @@ export function TextToSpeechScreen() {
   const handleGenerateSpeech = async () => {
     if (state.isSynthesizing || totalCharacters === 0) return
 
-    // Immediately clear previous recordings & wave player so multiple players never stack
+    // Immediately stop voice audition previews and clear previous playback
+    voicePreview.stopPreview()
     playback.stopActiveAudio()
     updateState({
       generations: [],
@@ -231,16 +248,22 @@ export function TextToSpeechScreen() {
                     voices={state.voices}
                     isFocused={isFocused}
                     isShuffling={isShuffling}
-                    onFocus={() => updateState({ focusedRoundIndex: index })}
+                    playingVoiceId={voicePreview.playingVoiceId}
+                    onTogglePreview={voicePreview.togglePreview}
+                    onFocus={() => {
+                      updateState({
+                        focusedRoundIndex: index,
+                        selectedVoiceId: round.voiceId,
+                      })
+                    }}
                     onUpdateRound={(updated) => {
                       updateState({
                         rounds: state.rounds.map((r, i) =>
                           i === index ? { ...r, ...updated } : r
                         ),
+                        focusedRoundIndex: index,
+                        ...(updated.voiceId ? { selectedVoiceId: updated.voiceId } : {}),
                       })
-                      if (updated.voiceId) {
-                        updateState({ selectedVoiceId: updated.voiceId })
-                      }
                     }}
                     onRemoveRound={() => handleRemoveRound(round.id)}
                     onOpenCloneModal={() => updateState({ isCloneModalOpen: true })}
@@ -277,7 +300,7 @@ export function TextToSpeechScreen() {
                   volume={state.isMuted ? 0 : state.volume}
                   isMuted={state.isMuted}
                   seekTarget={state.seekTarget}
-                  onTogglePlay={playback.togglePlayPause}
+                  onTogglePlay={handleTogglePlay}
                   onPlayStateChange={(playing) => updateState({ isPlaying: playing })}
                   onTimeUpdate={(time, _dur, ratio) => {
                     updateState({
@@ -339,7 +362,7 @@ export function TextToSpeechScreen() {
           playbackProgress={state.playbackProgress}
           isMuted={state.isMuted}
           volume={state.volume}
-          onTogglePlay={playback.togglePlayPause}
+          onTogglePlay={handleTogglePlay}
           onSeek={playback.handleSeek}
           onSkip={playback.handleSkip}
           onToggleMute={playback.toggleMute}
@@ -414,13 +437,28 @@ export function TextToSpeechScreen() {
             <SettingsDrawer
               activeVoice={activeVoice}
               voices={state.voices}
-              selectedVoiceId={state.selectedVoiceId}
+              selectedVoiceId={focusedRound?.voiceId || state.selectedVoiceId}
+              focusedRoundNumber={state.focusedRoundIndex + 1}
+              totalRounds={state.rounds.length}
+              playingVoiceId={voicePreview.playingVoiceId}
+              onTogglePreview={voicePreview.togglePreview}
               stability={state.stability}
               similarity={state.similarity}
               cfgScale={state.cfgScale}
               lavaSrEnabled={state.lavaSrEnabled}
               activeLanguage={activeLanguage}
-              onSelectVoice={(id) => updateState({ selectedVoiceId: id })}
+              onSelectVoice={(id) => {
+                const targetIndex =
+                  state.focusedRoundIndex >= 0 && state.focusedRoundIndex < state.rounds.length
+                    ? state.focusedRoundIndex
+                    : 0
+                updateState({
+                  selectedVoiceId: id,
+                  rounds: state.rounds.map((r, i) =>
+                    i === targetIndex ? { ...r, voiceId: id } : r
+                  ),
+                })
+              }}
               onOpenCloneModal={() => updateState({ isCloneModalOpen: true })}
               onStabilityChange={(val) => updateState({ stability: val })}
               onSimilarityChange={(val) => updateState({ similarity: val })}
@@ -443,6 +481,7 @@ export function TextToSpeechScreen() {
                 })
               }}
               onTogglePlayHistory={(item) => {
+                voicePreview.stopPreview()
                 if (state.playingHistoryId === item.id) {
                   playback.stopActiveAudio()
                   updateState({ playingHistoryId: null, isPlaying: false })
@@ -522,9 +561,16 @@ export function TextToSpeechScreen() {
         }}
         onStreamEnd={recording.stopMicrophone}
         onSaveVoice={(newVoice) => {
+          const targetIndex =
+            state.focusedRoundIndex >= 0 && state.focusedRoundIndex < state.rounds.length
+              ? state.focusedRoundIndex
+              : 0
           updateState({
             voices: [newVoice, ...state.voices],
             selectedVoiceId: newVoice.id,
+            rounds: state.rounds.map((r, i) =>
+              i === targetIndex ? { ...r, voiceId: newVoice.id } : r
+            ),
           })
         }}
       />

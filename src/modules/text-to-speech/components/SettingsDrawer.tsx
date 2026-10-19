@@ -1,4 +1,4 @@
-import { ChevronRight, Check } from 'lucide-react'
+import { ChevronRight, Check, Play } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +13,10 @@ export interface SettingsDrawerProps {
   activeVoice: Voice
   voices: Voice[]
   selectedVoiceId: string
+  focusedRoundNumber?: number
+  totalRounds?: number
+  playingVoiceId?: string | null
+  onTogglePreview?: (voice: Voice, e?: React.MouseEvent) => void
   stability: number
   similarity: number
   cfgScale: number
@@ -31,6 +35,10 @@ export function SettingsDrawer({
   activeVoice,
   voices,
   selectedVoiceId,
+  focusedRoundNumber,
+  totalRounds,
+  playingVoiceId,
+  onTogglePreview,
   stability,
   similarity,
   cfgScale,
@@ -49,7 +57,14 @@ export function SettingsDrawer({
       {/* VOICE CONFIGURATION */}
       <div className="space-y-2.5">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-semibold text-zinc-300">Voice</label>
+          <label className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
+            <span>Voice</span>
+            {totalRounds !== undefined && totalRounds > 1 && focusedRoundNumber !== undefined && (
+              <span className="text-[10px] font-medium text-zinc-400 bg-white/[0.06] border border-white/10 px-1.5 py-0.5 rounded font-mono">
+                Turn {focusedRoundNumber}
+              </span>
+            )}
+          </label>
           <button
             type="button"
             onClick={onOpenCloneModal}
@@ -61,10 +76,10 @@ export function SettingsDrawer({
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <div className="flex items-center justify-between rounded-xl border border-[#27272a] bg-[#161619] hover:bg-[#1c1c20] p-2.5 transition-colors cursor-pointer">
+            <div className="flex items-center justify-between rounded-xl border border-[#27272a] bg-[#161619] hover:bg-[#1c1c20] p-2.5 transition-colors cursor-pointer group">
               <div className="flex items-center gap-2.5 min-w-0">
                 <img
-                  src={activeVoice.avatarUrl || '/voices/jessica.jpg'}
+                  src={activeVoice.avatarUrl || '/voices/sterling.jpg'}
                   alt={activeVoice.name}
                   className="size-7 rounded-full object-cover shrink-0 ring-1 ring-white/15"
                 />
@@ -82,47 +97,114 @@ export function SettingsDrawer({
                   </div>
                 </div>
               </div>
-              <ChevronRight className="size-4 text-zinc-500 shrink-0" />
+
+              <div className="flex items-center gap-2 shrink-0">
+                {activeVoice.sampleUrl && onTogglePreview && (
+                  <button
+                    type="button"
+                    title={playingVoiceId === activeVoice.id ? 'Pause Voice Sample' : 'Test Voice'}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      e.preventDefault()
+                      onTogglePreview(activeVoice, e)
+                    }}
+                    className={cn(
+                      'size-7 rounded-full flex items-center justify-center transition-all cursor-pointer',
+                      playingVoiceId === activeVoice.id
+                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-sm shadow-emerald-500/20'
+                        : 'bg-white/[0.08] hover:bg-white/20 text-zinc-300 hover:text-white'
+                    )}
+                  >
+                    {playingVoiceId === activeVoice.id ? (
+                      <div className="flex items-center gap-0.5">
+                        <span className="w-0.5 h-2.5 bg-emerald-400 rounded-full animate-pulse" />
+                        <span className="w-0.5 h-3.5 bg-emerald-400 rounded-full animate-pulse delay-75" />
+                        <span className="w-0.5 h-2 bg-emerald-400 rounded-full animate-pulse delay-150" />
+                      </div>
+                    ) : (
+                      <Play className="size-3 fill-current ml-0.5" />
+                    )}
+                  </button>
+                )}
+                <ChevronRight className="size-4 text-zinc-500 shrink-0" />
+              </div>
             </div>
           </DropdownMenuTrigger>
 
-          <DropdownMenuContent className="w-80 bg-[#18181b] border-[#27272a] text-zinc-200 p-1.5 shadow-2xl">
-            <div className="px-2 py-1.5 text-[11px] font-medium text-zinc-400">
-              Select Voice
+          <DropdownMenuContent className="w-84 max-h-[380px] overflow-y-auto bg-[#18181b] border-[#27272a] text-zinc-200 p-1.5 shadow-2xl sidebar-scrollbar">
+            <div className="flex items-center justify-between px-2 py-1.5 text-[11px] font-medium text-zinc-400">
+              <span>Select Voice ({voices.length})</span>
+              <span className="text-[10px] text-zinc-500 font-normal">Play to test</span>
             </div>
 
-            {voices.map((v) => (
-              <DropdownMenuItem
-                key={v.id}
-                onClick={() => onSelectVoice(v.id)}
-                className={cn(
-                  'flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer text-xs',
-                  selectedVoiceId === v.id
-                    ? 'bg-white/10 text-white font-medium'
-                    : 'hover:bg-white/5 text-zinc-300'
-                )}
-              >
-                <div className="flex items-center gap-2.5">
-                  <img
-                    src={v.avatarUrl || '/voices/jessica.jpg'}
-                    alt={v.name}
-                    className="size-6 rounded-full object-cover shrink-0 ring-1 ring-white/10"
-                  />
-                  <div>
-                    <div className="font-semibold text-white flex items-center gap-1.5">
-                      {v.name}
-                      {v.category === 'cloned' && (
-                        <span className="text-[9px] bg-white/10 border border-white/10 text-zinc-300 px-1 rounded">
-                          Custom
-                        </span>
-                      )}
+            {voices.map((v) => {
+              const isPlaying = playingVoiceId === v.id
+              const isSelected = selectedVoiceId === v.id
+              return (
+                <DropdownMenuItem
+                  key={v.id}
+                  onClick={() => onSelectVoice(v.id)}
+                  className={cn(
+                    'flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer text-xs group/item',
+                    isSelected
+                      ? 'bg-white/10 text-white font-medium'
+                      : 'hover:bg-white/5 text-zinc-300'
+                  )}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                    <img
+                      src={v.avatarUrl || '/voices/sterling.jpg'}
+                      alt={v.name}
+                      className="size-6 rounded-full object-cover shrink-0 ring-1 ring-white/10"
+                    />
+                    <div className="min-w-0">
+                      <div className="font-semibold text-white flex items-center gap-1.5 truncate">
+                        <span>{v.name}</span>
+                        {v.category === 'cloned' && (
+                          <span className="text-[9px] bg-white/10 border border-white/10 text-zinc-300 px-1 rounded">
+                            Custom
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[11px] text-zinc-400 truncate max-w-[190px]">
+                        {v.description}
+                      </div>
                     </div>
-                    <div className="text-[11px] text-zinc-400">{v.description}</div>
                   </div>
-                </div>
-                {selectedVoiceId === v.id && <Check className="size-3.5 text-white" />}
-              </DropdownMenuItem>
-            ))}
+
+                  <div className="flex items-center gap-1.5 shrink-0 ml-auto">
+                    {v.sampleUrl && onTogglePreview && (
+                      <button
+                        type="button"
+                        title={isPlaying ? 'Pause Voice Sample' : 'Test Voice'}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          e.preventDefault()
+                          onTogglePreview(v, e)
+                        }}
+                        className={cn(
+                          'size-6.5 rounded-full flex items-center justify-center transition-all cursor-pointer',
+                          isPlaying
+                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-sm shadow-emerald-500/20'
+                            : 'bg-white/[0.06] hover:bg-white/20 text-zinc-400 hover:text-white'
+                        )}
+                      >
+                        {isPlaying ? (
+                          <div className="flex items-center gap-0.5">
+                            <span className="w-0.5 h-2.5 bg-emerald-400 rounded-full animate-pulse" />
+                            <span className="w-0.5 h-3.5 bg-emerald-400 rounded-full animate-pulse delay-75" />
+                            <span className="w-0.5 h-2 bg-emerald-400 rounded-full animate-pulse delay-150" />
+                          </div>
+                        ) : (
+                          <Play className="size-2.5 fill-current ml-0.5" />
+                        )}
+                      </button>
+                    )}
+                    {isSelected && <Check className="size-3.5 text-white" />}
+                  </div>
+                </DropdownMenuItem>
+              )
+            })}
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
