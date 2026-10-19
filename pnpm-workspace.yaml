@@ -1,0 +1,5 @@
+allowBuilds:
+  electron: true
+  esbuild: true
+minimumReleaseAgeExclude:
+  - shadcn@4.22.1
