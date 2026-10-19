@@ -6,7 +6,7 @@ import { WavesurferAudioPlayer } from '@/components/wavesurfer-audio-player'
 import { ShimmeringText } from '@/components/ui/shimmering-text'
 import { cn } from '@/lib/utils'
 
-import { Voice, SpeechRound, Generation, HistoryEntry, LANGUAGES } from '../types'
+import { Voice, SpeechRound, Generation, HistoryEntry, LANGUAGES, getVoicesForLanguage } from '../types'
 import {
   autoTagSpeechRounds,
   synthesizeRoundSpeech,
@@ -26,6 +26,7 @@ import { SpeechPlayerBar } from '../components/SpeechPlayerBar'
 import { SettingsDrawer } from '../components/SettingsDrawer'
 import { HistoryDrawer } from '../components/HistoryDrawer'
 import { VoiceCloneModal } from '../components/VoiceCloneModal'
+import { VoiceLanguageExplorerDialog } from '../components/VoiceLanguageExplorerDialog'
 
 export function TextToSpeechScreen() {
   const [state, updateState] = useTextToSpeechState()
@@ -53,7 +54,7 @@ export function TextToSpeechScreen() {
           description: 'Custom Voice',
           category: 'preset',
           color: '#a855f7',
-          avatarUrl: '/voices/jessica.jpg',
+          avatarUrl: '/voices/sterling.jpg',
           initials: 'S',
           gender: 'Neutral',
           tags: [],
@@ -197,7 +198,7 @@ export function TextToSpeechScreen() {
           ? `${activeRounds.length} Speakers`
           : `${firstSpeaker.name} - ${firstSpeaker.description}`,
       voiceColor: activeRounds.length > 1 ? '#10b981' : firstSpeaker.color,
-      voiceAvatarUrl: firstSpeaker.avatarUrl || '/voices/jessica.jpg',
+      voiceAvatarUrl: firstSpeaker.avatarUrl || '/voices/sterling.jpg',
       dateGroup: 'Today',
       timeAgo: 'Just now',
       model: 'Chatterbox T3 Turbo',
@@ -267,6 +268,7 @@ export function TextToSpeechScreen() {
                     }}
                     onRemoveRound={() => handleRemoveRound(round.id)}
                     onOpenCloneModal={() => updateState({ isCloneModalOpen: true })}
+                    onOpenExplorerModal={() => updateState({ isLanguageSelectorOpen: true })}
                     onInsertPauseTag={(tag) => handleInsertPauseTag(tag, index)}
                   />
                 )
@@ -460,11 +462,25 @@ export function TextToSpeechScreen() {
                 })
               }}
               onOpenCloneModal={() => updateState({ isCloneModalOpen: true })}
+              onOpenExplorerModal={() => updateState({ isLanguageSelectorOpen: true })}
               onStabilityChange={(val) => updateState({ stability: val })}
               onSimilarityChange={(val) => updateState({ similarity: val })}
               onCfgScaleChange={(val) => updateState({ cfgScale: val })}
               onToggleLavaSr={() => updateState({ lavaSrEnabled: !state.lavaSrEnabled })}
-              onSelectLanguage={(lang) => updateState({ language: lang })}
+              onSelectLanguage={(lang) => {
+                const langVoices = getVoicesForLanguage(lang)
+                const newVoiceId = langVoices[0]?.id
+                if (newVoiceId && lang !== 'Auto Detect') {
+                  const targetIdx = state.focusedRoundIndex >= 0 ? state.focusedRoundIndex : 0
+                  updateState({
+                    language: lang,
+                    selectedVoiceId: newVoiceId,
+                    rounds: state.rounds.map((r, i) => (i === targetIdx ? { ...r, voiceId: newVoiceId } : r)),
+                  })
+                } else {
+                  updateState({ language: lang })
+                }
+              }}
             />
 
             <HistoryDrawer
@@ -573,6 +589,28 @@ export function TextToSpeechScreen() {
             ),
           })
         }}
+      />
+
+      {/* VOICE & LANGUAGE EXPLORER DIALOG */}
+      <VoiceLanguageExplorerDialog
+        isOpen={state.isLanguageSelectorOpen}
+        onClose={() => updateState({ isLanguageSelectorOpen: false })}
+        activeVoiceId={focusedRound?.voiceId || state.selectedVoiceId}
+        activeLanguage={activeLanguage}
+        voices={state.voices}
+        playingVoiceId={voicePreview.playingVoiceId}
+        onTogglePreview={voicePreview.togglePreview}
+        onSelectVoice={(voiceId) => {
+          const targetIdx = state.focusedRoundIndex >= 0 ? state.focusedRoundIndex : 0
+          updateState({
+            selectedVoiceId: voiceId,
+            rounds: state.rounds.map((r, i) => (i === targetIdx ? { ...r, voiceId } : r)),
+          })
+        }}
+        onSelectLanguage={(langName) => {
+          updateState({ language: langName })
+        }}
+        onOpenCloneModal={() => updateState({ isCloneModalOpen: true })}
       />
     </div>
   )

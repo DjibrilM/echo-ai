@@ -22,9 +22,9 @@ export function createInitialSampleGeneration(): Generation {
     roundIndex: 0,
     title: 'Generation 1',
     textSnippet: 'I trusted you with everything. Every secret, every fear...',
-    speakerName: 'Jessica',
-    speakerColor: '#10b981',
-    speakerAvatarUrl: '/voices/jessica.jpg',
+    speakerName: 'Sterling Rhodes',
+    speakerColor: '#38bdf8',
+    speakerAvatarUrl: '/voices/sterling.jpg',
     duration: initialAudio.duration || 8,
     audioUrl: initialAudio.url,
     waveform: [
@@ -243,7 +243,7 @@ export async function synthesizeRoundSpeech(
     textSnippet: round.text,
     speakerName: speaker.name,
     speakerColor: speaker.color,
-    speakerAvatarUrl: speaker.avatarUrl || '/voices/jessica.jpg',
+    speakerAvatarUrl: speaker.avatarUrl || '/voices/sterling.jpg',
     duration: wavDuration || calculatedDuration,
     audioUrl,
     waveform: [
@@ -307,7 +307,7 @@ export async function synthesizeAndMergeDialogueRounds(
     textSnippet: combinedSnippet.slice(0, 140) + (combinedSnippet.length > 140 ? '...' : ''),
     speakerName: `${activeRounds.length} Speakers`,
     speakerColor: firstSpeaker.color,
-    speakerAvatarUrl: firstSpeaker.avatarUrl || '/voices/jessica.jpg',
+    speakerAvatarUrl: firstSpeaker.avatarUrl || '/voices/sterling.jpg',
     duration: merged.duration,
     audioUrl: merged.url,
     waveform: [

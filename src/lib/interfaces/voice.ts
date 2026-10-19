@@ -23,6 +23,8 @@ export interface Voice {
   referenceAudioName?: string
   sampleUrl?: string
   elevenLabsVoiceId?: string
+  languageCode?: string
+  languageName?: string
 }
 
 export interface SpeechRound {

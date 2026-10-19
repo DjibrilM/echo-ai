@@ -96,12 +96,12 @@ export function TextToSpeechPage() {
 }
 
 const PRESET_AVATARS = [
-  { name: 'Jessica', url: '/voices/jessica.jpg' },
-  { name: 'Roger', url: '/voices/roger.jpg' },
-  { name: 'George', url: '/voices/george.jpg' },
-  { name: 'Aria', url: '/voices/aria.jpg' },
-  { name: 'Marcus', url: '/voices/marcus.jpg' },
-  { name: 'Sarah', url: '/voices/sarah.jpg' },
+  { name: 'Sterling', url: '/voices/sterling.jpg' },
+  { name: 'Serena', url: '/voices/serena.jpg' },
+  { name: 'Chloe', url: '/voices/chloe.jpg' },
+  { name: 'Jax', url: '/voices/jax.jpg' },
+  { name: 'Alistair', url: '/voices/alistair.jpg' },
+  { name: 'Eleanor', url: '/voices/eleanor.jpg' },
 ]
 
 export function VoiceCreationPage() {

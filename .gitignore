@@ -24,8 +24,5 @@ dist-ssr
 *.sw?
 
 # Build outputs
-release/*.dmg
-release/*.blockmap
-release/**/mac-*/
-release/**/latest-*.yml
-release/**/builder-debug.yml
+release/
+dist-electron/

@@ -132,7 +132,7 @@ export function HistoryDrawer({
                         </p>
                         <div className="flex items-center gap-2 text-[11.5px] text-zinc-400 mt-1.5">
                           <img
-                            src={item.voiceAvatarUrl || '/voices/jessica.jpg'}
+                            src={item.voiceAvatarUrl || '/voices/sterling.jpg'}
                             alt={item.voiceName}
                             className="size-3.5 rounded-full object-cover shrink-0 ring-1 ring-white/10"
                           />

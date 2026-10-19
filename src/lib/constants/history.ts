@@ -6,7 +6,7 @@ export const INITIAL_HISTORY: HistoryEntry[] = [
     text: 'I trusted you with everything. Every secret, every fear...',
     voiceName: 'Sienna Ray - Playful, Bright, Warm',
     voiceColor: '#10b981',
-    voiceAvatarUrl: '/voices/jessica.jpg',
+    voiceAvatarUrl: '/voices/serena.jpg',
     dateGroup: 'Today',
     timeAgo: '33 minutes ago',
     model: 'Chatterbox T3 Turbo',

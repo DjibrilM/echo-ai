@@ -1,19 +1,19 @@
 import { useReducer } from 'react'
-import { TextToSpeechState, INITIAL_VOICES, INITIAL_HISTORY } from '../types'
+import { TextToSpeechState, ALL_VOICES, INITIAL_HISTORY } from '../types'
 
 export const initialTextToSpeechState: TextToSpeechState = {
   // Voice & Language selection
   language: 'English (US)',
   searchLangQuery: '',
   isLanguageSelectorOpen: false,
-  selectedVoiceId: 'voice-jessica',
-  voices: INITIAL_VOICES,
+  selectedVoiceId: 'voice-sterling',
+  voices: ALL_VOICES,
 
   // Multi-speaker dialogue rounds
   rounds: [
     {
       id: 'round-1',
-      voiceId: 'voice-jessica',
+      voiceId: 'voice-sterling',
       text: 'I trusted you with everything. Every secret, every fear. And you used it against me.',
       speed: 1.0,
       emotion: 'Neutral',

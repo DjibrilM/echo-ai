@@ -164,7 +164,7 @@ export const INITIAL_VOICES: Voice[] = [
     description: 'Young and popular playful female voice perfect for trendy content.',
     category: 'preset',
     color: '#10b981',
-    avatarUrl: '/voices/jessica.jpg',
+    avatarUrl: '/voices/serena.jpg',
     sampleUrl: '/voices/samples/cgSgspJ2msm6clMCkdW9.mp3',
     initials: 'SR',
     gender: 'Female',
@@ -177,7 +177,7 @@ export const INITIAL_VOICES: Voice[] = [
     description: 'Smooth tenor pitch, perfect for agentic and assistant use cases.',
     category: 'preset',
     color: '#14b8a6',
-    avatarUrl: '/voices/marcus.jpg',
+    avatarUrl: '/voices/sterling.jpg',
     sampleUrl: '/voices/samples/cjVigY5qzO86Huf0OWal.mp3',
     initials: 'JM',
     gender: 'Male',
@@ -190,7 +190,7 @@ export const INITIAL_VOICES: Voice[] = [
     description: 'Warm, bright, polished narrative quality with crisp diction.',
     category: 'preset',
     color: '#c084fc',
-    avatarUrl: '/voices/aria.jpg',
+    avatarUrl: '/voices/eleanor.jpg',
     sampleUrl: '/voices/samples/hpp4J3VqNfWAUOO0d1Us.mp3',
     initials: 'CM',
     gender: 'Female',
@@ -203,7 +203,7 @@ export const INITIAL_VOICES: Voice[] = [
     description: 'Natural and real, down-to-earth voice great across use-cases.',
     category: 'preset',
     color: '#0ea5e9',
-    avatarUrl: '/voices/roger.jpg',
+    avatarUrl: '/voices/jax.jpg',
     sampleUrl: '/voices/samples/iP95p4xoKVk53GoZ742B.mp3',
     initials: 'CM',
     gender: 'Male',
@@ -216,7 +216,7 @@ export const INITIAL_VOICES: Voice[] = [
     description: 'Resonant and comforting tone for narrations and stories.',
     category: 'preset',
     color: '#eab308',
-    avatarUrl: '/voices/george.jpg',
+    avatarUrl: '/voices/alistair.jpg',
     sampleUrl: '/voices/samples/nPczCjzI2devNBz1zQrb.mp3',
     initials: 'SS',
     gender: 'Male',
@@ -229,11 +229,11 @@ export const INITIAL_VOICES: Voice[] = [
     description: 'Strong voice perfect for delivering professional broadcasts.',
     category: 'preset',
     color: '#38bdf8',
-    avatarUrl: '/voices/edward.svg',
+    avatarUrl: '/voices/dorian.jpg',
     sampleUrl: '/voices/samples/onwK4e9ZLuTAKqWW03F9.mp3',
     initials: 'ES',
     gender: 'Male',
-    tags: ['British', 'Broadcast', 'News'],
+    tags: ['British', 'Advertisement', 'Broadcast', 'News'],
   },
   {
     id: 'voice-vivienne',
@@ -242,11 +242,11 @@ export const INITIAL_VOICES: Voice[] = [
     description: 'Velvety British female voice with warmth and clarity.',
     category: 'preset',
     color: '#f43f5e',
-    avatarUrl: '/voices/sarah.jpg',
+    avatarUrl: '/voices/helena.jpg',
     sampleUrl: '/voices/samples/pFZP5JQG7iQjIQuC4Bku.mp3',
     initials: 'VD',
     gender: 'Female',
-    tags: ['British', 'Theatrical', 'Velvety'],
+    tags: ['British', 'Entertainment', 'Theatrical', 'Velvety'],
   },
   {
     id: 'voice-dominic',
@@ -255,7 +255,7 @@ export const INITIAL_VOICES: Voice[] = [
     description: 'Bright tenor pitch, confident and unwavering delivery.',
     category: 'preset',
     color: '#e11d48',
-    avatarUrl: '/voices/dominic.svg',
+    avatarUrl: '/voices/kaelen.jpg',
     sampleUrl: '/voices/samples/pNInz6obpgDQGcFmaJgB.mp3',
     initials: 'DC',
     gender: 'Male',
@@ -268,11 +268,11 @@ export const INITIAL_VOICES: Voice[] = [
     description: 'Friendly, wise, and comforting voice ready to narrate lore.',
     category: 'preset',
     color: '#d97706',
-    avatarUrl: '/voices/silas.svg',
+    avatarUrl: '/voices/milo.jpg',
     sampleUrl: '/voices/samples/pqHfZKP75CvOlQylNhV4.mp3',
     initials: 'SB',
     gender: 'Male',
-    tags: ['American', 'Wisdom', 'Balanced'],
+    tags: ['American', 'Narration', 'Wisdom', 'Balanced'],
   },
 ]
 
@@ -289,13 +289,36 @@ export const PRESET_AVATARS = [
   { name: 'Eleanor', url: '/voices/eleanor.jpg' },
   { name: 'Helena', url: '/voices/helena.jpg' },
   { name: 'Milo', url: '/voices/milo.jpg' },
-  { name: 'Sienna', url: '/voices/jessica.jpg' },
-  { name: 'Julian', url: '/voices/marcus.jpg' },
-  { name: 'Clara', url: '/voices/aria.jpg' },
-  { name: 'Caleb', url: '/voices/roger.jpg' },
-  { name: 'Solomon', url: '/voices/george.jpg' },
-  { name: 'Vivienne', url: '/voices/sarah.jpg' },
-  { name: 'Edward', url: '/voices/edward.svg' },
-  { name: 'Dominic', url: '/voices/dominic.svg' },
-  { name: 'Silas', url: '/voices/silas.svg' },
 ]
+
+import multilingualVoicesJson from '../../data/multilingual-voices.json'
+
+export const MULTILINGUAL_VOICES: Record<string, Voice[]> =
+  multilingualVoicesJson as unknown as Record<string, Voice[]>
+
+export const ALL_MULTILINGUAL_VOICES: Voice[] = Object.values(MULTILINGUAL_VOICES).flat()
+
+export const ALL_VOICES: Voice[] = [...INITIAL_VOICES, ...ALL_MULTILINGUAL_VOICES]
+
+export function getVoicesForLanguage(langNameOrCode?: string): Voice[] {
+  if (!langNameOrCode || langNameOrCode === 'Auto Detect' || langNameOrCode === 'auto') {
+    return ALL_VOICES
+  }
+  const normalized = langNameOrCode.toLowerCase()
+  if (normalized.includes('english') || normalized === 'en' || normalized === 'en-gb') {
+    return INITIAL_VOICES
+  }
+  if (MULTILINGUAL_VOICES[normalized]) {
+    return MULTILINGUAL_VOICES[normalized]
+  }
+  for (const list of Object.values(MULTILINGUAL_VOICES)) {
+    if (
+      list[0]?.languageName?.toLowerCase() === normalized ||
+      list[0]?.tags.some((t) => t.toLowerCase() === normalized)
+    ) {
+      return list
+    }
+  }
+  return ALL_VOICES
+}
+

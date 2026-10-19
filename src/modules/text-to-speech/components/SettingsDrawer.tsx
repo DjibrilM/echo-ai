@@ -24,6 +24,7 @@ export interface SettingsDrawerProps {
   activeLanguage: LanguageOption
   onSelectVoice: (id: string) => void
   onOpenCloneModal: () => void
+  onOpenExplorerModal?: () => void
   onStabilityChange: (val: number) => void
   onSimilarityChange: (val: number) => void
   onCfgScaleChange: (val: number) => void
@@ -33,8 +34,8 @@ export interface SettingsDrawerProps {
 
 export function SettingsDrawer({
   activeVoice,
-  voices,
-  selectedVoiceId,
+  voices: _voices,
+  selectedVoiceId: _selectedVoiceId,
   focusedRoundNumber,
   totalRounds,
   playingVoiceId,
@@ -44,8 +45,9 @@ export function SettingsDrawer({
   cfgScale,
   lavaSrEnabled,
   activeLanguage,
-  onSelectVoice,
+  onSelectVoice: _onSelectVoice,
   onOpenCloneModal,
+  onOpenExplorerModal,
   onStabilityChange,
   onSimilarityChange,
   onCfgScaleChange,
@@ -65,148 +67,89 @@ export function SettingsDrawer({
               </span>
             )}
           </label>
-          <button
-            type="button"
-            onClick={onOpenCloneModal}
-            className="text-[11px] font-medium text-zinc-400 hover:text-white transition-colors cursor-pointer"
-          >
-            <span>Clone or Add Voice</span>
-          </button>
+          <div className="flex items-center gap-2">
+            {onOpenExplorerModal && (
+              <button
+                type="button"
+                onClick={onOpenExplorerModal}
+                className="text-[11px] font-medium text-sky-400 hover:text-white transition-colors cursor-pointer"
+              >
+                <span>Browse All</span>
+              </button>
+            )}
+            {onOpenExplorerModal && <span className="text-zinc-600">•</span>}
+            <button
+              type="button"
+              onClick={onOpenCloneModal}
+              className="text-[11px] font-medium text-zinc-400 hover:text-white transition-colors cursor-pointer"
+            >
+              <span>Clone Voice</span>
+            </button>
+          </div>
         </div>
 
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <div className="flex items-center justify-between rounded-xl border border-[#27272a] bg-[#161619] hover:bg-[#1c1c20] p-2.5 transition-colors cursor-pointer group">
-              <div className="flex items-center gap-2.5 min-w-0">
-                <img
-                  src={activeVoice.avatarUrl || '/voices/sterling.jpg'}
-                  alt={activeVoice.name}
-                  className="size-7 rounded-full object-cover shrink-0 ring-1 ring-white/15"
-                />
-                <div className="min-w-0">
-                  <div className="text-xs font-semibold text-white truncate flex items-center gap-1.5">
-                    {activeVoice.name}
-                    {activeVoice.category === 'cloned' && (
-                      <span className="text-[9px] bg-white/10 border border-white/10 text-zinc-300 px-1 rounded">
-                        Custom
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-[11px] text-zinc-400 truncate">
-                    {activeVoice.description}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 shrink-0">
-                {activeVoice.sampleUrl && onTogglePreview && (
-                  <button
-                    type="button"
-                    title={playingVoiceId === activeVoice.id ? 'Pause Voice Sample' : 'Test Voice'}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      e.preventDefault()
-                      onTogglePreview(activeVoice, e)
-                    }}
-                    className={cn(
-                      'size-7 rounded-full flex items-center justify-center transition-all cursor-pointer',
-                      playingVoiceId === activeVoice.id
-                        ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-sm shadow-emerald-500/20'
-                        : 'bg-white/[0.08] hover:bg-white/20 text-zinc-300 hover:text-white'
-                    )}
-                  >
-                    {playingVoiceId === activeVoice.id ? (
-                      <div className="flex items-center gap-0.5">
-                        <span className="w-0.5 h-2.5 bg-emerald-400 rounded-full animate-pulse" />
-                        <span className="w-0.5 h-3.5 bg-emerald-400 rounded-full animate-pulse delay-75" />
-                        <span className="w-0.5 h-2 bg-emerald-400 rounded-full animate-pulse delay-150" />
-                      </div>
-                    ) : (
-                      <Play className="size-3 fill-current ml-0.5" />
-                    )}
-                  </button>
+        {/* ACTIVE VOICE CARD -> Opens Language & Voice Explorer */}
+        <div
+          onClick={onOpenExplorerModal}
+          className="flex items-center justify-between rounded-xl border border-[#27272a] bg-[#161619] hover:bg-[#1c1c20] hover:border-zinc-600 p-2.5 transition-all cursor-pointer group shadow-xs"
+        >
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <img
+              src={activeVoice.avatarUrl || '/voices/sterling.jpg'}
+              alt={activeVoice.name}
+              className="size-7 rounded-full object-cover shrink-0 ring-1 ring-white/15"
+            />
+            <div className="min-w-0 flex-1">
+              <div className="text-xs font-semibold text-white truncate flex items-center gap-1.5">
+                <span>{activeVoice.name}</span>
+                {activeVoice.category === 'cloned' && (
+                  <span className="text-[9px] bg-white/10 border border-white/10 text-zinc-300 px-1 rounded font-medium">
+                    Custom
+                  </span>
                 )}
-                <ChevronRight className="size-4 text-zinc-500 shrink-0" />
+                {activeVoice.languageName && (
+                  <span className="text-[10px] text-zinc-400 font-normal">
+                    • {activeVoice.languageName}
+                  </span>
+                )}
+              </div>
+              <div className="text-[11px] text-zinc-400 truncate">
+                {activeVoice.description}
               </div>
             </div>
-          </DropdownMenuTrigger>
+          </div>
 
-          <DropdownMenuContent className="w-84 max-h-[380px] overflow-y-auto bg-[#18181b] border-[#27272a] text-zinc-200 p-1.5 shadow-2xl sidebar-scrollbar">
-            <div className="flex items-center justify-between px-2 py-1.5 text-[11px] font-medium text-zinc-400">
-              <span>Select Voice ({voices.length})</span>
-              <span className="text-[10px] text-zinc-500 font-normal">Play to test</span>
-            </div>
-
-            {voices.map((v) => {
-              const isPlaying = playingVoiceId === v.id
-              const isSelected = selectedVoiceId === v.id
-              return (
-                <DropdownMenuItem
-                  key={v.id}
-                  onClick={() => onSelectVoice(v.id)}
-                  className={cn(
-                    'flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer text-xs group/item',
-                    isSelected
-                      ? 'bg-white/10 text-white font-medium'
-                      : 'hover:bg-white/5 text-zinc-300'
-                  )}
-                >
-                  <div className="flex items-center gap-2.5 min-w-0 pr-2">
-                    <img
-                      src={v.avatarUrl || '/voices/sterling.jpg'}
-                      alt={v.name}
-                      className="size-6 rounded-full object-cover shrink-0 ring-1 ring-white/10"
-                    />
-                    <div className="min-w-0">
-                      <div className="font-semibold text-white flex items-center gap-1.5 truncate">
-                        <span>{v.name}</span>
-                        {v.category === 'cloned' && (
-                          <span className="text-[9px] bg-white/10 border border-white/10 text-zinc-300 px-1 rounded">
-                            Custom
-                          </span>
-                        )}
-                      </div>
-                      <div className="text-[11px] text-zinc-400 truncate max-w-[190px]">
-                        {v.description}
-                      </div>
-                    </div>
+          <div className="flex items-center gap-2 shrink-0 ml-2">
+            {activeVoice.sampleUrl && onTogglePreview && (
+              <button
+                type="button"
+                title={playingVoiceId === activeVoice.id ? 'Pause Voice Sample' : 'Test Voice'}
+                onClick={(e) => {
+                  e.stopPropagation()
+                  e.preventDefault()
+                  onTogglePreview(activeVoice, e)
+                }}
+                className={cn(
+                  'size-7 rounded-full flex items-center justify-center transition-all cursor-pointer',
+                  playingVoiceId === activeVoice.id
+                    ? 'bg-white text-black shadow-sm shadow-white/20'
+                    : 'bg-white/[0.08] hover:bg-white/20 text-zinc-300 hover:text-white'
+                )}
+              >
+                {playingVoiceId === activeVoice.id ? (
+                  <div className="flex items-center gap-0.5">
+                    <span className="w-0.5 h-2.5 bg-black rounded-full animate-pulse" />
+                    <span className="w-0.5 h-3.5 bg-black rounded-full animate-pulse delay-75" />
+                    <span className="w-0.5 h-2 bg-black rounded-full animate-pulse delay-150" />
                   </div>
-
-                  <div className="flex items-center gap-1.5 shrink-0 ml-auto">
-                    {v.sampleUrl && onTogglePreview && (
-                      <button
-                        type="button"
-                        title={isPlaying ? 'Pause Voice Sample' : 'Test Voice'}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          e.preventDefault()
-                          onTogglePreview(v, e)
-                        }}
-                        className={cn(
-                          'size-6.5 rounded-full flex items-center justify-center transition-all cursor-pointer',
-                          isPlaying
-                            ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 shadow-sm shadow-emerald-500/20'
-                            : 'bg-white/[0.06] hover:bg-white/20 text-zinc-400 hover:text-white'
-                        )}
-                      >
-                        {isPlaying ? (
-                          <div className="flex items-center gap-0.5">
-                            <span className="w-0.5 h-2.5 bg-emerald-400 rounded-full animate-pulse" />
-                            <span className="w-0.5 h-3.5 bg-emerald-400 rounded-full animate-pulse delay-75" />
-                            <span className="w-0.5 h-2 bg-emerald-400 rounded-full animate-pulse delay-150" />
-                          </div>
-                        ) : (
-                          <Play className="size-2.5 fill-current ml-0.5" />
-                        )}
-                      </button>
-                    )}
-                    {isSelected && <Check className="size-3.5 text-white" />}
-                  </div>
-                </DropdownMenuItem>
-              )
-            })}
-          </DropdownMenuContent>
-        </DropdownMenu>
+                ) : (
+                  <Play className="size-3 fill-current ml-0.5" />
+                )}
+              </button>
+            )}
+            <ChevronRight className="size-4 text-zinc-500 group-hover:text-white transition-colors shrink-0" />
+          </div>
+        </div>
       </div>
 
       {/* VOICE PARAMETERS */}
@@ -296,14 +239,14 @@ export function SettingsDrawer({
           </button>
         </div>
 
-        {/* Language Selection */}
+        {/* Language Selection Dropdown */}
         <div className="flex items-center justify-between py-1">
           <span className="text-xs font-semibold text-zinc-300">Language</span>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
                 type="button"
-                className="flex items-center justify-between gap-2 min-w-[150px] h-8.5 rounded-lg border border-[#27272a] bg-[#161619] hover:bg-[#1c1c20] px-2.5 text-xs text-zinc-200 transition-colors cursor-pointer shadow-xs"
+                className="flex items-center justify-between gap-2 min-w-[150px] h-8.5 rounded-lg border border-[#27272a] bg-[#161619] hover:bg-[#1c1c20] px-2.5 text-xs text-zinc-200 transition-colors cursor-pointer shadow-xs group"
               >
                 <div className="flex items-center gap-2 truncate">
                   {!activeLanguage.isAuto && activeLanguage.flag && (
@@ -311,11 +254,14 @@ export function SettingsDrawer({
                   )}
                   <span className="truncate font-medium">{activeLanguage.name}</span>
                 </div>
-                <ChevronRight className="size-3.5 text-zinc-500 shrink-0 ml-1" />
+                <ChevronRight className="size-3.5 text-zinc-500 group-hover:text-zinc-300 shrink-0 ml-1 transition-colors" />
               </button>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent className="w-72 max-h-[440px] overflow-y-auto bg-[#18181b] border-[#27272a] text-zinc-200 p-1.5 shadow-2xl sidebar-scrollbar">
+            <DropdownMenuContent
+              align="end"
+              className="w-72 max-h-[440px] overflow-y-auto bg-[#18181b] border-[#27272a] text-zinc-200 p-1.5 shadow-2xl sidebar-scrollbar z-[100]"
+            >
               <div className="px-2 py-1.5 text-[11px] font-medium text-zinc-400">
                 Select Language
               </div>

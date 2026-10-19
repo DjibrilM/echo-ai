@@ -75,7 +75,7 @@ export function VoiceCloneModal({
       description: cloneDescription.trim() || 'Custom Cloned Voice',
       category: 'cloned',
       color: '#3b82f6',
-      avatarUrl: cloneAvatarUrl || '/voices/jessica.jpg',
+      avatarUrl: cloneAvatarUrl || '/voices/sterling.jpg',
       initials: voiceName.trim().charAt(0).toUpperCase() || 'C',
       gender: cloneGender,
       tags: ['Cloned', 'Custom'],
@@ -89,8 +89,8 @@ export function VoiceCloneModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-[580px] bg-[#121214] border-none text-white p-6 shadow-2xl rounded-2xl">
-        <DialogHeader className="border-none pb-2">
+      <DialogContent className="sm:max-w-[580px] w-full max-h-[88vh] bg-[#121214] border border-white/10 text-white p-0 shadow-2xl rounded-2xl flex flex-col overflow-hidden">
+        <DialogHeader className="p-5 pb-3 border-b border-white/[0.08] shrink-0">
           <DialogTitle className="text-base font-semibold text-white tracking-tight">
             Bring Your Own Voice (Instant Voice Clone)
           </DialogTitle>
@@ -99,7 +99,7 @@ export function VoiceCloneModal({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 pt-2">
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 sidebar-scrollbar">
           {/* Audio Source Segmented Control */}
           <LayoutGroup id="cloneModalTabs">
             <div className="flex rounded-xl bg-[#18181b] p-1 border-none relative select-none">
@@ -153,7 +153,7 @@ export function VoiceCloneModal({
               <div className="w-full shrink-0 min-w-0">
                 <div
                   className={cn(
-                    'relative rounded-2xl border border-dashed p-6 text-center transition-all h-[230px] flex flex-col items-center justify-center',
+                    'relative rounded-2xl border border-dashed p-4 text-center transition-all h-[165px] flex flex-col items-center justify-center',
                     uploadedFile
                       ? 'border-white/20 bg-white/[0.03]'
                       : 'border-zinc-800 hover:border-zinc-600 bg-[#121214]'
@@ -209,7 +209,7 @@ export function VoiceCloneModal({
 
               {/* Tab 2: Record Microphone */}
               <div className="w-full shrink-0 min-w-0">
-                <div className="rounded-2xl border-none bg-[#18181b]/50 p-6 text-center h-[230px] flex flex-col items-center justify-center gap-3">
+                <div className="rounded-2xl border-none bg-[#18181b]/50 p-4 text-center h-[165px] flex flex-col items-center justify-center gap-2.5">
                   <div className="w-full h-16 flex items-center justify-center px-4 overflow-hidden min-w-0">
                     <LiveWaveform
                       active={isRecording}
@@ -437,30 +437,31 @@ export function VoiceCloneModal({
             </div>
           )}
 
-          {/* Modal Actions */}
-          <div className="flex items-center justify-end gap-3 pt-4 border-none">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={onClose}
-              className="h-10 px-5 rounded-lg text-xs font-medium bg-white/10 hover:bg-white/15 text-white border-none cursor-pointer transition-colors shadow-none"
-            >
-              Cancel
-            </Button>
+        </div>
 
-            <Button
-              type="button"
-              disabled={
-                isProcessing ||
-                !voiceName.trim() ||
-                (!uploadedFile && recordedDuration === 0)
-              }
-              onClick={handleSave}
-              className="h-10 px-5 rounded-lg bg-white hover:bg-zinc-200 text-black text-xs font-medium transition-all shadow-sm active:scale-98 disabled:opacity-40 disabled:pointer-events-none cursor-pointer border-none"
-            >
-              {isProcessing ? 'Creating Voice...' : 'Create Voice'}
-            </Button>
-          </div>
+        {/* Modal Actions */}
+        <div className="flex items-center justify-end gap-3 p-4 px-5 border-t border-white/[0.08] bg-[#121214] shrink-0">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={onClose}
+            className="h-10 px-5 rounded-lg text-xs font-medium bg-white/10 hover:bg-white/15 text-white border-none cursor-pointer transition-colors shadow-none"
+          >
+            Cancel
+          </Button>
+
+          <Button
+            type="button"
+            disabled={
+              isProcessing ||
+              !voiceName.trim() ||
+              (!uploadedFile && recordedDuration === 0)
+            }
+            onClick={handleSave}
+            className="h-10 px-5 rounded-lg bg-white hover:bg-zinc-200 text-black text-xs font-medium transition-all shadow-sm active:scale-98 disabled:opacity-40 disabled:pointer-events-none cursor-pointer border-none"
+          >
+            {isProcessing ? 'Creating Voice...' : 'Create Voice'}
+          </Button>
         </div>
       </DialogContent>
     </Dialog>
