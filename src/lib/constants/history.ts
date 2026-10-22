@@ -3,7 +3,7 @@ import { HistoryEntry } from '../interfaces/voice'
 export const INITIAL_HISTORY: HistoryEntry[] = [
   {
     id: 'hist-1',
-    text: 'I trusted you with everything. Every secret, every fear...',
+    text: 'Welcome to Echo AI. Configure speakers and compose multi-speaker dialogues.',
     voiceName: 'Sienna Ray - Playful, Bright, Warm',
     voiceColor: '#10b981',
     voiceAvatarUrl: '/voices/serena.jpg',

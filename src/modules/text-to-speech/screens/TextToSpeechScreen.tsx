@@ -1,23 +1,24 @@
-import { useMemo, useCallback } from 'react'
+import { useMemo, useCallback, useEffect } from 'react'
 import { Plus } from 'lucide-react'
 import { motion, AnimatePresence, LayoutGroup, Reorder } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { WavesurferAudioPlayer } from '@/components/wavesurfer-audio-player'
 import { ShimmeringText } from '@/components/ui/shimmering-text'
+import { useVoiceEngineModels } from '../store/voiceEngineStore'
 import { cn } from '@/lib/utils'
 
 import { Voice, SpeechRound, Generation, HistoryEntry, LANGUAGES, getVoicesForLanguage } from '../types'
+import { scanVoiceSamples, loadVoicesForLanguage } from '@/lib/services/voiceLoader'
 import {
   autoTagSpeechRounds,
-  synthesizeRoundSpeech,
-  synthesizeAndMergeDialogueRounds,
   formatTime,
-  playSyntheticTone,
+  generateSpeech,
 } from '../services/tts-service'
 import { useTextToSpeechState } from '../hooks/useTextToSpeechState'
 import { useSpeechPlayback } from '../hooks/useSpeechPlayback'
 import { useVoiceCloneRecording } from '../hooks/useVoiceCloneRecording'
 import { useVoicePreview } from '../hooks/useVoicePreview'
+import { useIpcEffect } from '@/hooks/useIpcEffect'
 
 import { TopSubHeader } from '../components/TopSubHeader'
 import { DialogueRoundCard } from '../components/DialogueRoundCard'
@@ -26,18 +27,85 @@ import { SpeechPlayerBar } from '../components/SpeechPlayerBar'
 import { SettingsDrawer } from '../components/SettingsDrawer'
 import { HistoryDrawer } from '../components/HistoryDrawer'
 import { VoiceCloneModal } from '../components/VoiceCloneModal'
-import { VoiceLanguageExplorerDialog } from '../components/VoiceLanguageExplorerDialog'
+import { VoiceLanguageExplorerDialog } from '../components/VoiceLanguageExplorerDialog/index'
+import { InstallRequiredModelsView } from '../components/InstallRequiredModelsView'
 
 export function TextToSpeechScreen() {
   const [state, updateState] = useTextToSpeechState()
+  const { allRequiredReady, deleteAllModels, selectedEngine, setSelectedEngine } = useVoiceEngineModels()
   const playback = useSpeechPlayback({ state, updateState })
   const recording = useVoiceCloneRecording({ state, updateState })
   const voicePreview = useVoicePreview()
+
+  // Real-time IPC Event Gateway listener for incoming generation progress and logs
+  useIpcEffect({
+    onTtsProgress: (data) => {
+      updateState({ synthesisProgress: data.message })
+    },
+    onTerminalLog: (log) => {
+      console.log(`[IPC Terminal ${log.stream}]:`, log.text)
+    },
+  })
+
+  // Dynamically analyze the voices/samples folder and load initial language voices
+  useEffect(() => {
+    scanVoiceSamples()
+    loadVoicesForLanguage(state.language).then((loaded) => {
+      if (loaded.length > 0) {
+        updateState({
+          voices: Array.from(new Map([...state.voices, ...loaded].map((v) => [v.id, v])).values()),
+        })
+      }
+    })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Download a data: URI (base64-encoded audio) as a .wav file.
+  // Converts the base64 payload directly to a Blob so the download is reliable in Electron.
+  // Using fetch() on data URIs can be inconsistent in Electron; direct base64 decode avoids that.
+  const downloadDataUriAsWav = useCallback(
+    (dataUri: string, fileName: string) => {
+      try {
+        const base64 = dataUri.split(',')[1]
+        const binary = atob(base64)
+        const bytes = new Uint8Array(binary.length)
+        for (let i = 0; i < binary.length; i++) {
+          bytes[i] = binary.charCodeAt(i)
+        }
+        const blob = new Blob([bytes], { type: 'audio/wav' })
+        const objectUrl = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = objectUrl
+        a.download = fileName
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(objectUrl)
+      } catch (err) {
+        console.error('[TTS Screen] Download failed:', err)
+        // Fallback: direct data URI download
+        const a = document.createElement('a')
+        a.href = dataUri
+        a.download = fileName
+        a.click()
+      }
+    },
+    []
+  )
 
   const handleTogglePlay = useCallback(() => {
     voicePreview.stopPreview()
     playback.togglePlayPause()
   }, [playback, voicePreview])
+
+  const handleVoicesLoaded = useCallback(
+    (loadedVoices: Voice[]) => {
+      updateState({
+        voices: loadedVoices,
+      })
+    },
+    [updateState]
+  )
 
   // Total character counter
   const totalCharacters = useMemo(() => {
@@ -131,89 +199,128 @@ export function TextToSpeechScreen() {
     updateState({ rounds: autoTagSpeechRounds(state.rounds) })
   }
 
-  // Generate speech handler
+  // Clear the editor: reset to a single empty turn and drop the current generation/playback
+  const handleClearEditor = () => {
+    if (state.isSynthesizing) return
+    voicePreview.stopPreview()
+    playback.stopActiveAudio()
+    const voiceId = state.rounds[0]?.voiceId || state.selectedVoiceId
+    updateState({
+      rounds: [
+        {
+          id: `round-${Date.now()}`,
+          voiceId,
+          text: '',
+          speed: 1.0,
+          emotion: 'Neutral',
+          pace: 'Moderate',
+        },
+      ],
+      focusedRoundIndex: 0,
+      selectedVoiceId: voiceId,
+      generations: [],
+      activeGeneration: null,
+      isPlaying: false,
+      playbackProgress: 0,
+      currentTime: 0,
+      seekTarget: null,
+      playingHistoryId: null,
+      synthesisProgress: '',
+    })
+  }
+
+  // Generate speech handler - Wired directly to Electron Core Backend IPC
   const handleGenerateSpeech = async () => {
-    if (state.isSynthesizing || totalCharacters === 0) return
+    if (state.isSynthesizing || totalCharacters === 0 || !allRequiredReady) return
 
     // Immediately stop voice audition previews and clear previous playback
     voicePreview.stopPreview()
     playback.stopActiveAudio()
+    const currentEngine = state.engine || selectedEngine || 'cosyvoice3'
     updateState({
-      generations: [],
-      activeGeneration: null,
-      isPlaying: false,
-      currentTime: 0,
-      playbackProgress: 0,
-      seekTarget: null,
       isSynthesizing: true,
-      synthesisProgress: 'connecting to voice engine...',
+      synthesisProgress: `Connecting to ${currentEngine === 'parler' ? 'Parler-TTS' : 'CosyVoice 3'} voice engine...`,
     })
-
-    await new Promise((r) => setTimeout(r, 400))
-    updateState({ synthesisProgress: 'loading speaker acoustic latents...' })
-
-    await new Promise((r) => setTimeout(r, 600))
-    updateState({
-      synthesisProgress: `autoregressive token generation (temperature ${state.stability.toFixed(2)}, cfg ${state.cfgScale.toFixed(1)})...`,
-    })
-
-    await new Promise((r) => setTimeout(r, 800))
-    if (state.lavaSrEnabled) {
-      updateState({ synthesisProgress: 'applying 48khz audio clarity...' })
-      await new Promise((r) => setTimeout(r, 600))
-    }
 
     // Filter active speech rounds that have text to synthesize
     const activeRounds = state.rounds.filter((r) => r.text.trim().length > 0)
-    let newGen: Generation
-
-    // If multi-speaker dialogue turns exist, synthesize each turn and merge into a single master audio
-    if (activeRounds.length > 1) {
-      updateState({ synthesisProgress: `synthesizing & stitching ${activeRounds.length} dialogue turns...` })
-      newGen = await synthesizeAndMergeDialogueRounds(
-        activeRounds,
-        state.voices,
-        state.history.length,
-        state.speed,
-        (phase) => updateState({ synthesisProgress: phase.toLowerCase() })
-      )
-    } else {
-      const singleRound = activeRounds[0] || state.rounds[0]
-      const speaker = getVoice(singleRound.voiceId)
-      newGen = await synthesizeRoundSpeech(
-        singleRound,
-        speaker,
-        state.focusedRoundIndex,
-        state.history.length,
-        state.speed
-      )
+    if (activeRounds.length === 0) {
+      updateState({ isSynthesizing: false, synthesisProgress: '' })
+      return
     }
 
     const firstSpeaker = getVoice(activeRounds[0]?.voiceId || state.rounds[0].voiceId)
-    const newHist: HistoryEntry = {
-      id: `hist-${Date.now()}`,
-      text: newGen.textSnippet,
-      voiceName:
-        activeRounds.length > 1
-          ? `${activeRounds.length} Speakers`
-          : `${firstSpeaker.name} - ${firstSpeaker.description}`,
-      voiceColor: activeRounds.length > 1 ? '#10b981' : firstSpeaker.color,
-      voiceAvatarUrl: firstSpeaker.avatarUrl || '/voices/sterling.jpg',
-      dateGroup: 'Today',
-      timeAgo: 'Just now',
-      model: 'Chatterbox T3 Turbo',
-      duration: formatTime(newGen.duration),
-      roundsData: [...state.rounds],
-    }
+    const taskId = `task-${Date.now()}`
 
-    // Replace with ONLY the latest recording (single wave player, in sync with main player)
-    updateState({
-      generations: [newGen],
-      activeGeneration: newGen,
-      history: [newHist, ...state.history],
-      isSynthesizing: false,
-      synthesisProgress: '',
-    })
+    try {
+      const ipcResult = await generateSpeech({
+        taskId,
+        rounds: activeRounds,
+        speakerName: activeRounds.length > 1 ? `${activeRounds.length} Speakers` : firstSpeaker.name,
+        speakerColor: activeRounds.length > 1 ? '#10b981' : firstSpeaker.color,
+        speakerAvatarUrl: firstSpeaker.avatarUrl || '/voices/sterling.jpg',
+        referenceAudioSrc: firstSpeaker.sampleUrl || firstSpeaker.referenceAudioName,
+        language: state.language || 'en',
+        prompt: state.voicePrompt,
+        voicePrompt: state.voicePrompt,
+        stability: state.stability,
+        similarity: state.similarity,
+        cfgScale: state.cfgScale,
+        lavaSrEnabled: state.lavaSrEnabled,
+        speed: state.speed,
+        historyIndex: state.history.length,
+        engine: currentEngine,
+      })
+
+      if (ipcResult.success && ipcResult.data) {
+        const newGen: Generation = {
+          ...(ipcResult.data as Generation),
+          emotion: ipcResult.data.emotion || activeRounds[0]?.emotion || 'Neutral',
+        }
+
+        const newHist: HistoryEntry = {
+          id: `hist-${Date.now()}`,
+          text: newGen.textSnippet,
+          voiceName:
+            activeRounds.length > 1
+              ? `${activeRounds.length} Speakers`
+              : `${firstSpeaker.name} - ${firstSpeaker.description}`,
+          voiceColor: activeRounds.length > 1 ? '#10b981' : firstSpeaker.color,
+          voiceAvatarUrl: firstSpeaker.avatarUrl || '/voices/sterling.jpg',
+          dateGroup: 'Today',
+          timeAgo: 'Just now',
+          model: 'Chatterbox T3 Turbo',
+          duration: formatTime(newGen.duration),
+          roundsData: [...state.rounds],
+        }
+
+        updateState({
+          generations: [newGen],
+          activeGeneration: newGen,
+          history: [newHist, ...state.history],
+          isSynthesizing: false,
+          synthesisProgress: '',
+        })
+      } else {
+        console.error('[TTS Screen] Backend synthesis failed:', ipcResult.error)
+        updateState({
+          isSynthesizing: false,
+          synthesisProgress: ipcResult.error || 'Synthesis failed',
+        })
+        setTimeout(() => {
+          updateState({ synthesisProgress: '' })
+        }, 3000)
+      }
+    } catch (err) {
+      console.error('[TTS Screen] Error generating speech:', err)
+      updateState({
+        isSynthesizing: false,
+        synthesisProgress: String(err),
+      })
+      setTimeout(() => {
+        updateState({ synthesisProgress: '' })
+      }, 3000)
+    }
   }
 
   return (
@@ -222,116 +329,194 @@ export function TextToSpeechScreen() {
       {/* MAIN STAGE (Center/Left Editor Area & Bottom Bar)       */}
       {/* ======================================================== */}
       <div className="relative flex flex-1 flex-col h-full min-w-0 overflow-hidden bg-[#0f0f10]">
-        <TopSubHeader totalRounds={state.rounds.length} />
+        <TopSubHeader
+          totalRounds={state.rounds.length}
+          engine={state.engine || selectedEngine}
+          onEngineChange={(eng) => {
+            updateState({ engine: eng })
+            setSelectedEngine(eng)
+          }}
+        />
 
-        {/* Scrollable Dialogue / Speech Rounds Area */}
-        <div className="flex-1 overflow-y-auto px-6 py-8 pb-60 sidebar-scrollbar">
-          <div className="w-full flex flex-col gap-6">
-            <Reorder.Group
-              axis="y"
-              values={state.rounds}
-              onReorder={(newRounds) => updateState({ rounds: newRounds })}
-              className="w-full flex flex-col gap-6"
-              as="div"
-            >
-              {state.rounds.map((round, index) => {
-                const speaker = getVoice(round.voiceId)
-                const isFocused = state.focusedRoundIndex === index
-                const isShuffling = state.shufflingRoundId === round.id
-
-                return (
-                  <DialogueRoundCard
-                    key={round.id}
-                    round={round}
-                    index={index}
-                    totalRounds={state.rounds.length}
-                    speaker={speaker}
-                    voices={state.voices}
-                    isFocused={isFocused}
-                    isShuffling={isShuffling}
-                    playingVoiceId={voicePreview.playingVoiceId}
-                    onTogglePreview={voicePreview.togglePreview}
-                    onFocus={() => {
-                      updateState({
-                        focusedRoundIndex: index,
-                        selectedVoiceId: round.voiceId,
-                      })
-                    }}
-                    onUpdateRound={(updated) => {
-                      updateState({
-                        rounds: state.rounds.map((r, i) =>
-                          i === index ? { ...r, ...updated } : r
-                        ),
-                        focusedRoundIndex: index,
-                        ...(updated.voiceId ? { selectedVoiceId: updated.voiceId } : {}),
-                      })
-                    }}
-                    onRemoveRound={() => handleRemoveRound(round.id)}
-                    onOpenCloneModal={() => updateState({ isCloneModalOpen: true })}
-                    onOpenExplorerModal={() => updateState({ isLanguageSelectorOpen: true })}
-                    onInsertPauseTag={(tag) => handleInsertPauseTag(tag, index)}
-                  />
+        {/* Delete all models button (always visible to reset out-of-sync / false-complete state) */}
+        <div className="px-6 py-2 flex justify-end">
+          <Button
+            type="button"
+            variant="destructive"
+            size="sm"
+            onClick={async () => {
+              if (
+                window.confirm(
+                  'Delete all downloaded models and reset state? This cannot be undone.',
                 )
-              })}
-            </Reorder.Group>
-
-            {/* Add Speaker Round button */}
-            <div className="flex justify-start mt-6">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleAddSpeakerRound}
-                className="border-dashed border-[#2b2b30] hover:border-zinc-500 bg-[#141416]/40 hover:bg-white/[0.04] text-zinc-400 hover:text-white cursor-pointer shadow-xs gap-2 text-xs font-medium"
-              >
-                <Plus className="size-3.5 text-zinc-400" />
-                <span>Add Speaker Round</span>
-              </Button>
-            </div>
-
-            {/* Latest Generation Wave Player (only single latest recording, in sync with main player) */}
-            {state.generations.length > 0 && state.generations[0] && (
-              <div className="mt-4 flex flex-col items-start gap-3 w-fit max-w-full">
-                <WavesurferAudioPlayer
-                  key={state.generations[0].id}
-                  url={state.generations[0].audioUrl}
-                  waveform={state.generations[0].waveform}
-                  defaultDuration={state.generations[0].duration}
-                  isCur={true}
-                  isPlaying={state.isPlaying}
-                  currentTime={state.currentTime}
-                  volume={state.isMuted ? 0 : state.volume}
-                  isMuted={state.isMuted}
-                  seekTarget={state.seekTarget}
-                  onTogglePlay={handleTogglePlay}
-                  onPlayStateChange={(playing) => updateState({ isPlaying: playing })}
-                  onTimeUpdate={(time, _dur, ratio) => {
-                    updateState({
-                      currentTime: time,
-                      playbackProgress: ratio,
-                    })
-                  }}
-                  onDownload={() => {
-                    if (state.generations[0].audioUrl) {
-                      const a = document.createElement('a')
-                      a.href = state.generations[0].audioUrl
-                      a.download = `${state.generations[0].title.replace(/\s+/g, '_')}-${state.generations[0].speakerName}.wav`
-                      a.click()
-                    }
-                  }}
-                />
-              </div>
-            )}
-          </div>
+              ) {
+                const ok = await deleteAllModels()
+                if (!ok) {
+                  window.alert('Failed to delete models. Check logs for details.')
+                }
+              }
+            }}
+            className="border-destructive hover:bg-destructive/20 text-destructive hover:text-white text-xs font-medium px-3 py-2"
+          >
+            🗑️ Delete All Models
+          </Button>
         </div>
 
-        {/* BOTTOM EDITOR ACTION BAR */}
-        <SpeechEditorActionBar
-          totalCharacters={totalCharacters}
-          totalRounds={state.rounds.length}
-          isSynthesizing={state.isSynthesizing}
-          onAutoTag={handleAutoTag}
-          onGenerate={handleGenerateSpeech}
-        />
+        {!allRequiredReady ? (
+          <InstallRequiredModelsView />
+        ) : (
+          <>
+            {/* Scrollable Dialogue / Speech Rounds Area */}
+            <div className="flex-1 overflow-y-auto px-6 py-8 pb-60 sidebar-scrollbar">
+              <div className="w-full flex flex-col gap-6">
+                <Reorder.Group
+                  axis="y"
+                  values={state.rounds}
+                  onReorder={(newRounds) => updateState({ rounds: newRounds })}
+                  className="w-full flex flex-col gap-6"
+                  as="div"
+                >
+                  {state.rounds.map((round, index) => {
+                    const speaker = getVoice(round.voiceId)
+                    const isFocused = state.focusedRoundIndex === index
+                    const isShuffling = state.shufflingRoundId === round.id
+
+                    return (
+                      <DialogueRoundCard
+                        key={round.id}
+                        round={round}
+                        index={index}
+                        totalRounds={state.rounds.length}
+                        speaker={speaker}
+                        voices={state.voices}
+                        isFocused={isFocused}
+                        isShuffling={isShuffling}
+                        playingVoiceId={voicePreview.playingVoiceId}
+                        onTogglePreview={voicePreview.togglePreview}
+                        engine={state.engine || selectedEngine}
+                        onFocus={() => {
+                          updateState({
+                            focusedRoundIndex: index,
+                            selectedVoiceId: round.voiceId,
+                          })
+                        }}
+                        onUpdateRound={(updated) => {
+                          updateState({
+                            rounds: state.rounds.map((r, i) =>
+                              i === index ? { ...r, ...updated } : r
+                            ),
+                            focusedRoundIndex: index,
+                            ...(updated.voiceId ? { selectedVoiceId: updated.voiceId } : {}),
+                          })
+                        }}
+                        onRemoveRound={() => handleRemoveRound(round.id)}
+                        onOpenCloneModal={() => updateState({ isCloneModalOpen: true })}
+                        onOpenExplorerModal={() => updateState({ isLanguageSelectorOpen: true })}
+                        onInsertPauseTag={(tag) => handleInsertPauseTag(tag, index)}
+                      />
+                    )
+                  })}
+                </Reorder.Group>
+
+                {/* Add Speaker Round button */}
+                <div className="flex justify-start mt-6">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleAddSpeakerRound}
+                    className="border-dashed border-[#2b2b30] hover:border-zinc-500 bg-[#141416]/40 hover:bg-white/[0.04] text-zinc-400 hover:text-white cursor-pointer shadow-xs gap-2 text-xs font-medium"
+                  >
+                    <Plus className="size-3.5 text-zinc-400" />
+                    <span>Add Speaker Round</span>
+                  </Button>
+                </div>
+
+                {/* Latest Generation Wave Player with Emotion & Cloned Timbre metadata */}
+                {state.generations.length > 0 && state.generations[0] && (
+                  <div className="mt-4 flex w-fit max-w-full flex-col items-start gap-2.5">
+                    {/* Generation Metadata */}
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-zinc-400">
+                      <span className="inline-flex items-center gap-1.5 font-medium text-zinc-200">
+                        <span
+                          className="size-1.5 rounded-full"
+                          style={{ backgroundColor: state.generations[0].speakerColor }}
+                        />
+                        {state.generations[0].speakerName}
+                      </span>
+
+                      <span className="text-zinc-700">/</span>
+
+                      <span>
+                        Emotion:{" "}
+                        <span className="text-zinc-300">
+                          {state.generations[0].emotion || "Neutral"}
+                        </span>
+                      </span>
+
+                      <span className="text-zinc-700">/</span>
+
+                      <span>
+                        CFG{" "}
+                        <span className="tabular-nums text-zinc-300">
+                          {state.cfgScale.toFixed(1)}
+                        </span>
+                      </span>
+
+                      {state.lavaSrEnabled && (
+                        <>
+                          <span className="text-zinc-700">/</span>
+                          <span className="text-zinc-300">48 kHz</span>
+                        </>
+                      )}
+                    </div>
+
+                    <WavesurferAudioPlayer
+                      key={state.generations[0].id}
+                      url={state.generations[0].audioUrl}
+                      waveform={state.generations[0].waveform}
+                      defaultDuration={state.generations[0].duration}
+                      isCur={true}
+                      isPlaying={state.isPlaying}
+                      currentTime={state.currentTime}
+                      volume={state.isMuted ? 0 : state.volume}
+                      isMuted={state.isMuted}
+                      seekTarget={state.seekTarget}
+                      onTogglePlay={handleTogglePlay}
+                      onPlayStateChange={(playing) =>
+                        updateState({ isPlaying: playing })
+                      }
+                      onTimeUpdate={(time, _dur, ratio) => {
+                        updateState({
+                          currentTime: time,
+                          playbackProgress: ratio,
+                        })
+                      }}
+                      onDownload={() => {
+                        if (state.generations[0].audioUrl) {
+                          downloadDataUriAsWav(
+                            state.generations[0].audioUrl,
+                            `${state.generations[0].title.replace(/\s+/g, "_")}-${state.generations[0].speakerName}.wav`
+                          )
+                        }
+                      }}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* BOTTOM EDITOR ACTION BAR */}
+            <SpeechEditorActionBar
+              totalCharacters={totalCharacters}
+              totalRounds={state.rounds.length}
+              isSynthesizing={state.isSynthesizing}
+              onAutoTag={handleAutoTag}
+              onClear={handleClearEditor}
+              onGenerate={handleGenerateSpeech}
+              modelsReady={allRequiredReady}
+            />
+          </>
+        )}
 
         {/* Synthesizing toast notification with ShimmeringText */}
         <AnimatePresence>
@@ -371,10 +556,10 @@ export function TextToSpeechScreen() {
           onVolumeChange={playback.handleVolumeChange}
           onDownload={() => {
             if (state.activeGeneration?.audioUrl) {
-              const a = document.createElement('a')
-              a.href = state.activeGeneration.audioUrl
-              a.download = `${state.activeGeneration.title.replace(/\s+/g, '_')}-${state.activeGeneration.speakerName}.wav`
-              a.click()
+              downloadDataUriAsWav(
+                state.activeGeneration.audioUrl,
+                `${state.activeGeneration.title.replace(/\s+/g, '_')}-${state.activeGeneration.speakerName}.wav`
+              )
             }
           }}
         />
@@ -437,6 +622,15 @@ export function TextToSpeechScreen() {
             transition={{ type: 'spring', stiffness: 320, damping: 32, mass: 0.8 }}
           >
             <SettingsDrawer
+              engine={state.engine || selectedEngine}
+              onEngineChange={(eng) => {
+                updateState({ engine: eng })
+                setSelectedEngine(eng)
+              }}
+              onSwitchToCosyVoice={() => {
+                updateState({ engine: 'cosyvoice3' })
+                setSelectedEngine('cosyvoice3')
+              }}
               activeVoice={activeVoice}
               voices={state.voices}
               selectedVoiceId={focusedRound?.voiceId || state.selectedVoiceId}
@@ -444,6 +638,19 @@ export function TextToSpeechScreen() {
               totalRounds={state.rounds.length}
               playingVoiceId={voicePreview.playingVoiceId}
               onTogglePreview={voicePreview.togglePreview}
+              voicePrompt={focusedRound?.prompt !== undefined ? focusedRound.prompt : state.voicePrompt}
+              onVoicePromptChange={(val) => {
+                const targetIndex =
+                  state.focusedRoundIndex >= 0 && state.focusedRoundIndex < state.rounds.length
+                    ? state.focusedRoundIndex
+                    : 0
+                updateState({
+                  voicePrompt: val,
+                  rounds: state.rounds.map((r, i) =>
+                    i === targetIndex ? { ...r, prompt: val } : r
+                  ),
+                })
+              }}
               stability={state.stability}
               similarity={state.similarity}
               cfgScale={state.cfgScale}
@@ -468,18 +675,21 @@ export function TextToSpeechScreen() {
               onCfgScaleChange={(val) => updateState({ cfgScale: val })}
               onToggleLavaSr={() => updateState({ lavaSrEnabled: !state.lavaSrEnabled })}
               onSelectLanguage={(lang) => {
-                const langVoices = getVoicesForLanguage(lang)
-                const newVoiceId = langVoices[0]?.id
-                if (newVoiceId && lang !== 'Auto Detect') {
+                loadVoicesForLanguage(lang).then((langVoices) => {
+                  const voicesToUse = langVoices.length > 0 ? langVoices : getVoicesForLanguage(lang)
+                  const newVoiceId = voicesToUse[0]?.id
                   const targetIdx = state.focusedRoundIndex >= 0 ? state.focusedRoundIndex : 0
-                  updateState({
-                    language: lang,
-                    selectedVoiceId: newVoiceId,
-                    rounds: state.rounds.map((r, i) => (i === targetIdx ? { ...r, voiceId: newVoiceId } : r)),
-                  })
-                } else {
-                  updateState({ language: lang })
-                }
+                  if (newVoiceId && lang !== 'Auto Detect') {
+                    updateState({
+                      language: lang,
+                      selectedVoiceId: newVoiceId,
+                      voices: Array.from(new Map([...state.voices, ...voicesToUse].map((v) => [v.id, v])).values()),
+                      rounds: state.rounds.map((r, i) => (i === targetIdx ? { ...r, voiceId: newVoiceId } : r)),
+                    })
+                  } else {
+                    updateState({ language: lang })
+                  }
+                })
               }}
             />
 
@@ -503,17 +713,11 @@ export function TextToSpeechScreen() {
                   updateState({ playingHistoryId: null, isPlaying: false })
                 } else {
                   playback.stopActiveAudio()
-                  updateState({ playingHistoryId: item.id, isPlaying: true })
-                  const stop = playSyntheticTone(
-                    item.text,
-                    state.speed,
-                    undefined,
-                    () => {
-                      updateState({ playingHistoryId: null, isPlaying: false })
-                    },
-                    state.volume
-                  )
-                  playback.stopAudioRef.current = stop
+                  const matchingGen = state.generations.find((g) => g.textSnippet === item.text)
+                  if (matchingGen && matchingGen.audioUrl) {
+                    playback.handlePlayGeneration(matchingGen)
+                  }
+                  updateState({ playingHistoryId: item.id })
                 }
               }}
               onDeleteHistoryItem={(id) => {
@@ -529,6 +733,11 @@ export function TextToSpeechScreen() {
       {/* BRING YOUR OWN VOICE MODAL */}
       <VoiceCloneModal
         isOpen={state.isCloneModalOpen}
+        engine={state.engine || selectedEngine}
+        onSwitchToCosyVoice={() => {
+          updateState({ engine: 'cosyvoice3' })
+          setSelectedEngine('cosyvoice3')
+        }}
         cloneMode={state.cloneMode}
         isRecording={state.isRecording}
         recordedDuration={state.recordedDuration}
@@ -549,10 +758,10 @@ export function TextToSpeechScreen() {
             const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
               ? 'audio/webm;codecs=opus'
               : MediaRecorder.isTypeSupported('audio/webm')
-              ? 'audio/webm'
-              : MediaRecorder.isTypeSupported('audio/mp4')
-              ? 'audio/mp4'
-              : ''
+                ? 'audio/webm'
+                : MediaRecorder.isTypeSupported('audio/mp4')
+                  ? 'audio/mp4'
+                  : ''
             const mr = mimeType
               ? new MediaRecorder(stream, { mimeType })
               : new MediaRecorder(stream)
@@ -611,6 +820,7 @@ export function TextToSpeechScreen() {
           updateState({ language: langName })
         }}
         onOpenCloneModal={() => updateState({ isCloneModalOpen: true })}
+        onVoicesLoaded={handleVoicesLoaded}
       />
     </div>
   )

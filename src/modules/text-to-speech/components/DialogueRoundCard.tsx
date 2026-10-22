@@ -1,3 +1,4 @@
+import { useEffect, useLayoutEffect, useRef, useCallback } from 'react'
 import { Reorder, useDragControls } from 'framer-motion'
 import {
   GripVertical,
@@ -7,6 +8,7 @@ import {
   ChevronDown,
   Check,
   Play,
+  Sparkles,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -14,17 +16,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import ExpandableContainer from '@/components/ExpandableContainer'
 import { cn } from '@/lib/utils'
 import {
   SpeechRound,
   Voice,
   QvacEmotion,
   QvacPace,
-  QVAC_EMOTIONS,
+  COSYVOICE_EMOTIONS,
+  PARLER_EMOTIONS,
   QVAC_PACES,
   QVAC_PAUSES,
-  QVAC_MAX_CHARS_PER_ROUND,
 } from '../types'
+import { isLegacyPlaceholderText } from '../store/ttsStore'
 
 export interface DialogueRoundCardProps {
   round: SpeechRound
@@ -42,11 +46,12 @@ export interface DialogueRoundCardProps {
   onOpenCloneModal: () => void
   onOpenExplorerModal?: () => void
   onInsertPauseTag: (tag: string) => void
+  engine?: 'cosyvoice3' | 'parler'
 }
 
 export function DialogueRoundCard({
   round,
-  index: _index,
+  index = 0,
   totalRounds,
   speaker,
   voices: _voices,
@@ -60,8 +65,59 @@ export function DialogueRoundCard({
   onOpenCloneModal: _onOpenCloneModal,
   onOpenExplorerModal,
   onInsertPauseTag,
+  engine = 'cosyvoice3',
 }: DialogueRoundCardProps) {
+  const activeEmotions = engine === 'cosyvoice3' ? COSYVOICE_EMOTIONS : PARLER_EMOTIONS
   const dragControls = useDragControls()
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+
+  // Ensure legacy placeholder demo text is wiped immediately
+  const currentText = isLegacyPlaceholderText(round.text) ? '' : round.text
+
+  const autoResizeTextarea = useCallback(() => {
+    const el = textareaRef.current
+    if (!el) return
+    el.style.height = 'auto'
+    el.style.height = `${el.scrollHeight}px`
+  }, [])
+
+  // Re-measure on text change (wrapping depends on content)
+  useLayoutEffect(() => {
+    autoResizeTextarea()
+  }, [currentText, autoResizeTextarea])
+
+  // Re-measure on window resize: narrower/wider layout reflows
+  // wrapped lines, so scrollHeight goes stale without this.
+  // Also observes the card itself so sidebar/panel resizes are caught
+  // even when window size doesn't change.
+  useEffect(() => {
+    let raf = 0
+    const schedule = () => {
+      cancelAnimationFrame(raf)
+      raf = requestAnimationFrame(autoResizeTextarea)
+    }
+    window.addEventListener('resize', schedule)
+    let ro: ResizeObserver | null = null
+    const card = textareaRef.current?.closest('[data-speaker-card]') ?? textareaRef.current?.parentElement
+    if (card && typeof ResizeObserver !== 'undefined') {
+      ro = new ResizeObserver(schedule)
+      ro.observe(card)
+    }
+    // Fonts/layout settling after mount can also change wrapping
+    const t = setTimeout(autoResizeTextarea, 100)
+    return () => {
+      window.removeEventListener('resize', schedule)
+      ro?.disconnect()
+      clearTimeout(t)
+      cancelAnimationFrame(raf)
+    }
+  }, [autoResizeTextarea])
+
+  useEffect(() => {
+    if (isLegacyPlaceholderText(round.text)) {
+      onUpdateRound({ text: '' })
+    }
+  }, [round.text, onUpdateRound])
 
   return (
     <Reorder.Item
@@ -76,8 +132,8 @@ export function DialogueRoundCard({
         boxShadow: isShuffling
           ? '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5)'
           : isFocused
-          ? '0 10px 15px -3px rgba(0, 0, 0, 0.4)'
-          : 'none',
+            ? '0 10px 15px -3px rgba(0, 0, 0, 0.4)'
+            : 'none',
         zIndex: isShuffling ? 50 : 1,
       }}
       whileDrag={{
@@ -93,6 +149,7 @@ export function DialogueRoundCard({
         damping: 35,
       }}
       onClick={onFocus}
+      data-speaker-card
       className={cn(
         'group relative flex flex-col rounded-2xl border transition-colors duration-150 overflow-hidden bg-[#141416]',
         isFocused && !isShuffling
@@ -126,70 +183,83 @@ export function DialogueRoundCard({
             <GripVertical className="size-4" />
           </div>
 
-          {/* Speaker Voice Pill -> Opens Voice & Language Explorer */}
-          <div className="flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={() => {
-                onFocus()
-                onOpenExplorerModal?.()
-              }}
-              className="flex items-center gap-2 rounded-lg bg-[#18181b] hover:bg-[#202024] border border-[#27272a] hover:border-zinc-500 px-3 py-1.5 text-xs font-medium text-zinc-200 transition-colors shadow-xs cursor-pointer group"
-              title="Change Voice & Language in Explorer"
-            >
-              <img
-                src={speaker.avatarUrl || '/voices/sterling.jpg'}
-                alt={speaker.name}
-                className="size-5 rounded-full object-cover shrink-0 ring-1 ring-white/10"
-              />
-              <span className="font-semibold text-white tracking-tight group-hover:text-white">
-                {speaker.name}
-              </span>
-              <span className="hidden sm:inline text-zinc-400 font-normal truncate max-w-[140px]">
-                — {speaker.description}
-              </span>
-              {speaker.languageName && (
-                <span className="hidden md:inline-block text-[10px] text-zinc-400 bg-white/[0.06] border border-white/10 px-1.5 py-0.2 rounded font-normal">
-                  {speaker.languageName}
-                </span>
-              )}
-              {speaker.category === 'cloned' && (
-                <span className="rounded bg-white/10 border border-white/10 px-1.5 py-0.5 text-[10px] font-medium text-zinc-300">
-                  Custom
-                </span>
-              )}
-              <ChevronDown className="size-3 text-zinc-500 group-hover:text-zinc-300 ml-0.5 shrink-0" />
-            </button>
-
-            {/* Quick Test Voice Play Button on Card Header */}
-            {speaker.sampleUrl && onTogglePreview && (
+          {/* Voice Selection Pill (CosyVoice 3 - ExpandableContainer) */}
+          <ExpandableContainer isExpanded={engine === 'cosyvoice3'}>
+            <div className="flex items-center gap-1.5 pr-1">
               <button
                 type="button"
-                title={playingVoiceId === speaker.id ? 'Pause Voice Sample' : `Test ${speaker.name}'s Voice`}
-                onClick={(e) => {
-                  e.stopPropagation()
+                onClick={() => {
                   onFocus()
-                  onTogglePreview(speaker, e)
+                  onOpenExplorerModal?.()
                 }}
-                className={cn(
-                  'size-7 rounded-full flex items-center justify-center transition-all cursor-pointer border',
-                  playingVoiceId === speaker.id
-                    ? 'bg-white text-black border-white shadow-sm shadow-white/20'
-                    : 'bg-[#18181b] hover:bg-[#222226] border-[#27272a] text-zinc-400 hover:text-white'
-                )}
+                className="flex items-center gap-2 rounded-lg bg-[#18181b] hover:bg-[#202024] border border-[#27272a] hover:border-zinc-500 px-3 py-1.5 text-xs font-medium text-zinc-200 transition-colors shadow-xs cursor-pointer group"
+                title="Change Voice & Language in Explorer"
               >
-                {playingVoiceId === speaker.id ? (
-                  <div className="flex items-center gap-0.5">
-                    <span className="w-0.5 h-2.5 bg-black rounded-full animate-pulse" />
-                    <span className="w-0.5 h-3 bg-black rounded-full animate-pulse delay-75" />
-                    <span className="w-0.5 h-2 bg-black rounded-full animate-pulse delay-150" />
-                  </div>
-                ) : (
-                  <Play className="size-3 fill-current ml-0.5" />
+                <img
+                  src={speaker.avatarUrl || '/voices/sterling.jpg'}
+                  alt={speaker.name}
+                  className="size-5 rounded-full object-cover shrink-0 ring-1 ring-white/10"
+                />
+                <span className="font-semibold text-white tracking-tight group-hover:text-white">
+                  {speaker.name}
+                </span>
+                <span className="hidden sm:inline text-zinc-400 font-normal truncate max-w-[140px]">
+                  — {speaker.description}
+                </span>
+                {speaker.languageName && (
+                  <span className="hidden md:inline-block text-[10px] text-zinc-400 bg-white/[0.06] border border-white/10 px-1.5 py-0.2 rounded font-normal">
+                    {speaker.languageName}
+                  </span>
                 )}
+                {speaker.category === 'cloned' && (
+                  <span className="rounded border border-white/10 bg-white/10 px-1.5 py-0.5 text-[10px] font-medium text-zinc-300">
+                    Custom
+                  </span>
+                )}
+                <ChevronDown className="size-3 text-zinc-500 group-hover:text-zinc-300 ml-0.5 shrink-0" />
               </button>
-            )}
-          </div>
+
+              {/* Quick Test Voice Play Button on Card Header */}
+              {speaker.sampleUrl && onTogglePreview && (
+                <button
+                  type="button"
+                  title={playingVoiceId === speaker.id ? 'Pause Voice Sample' : `Test ${speaker.name}'s Voice`}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onFocus()
+                    onTogglePreview(speaker, e)
+                  }}
+                  className={cn(
+                    'size-7 rounded-full flex items-center justify-center transition-all cursor-pointer border',
+                    playingVoiceId === speaker.id
+                      ? 'bg-white text-black border-white shadow-sm shadow-white/20'
+                      : 'bg-[#18181b] hover:bg-[#222226] border-[#27272a] text-zinc-400 hover:text-white'
+                  )}
+                >
+                  {playingVoiceId === speaker.id ? (
+                    <div className="flex items-center gap-0.5">
+                      <span className="w-0.5 h-2.5 bg-black rounded-full animate-pulse" />
+                      <span className="w-0.5 h-3 bg-black rounded-full animate-pulse delay-75" />
+                      <span className="w-0.5 h-2 bg-black rounded-full animate-pulse delay-150" />
+                    </div>
+                  ) : (
+                    <Play className="size-3 fill-current ml-0.5" />
+                  )}
+                </button>
+              )}
+            </div>
+          </ExpandableContainer>
+
+          {/* Persona Turn Badge (Parler-TTS - ExpandableContainer) */}
+          <ExpandableContainer isExpanded={engine === 'parler'}>
+            <div className="flex items-center gap-1.5 pr-1">
+              <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#18181b] border border-[#27272a] px-3 py-1.5 text-xs font-medium text-zinc-200 shadow-xs">
+                <Sparkles className="size-3.5 text-purple-400 shrink-0" />
+                <span className="font-semibold text-white tracking-tight">Turn {index + 1}</span>
+                <span className="text-[10px] text-zinc-400 font-normal hidden sm:inline">• Prompt Persona</span>
+              </span>
+            </div>
+          </ExpandableContainer>
 
           {/* QVAC Emotion Selector */}
           <DropdownMenu>
@@ -207,12 +277,15 @@ export function DialogueRoundCard({
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="start"
-              className="w-56 bg-[#18181b] border-[#27272a] text-zinc-200 p-1.5 shadow-2xl"
+              className="w-60 bg-[#18181b] border-[#27272a] text-zinc-200 p-1.5 shadow-2xl"
             >
-              <div className="px-2 py-1.5 text-[11px] font-medium text-zinc-400">
-                Voice Emotion
+              <div className="flex items-center justify-between px-2 py-1.5 text-[11px] font-medium text-zinc-400 border-b border-[#27272a] mb-1">
+                <span>Voice Emotion</span>
+                <span className="text-[9px] text-zinc-500 font-mono">
+                  {engine === 'cosyvoice3' ? 'CosyVoice 3 (4)' : 'Parler-TTS (12)'}
+                </span>
               </div>
-              {QVAC_EMOTIONS.map((e) => (
+              {activeEmotions.map((e) => (
                 <DropdownMenuItem
                   key={e.label}
                   onClick={() => {
@@ -305,25 +378,19 @@ export function DialogueRoundCard({
       {/* Main Textarea Area */}
       <div className="p-4">
         <textarea
-          value={round.text}
+          value={currentText}
           onFocus={onFocus}
           onPointerDown={(e) => {
             e.stopPropagation()
             onFocus()
           }}
           onChange={(e) => {
-            onUpdateRound({ text: e.target.value })
-            const target = e.target
-            target.style.height = 'auto'
-            target.style.height = `${target.scrollHeight}px`
+            const nextVal = isLegacyPlaceholderText(e.target.value) ? '' : e.target.value
+            onUpdateRound({ text: nextVal })
+            autoResizeTextarea()
           }}
           className="w-full bg-transparent text-sm leading-relaxed text-zinc-100 placeholder:text-zinc-600 focus:outline-none resize-none font-normal overflow-hidden min-h-[5rem]"
-          ref={(el) => {
-            if (el) {
-              el.style.height = 'auto'
-              el.style.height = `${el.scrollHeight}px`
-            }
-          }}
+          ref={textareaRef}
           placeholder={`Enter dialogue or speech for ${speaker.name}...`}
         />
       </div>
@@ -349,34 +416,9 @@ export function DialogueRoundCard({
             </button>
           ))}
 
-          {round.text.includes('[pause') && (
+          {currentText.includes('[pause') && (
             <span className="ml-2 inline-flex items-center gap-1 rounded bg-white/[0.04] border border-white/[0.08] px-1.5 py-0.5 text-[10px] font-mono text-zinc-400">
-              {round.text.match(/\[pause\s*[^\]]+\]/g)?.length || 0} pause cue(s)
-            </span>
-          )}
-        </div>
-
-        {/* QVAC 4,096 Characters Norm Indicator per speaker turn */}
-        <div className="flex items-center gap-1.5 shrink-0 ml-auto pl-2 select-none">
-          <span
-            className={cn(
-              'font-mono text-[11px] transition-colors',
-              round.text.length > QVAC_MAX_CHARS_PER_ROUND
-                ? 'text-rose-400 font-semibold'
-                : round.text.length > QVAC_MAX_CHARS_PER_ROUND * 0.85
-                ? 'text-amber-400'
-                : 'text-zinc-500'
-            )}
-            title={`QVAC Chatterbox norm: Up to ${QVAC_MAX_CHARS_PER_ROUND.toLocaleString()} chars per speaker turn for peak neural prosody.`}
-          >
-            {round.text.length.toLocaleString()} / {QVAC_MAX_CHARS_PER_ROUND.toLocaleString()} chars
-          </span>
-          {round.text.length > QVAC_MAX_CHARS_PER_ROUND && (
-            <span
-              className="text-[10px] px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 font-medium"
-              title="Exceeds single turn limit. Split across turns to prevent neural voice drift."
-            >
-              Exceeds Turn Limit
+              {currentText.match(/\[pause\s*[^\]]+\]/g)?.length || 0} pause cue(s)
             </span>
           )}
         </div>

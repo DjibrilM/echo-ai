@@ -1,0 +1,392 @@
+[
+  {
+    "id": "voice-es-male-1",
+    "audio": "voice_es_male_1.mp3",
+    "image": "/voices/sterling.jpg",
+    "color": "#38bdf8",
+    "info": {
+      "id": "voice-es-male-1",
+      "name": "Roger (Spanish)",
+      "description": "Easy going and perfect for casual conversations.",
+      "category": "preset",
+      "initials": "RO",
+      "gender": "Male",
+      "languageCode": "es",
+      "languageName": "Spanish",
+      "tags": [
+        "Spanish",
+        "Male",
+        "Conversational",
+        "Classy"
+      ],
+      "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17"
+    },
+    "name": "Roger (Spanish)",
+    "description": "Easy going and perfect for casual conversations.",
+    "category": "preset",
+    "avatarUrl": "/voices/sterling.jpg",
+    "sampleUrl": "/voices/samples/es/voice_es_male_1.mp3",
+    "initials": "RO",
+    "gender": "Male",
+    "languageCode": "es",
+    "languageName": "Spanish",
+    "tags": [
+      "Spanish",
+      "Male",
+      "Conversational",
+      "Classy"
+    ],
+    "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17"
+  },
+  {
+    "id": "voice-es-male-2",
+    "audio": "voice_es_male_2.mp3",
+    "image": "/voices/jax.jpg",
+    "color": "#f59e0b",
+    "info": {
+      "id": "voice-es-male-2",
+      "name": "Charlie (Spanish)",
+      "description": "A young Australian male with a confident and energetic voice.",
+      "category": "preset",
+      "initials": "CH",
+      "gender": "Male",
+      "languageCode": "es",
+      "languageName": "Spanish",
+      "tags": [
+        "Spanish",
+        "Male",
+        "Conversational",
+        "Hyped"
+      ],
+      "elevenLabsVoiceId": "IKne3meq5aSn9XLyUdCD"
+    },
+    "name": "Charlie (Spanish)",
+    "description": "A young Australian male with a confident and energetic voice.",
+    "category": "preset",
+    "avatarUrl": "/voices/jax.jpg",
+    "sampleUrl": "/voices/samples/es/voice_es_male_2.mp3",
+    "initials": "CH",
+    "gender": "Male",
+    "languageCode": "es",
+    "languageName": "Spanish",
+    "tags": [
+      "Spanish",
+      "Male",
+      "Conversational",
+      "Hyped"
+    ],
+    "elevenLabsVoiceId": "IKne3meq5aSn9XLyUdCD"
+  },
+  {
+    "id": "voice-es-male-3",
+    "audio": "voice_es_male_3.mp3",
+    "image": "/voices/alistair.jpg",
+    "color": "#d97706",
+    "info": {
+      "id": "voice-es-male-3",
+      "name": "George (Spanish)",
+      "description": "Warm resonance that instantly captivates listeners.",
+      "category": "preset",
+      "initials": "GE",
+      "gender": "Male",
+      "languageCode": "es",
+      "languageName": "Spanish",
+      "tags": [
+        "Spanish",
+        "Male",
+        "Narrative story",
+        "Mature"
+      ],
+      "elevenLabsVoiceId": "JBFqnCBsd6RMkjVDRZzb"
+    },
+    "name": "George (Spanish)",
+    "description": "Warm resonance that instantly captivates listeners.",
+    "category": "preset",
+    "avatarUrl": "/voices/alistair.jpg",
+    "sampleUrl": "/voices/samples/es/voice_es_male_3.mp3",
+    "initials": "GE",
+    "gender": "Male",
+    "languageCode": "es",
+    "languageName": "Spanish",
+    "tags": [
+      "Spanish",
+      "Male",
+      "Narrative story",
+      "Mature"
+    ],
+    "elevenLabsVoiceId": "JBFqnCBsd6RMkjVDRZzb"
+  },
+  {
+    "id": "voice-es-male-4",
+    "audio": "voice_es_male_4.mp3",
+    "image": "/voices/george.jpg",
+    "color": "#10b981",
+    "info": {
+      "id": "voice-es-male-4",
+      "name": "Will (Spanish)",
+      "description": "Conversational and laid back.",
+      "category": "preset",
+      "initials": "WI",
+      "gender": "Male",
+      "languageCode": "es",
+      "languageName": "Spanish",
+      "tags": [
+        "Spanish",
+        "Male",
+        "Conversational",
+        "Chill"
+      ],
+      "elevenLabsVoiceId": "bIHbv24MWmeRgasZH58o"
+    },
+    "name": "Will (Spanish)",
+    "description": "Conversational and laid back.",
+    "category": "preset",
+    "avatarUrl": "/voices/george.jpg",
+    "sampleUrl": "/voices/samples/es/voice_es_male_4.mp3",
+    "initials": "WI",
+    "gender": "Male",
+    "languageCode": "es",
+    "languageName": "Spanish",
+    "tags": [
+      "Spanish",
+      "Male",
+      "Conversational",
+      "Chill"
+    ],
+    "elevenLabsVoiceId": "bIHbv24MWmeRgasZH58o"
+  },
+  {
+    "id": "voice-es-male-5",
+    "audio": "voice_es_male_5.mp3",
+    "image": "/voices/roger.jpg",
+    "color": "#a855f7",
+    "info": {
+      "id": "voice-es-male-5",
+      "name": "Eric (Spanish)",
+      "description": "A smooth tenor pitch from a man in his 40s - perfect for agentic use cases.",
+      "category": "preset",
+      "initials": "ER",
+      "gender": "Male",
+      "languageCode": "es",
+      "languageName": "Spanish",
+      "tags": [
+        "Spanish",
+        "Male",
+        "Conversational",
+        "Classy"
+      ],
+      "elevenLabsVoiceId": "cjVigY5qzO86Huf0OWal"
+    },
+    "name": "Eric (Spanish)",
+    "description": "A smooth tenor pitch from a man in his 40s - perfect for agentic use cases.",
+    "category": "preset",
+    "avatarUrl": "/voices/roger.jpg",
+    "sampleUrl": "/voices/samples/es/voice_es_male_5.mp3",
+    "initials": "ER",
+    "gender": "Male",
+    "languageCode": "es",
+    "languageName": "Spanish",
+    "tags": [
+      "Spanish",
+      "Male",
+      "Conversational",
+      "Classy"
+    ],
+    "elevenLabsVoiceId": "cjVigY5qzO86Huf0OWal"
+  },
+  {
+    "id": "voice-es-female-1",
+    "audio": "voice_es_female_1.mp3",
+    "image": "/voices/serena.jpg",
+    "color": "#ec4899",
+    "info": {
+      "id": "voice-es-female-1",
+      "name": "Sarah (Spanish)",
+      "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
+      "category": "preset",
+      "initials": "SA",
+      "gender": "Female",
+      "languageCode": "es",
+      "languageName": "Spanish",
+      "tags": [
+        "Spanish",
+        "Female",
+        "Entertainment tv",
+        "Professional"
+      ],
+      "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL"
+    },
+    "name": "Sarah (Spanish)",
+    "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
+    "category": "preset",
+    "avatarUrl": "/voices/serena.jpg",
+    "sampleUrl": "/voices/samples/es/voice_es_female_1.mp3",
+    "initials": "SA",
+    "gender": "Female",
+    "languageCode": "es",
+    "languageName": "Spanish",
+    "tags": [
+      "Spanish",
+      "Female",
+      "Entertainment tv",
+      "Professional"
+    ],
+    "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL"
+  },
+  {
+    "id": "voice-es-female-2",
+    "audio": "voice_es_female_2.mp3",
+    "image": "/voices/chloe.jpg",
+    "color": "#06b6d4",
+    "info": {
+      "id": "voice-es-female-2",
+      "name": "Matilda (Spanish)",
+      "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
+      "category": "preset",
+      "initials": "MA",
+      "gender": "Female",
+      "languageCode": "es",
+      "languageName": "Spanish",
+      "tags": [
+        "Spanish",
+        "Female",
+        "Informative educational",
+        "Upbeat"
+      ],
+      "elevenLabsVoiceId": "XrExE9yKIg1WjnnlVkGX"
+    },
+    "name": "Matilda (Spanish)",
+    "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
+    "category": "preset",
+    "avatarUrl": "/voices/chloe.jpg",
+    "sampleUrl": "/voices/samples/es/voice_es_female_2.mp3",
+    "initials": "MA",
+    "gender": "Female",
+    "languageCode": "es",
+    "languageName": "Spanish",
+    "tags": [
+      "Spanish",
+      "Female",
+      "Informative educational",
+      "Upbeat"
+    ],
+    "elevenLabsVoiceId": "XrExE9yKIg1WjnnlVkGX"
+  },
+  {
+    "id": "voice-es-female-3",
+    "audio": "voice_es_female_3.mp3",
+    "image": "/voices/sarah.jpg",
+    "color": "#8b5cf6",
+    "info": {
+      "id": "voice-es-female-3",
+      "name": "Bella (Spanish)",
+      "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
+      "category": "preset",
+      "initials": "BE",
+      "gender": "Female",
+      "languageCode": "es",
+      "languageName": "Spanish",
+      "tags": [
+        "Spanish",
+        "Female",
+        "Informative educational",
+        "Professional"
+      ],
+      "elevenLabsVoiceId": "hpp4J3VqNfWAUOO0d1Us"
+    },
+    "name": "Bella (Spanish)",
+    "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
+    "category": "preset",
+    "avatarUrl": "/voices/sarah.jpg",
+    "sampleUrl": "/voices/samples/es/voice_es_female_3.mp3",
+    "initials": "BE",
+    "gender": "Female",
+    "languageCode": "es",
+    "languageName": "Spanish",
+    "tags": [
+      "Spanish",
+      "Female",
+      "Informative educational",
+      "Professional"
+    ],
+    "elevenLabsVoiceId": "hpp4J3VqNfWAUOO0d1Us"
+  },
+  {
+    "id": "voice-es-female-4",
+    "audio": "voice_es_female_4.mp3",
+    "image": "/voices/jessica.jpg",
+    "color": "#ef4444",
+    "info": {
+      "id": "voice-es-female-4",
+      "name": "Laura (Spanish)",
+      "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
+      "category": "preset",
+      "initials": "LA",
+      "gender": "Female",
+      "languageCode": "es",
+      "languageName": "Spanish",
+      "tags": [
+        "Spanish",
+        "Female",
+        "Social media",
+        "Sassy"
+      ],
+      "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5"
+    },
+    "name": "Laura (Spanish)",
+    "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
+    "category": "preset",
+    "avatarUrl": "/voices/jessica.jpg",
+    "sampleUrl": "/voices/samples/es/voice_es_female_4.mp3",
+    "initials": "LA",
+    "gender": "Female",
+    "languageCode": "es",
+    "languageName": "Spanish",
+    "tags": [
+      "Spanish",
+      "Female",
+      "Social media",
+      "Sassy"
+    ],
+    "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5"
+  },
+  {
+    "id": "voice-es-female-5",
+    "audio": "voice_es_female_5.mp3",
+    "image": "/voices/eleanor.jpg",
+    "color": "#3b82f6",
+    "info": {
+      "id": "voice-es-female-5",
+      "name": "Alice (Spanish)",
+      "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
+      "category": "preset",
+      "initials": "AL",
+      "gender": "Female",
+      "languageCode": "es",
+      "languageName": "Spanish",
+      "tags": [
+        "Spanish",
+        "Female",
+        "Informative educational",
+        "Professional"
+      ],
+      "elevenLabsVoiceId": "Xb7hH8MSUJpSbSDYk0k2"
+    },
+    "name": "Alice (Spanish)",
+    "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
+    "category": "preset",
+    "avatarUrl": "/voices/eleanor.jpg",
+    "sampleUrl": "/voices/samples/es/voice_es_female_5.mp3",
+    "initials": "AL",
+    "gender": "Female",
+    "languageCode": "es",
+    "languageName": "Spanish",
+    "tags": [
+      "Spanish",
+      "Female",
+      "Informative educational",
+      "Professional"
+    ],
+    "elevenLabsVoiceId": "Xb7hH8MSUJpSbSDYk0k2"
+  }
+]

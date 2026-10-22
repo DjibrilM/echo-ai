@@ -2,7 +2,14 @@ import { QvacEmotion, QvacPace } from '../interfaces/voice'
 
 export const QVAC_MAX_CHARS_PER_ROUND = 4096
 
-export const QVAC_EMOTIONS: { label: QvacEmotion; description: string }[] = [
+export const COSYVOICE_EMOTIONS: { label: QvacEmotion; description: string }[] = [
+  { label: 'Neutral', description: 'Natural, balanced default vocal delivery' },
+  { label: 'Happy', description: 'Upbeat, warm, and cheerful intonation' },
+  { label: 'Sad', description: 'Subdued, somber, and reflective cadence' },
+  { label: 'Anger', description: 'Assertive, intense, and emphatic projection' },
+]
+
+export const PARLER_EMOTIONS: { label: QvacEmotion; description: string }[] = [
   { label: 'Neutral', description: 'Natural, balanced default vocal delivery' },
   { label: 'Happy', description: 'Upbeat, warm, and cheerful intonation' },
   { label: 'Sad', description: 'Subdued, somber, and reflective cadence' },
@@ -11,7 +18,13 @@ export const QVAC_EMOTIONS: { label: QvacEmotion; description: string }[] = [
   { label: 'Conversation', description: 'Spontaneous, informal conversational flow' },
   { label: 'Surprise', description: 'Elevated pitch with expressive dynamic range' },
   { label: 'Command', description: 'Authoritative, firm directive timbre' },
+  { label: 'Fear', description: 'Tense, apprehensive, and breathless cadence' },
+  { label: 'Disgust', description: 'Aversive, harsh, and dismissive intonation' },
+  { label: 'News', description: 'Formal, objective journalistic projection' },
+  { label: 'Proper Noun', description: 'Crisp, deliberate articulation for names' },
 ]
+
+export const QVAC_EMOTIONS = PARLER_EMOTIONS
 
 export const QVAC_PACES: { label: QvacPace; rate: string; multiplier: number }[] = [
   { label: 'Slow', rate: '0.8x', multiplier: 0.8 },

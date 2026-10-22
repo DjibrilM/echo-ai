@@ -1,280 +1,34 @@
 import { Voice } from '../interfaces/voice'
+import {
+  scanVoiceSamples,
+  loadVoicesForLanguage,
+  loadVoicesForPackage,
+  loadAllVoices,
+  getCachedVoices,
+  isLanguageLoaded,
+  subscribeToVoicePackages,
+  type VoicePackageInfo,
+} from '../services/voiceLoader'
 
-export const INITIAL_VOICES: Voice[] = [
-  {
-    id: 'voice-sterling',
-    elevenLabsVoiceId: 'CwhRBWXzGAHq8TQ4Fs17',
-    name: 'Sterling Rhodes',
-    description: 'Easy going and perfect for casual conversations.',
-    category: 'preset',
-    color: '#38bdf8',
-    avatarUrl: '/voices/sterling.jpg',
-    sampleUrl: '/voices/samples/CwhRBWXzGAHq8TQ4Fs17.mp3',
-    initials: 'SR',
-    gender: 'Male',
-    tags: ['American', 'Conversational', 'Classy'],
-  },
-  {
-    id: 'voice-serena',
-    elevenLabsVoiceId: 'EXAVITQu4vr4xnSDxMaL',
-    name: 'Serena Vance',
-    description: 'Young adult woman with a confident and warm, mature quality.',
-    category: 'preset',
-    color: '#ec4899',
-    avatarUrl: '/voices/serena.jpg',
-    sampleUrl: '/voices/samples/EXAVITQu4vr4xnSDxMaL.mp3',
-    initials: 'SV',
-    gender: 'Female',
-    tags: ['American', 'Entertainment', 'Professional'],
-  },
-  {
-    id: 'voice-chloe',
-    elevenLabsVoiceId: 'FGY2WhTYpPnrIDTdsKH5',
-    name: 'Chloe Sparks',
-    description: 'Delivers sunny enthusiasm with a quirky attitude.',
-    category: 'preset',
-    color: '#f59e0b',
-    avatarUrl: '/voices/chloe.jpg',
-    sampleUrl: '/voices/samples/FGY2WhTYpPnrIDTdsKH5.mp3',
-    initials: 'CS',
-    gender: 'Female',
-    tags: ['American', 'Social media', 'Sassy'],
-  },
-  {
-    id: 'voice-jax',
-    elevenLabsVoiceId: 'IKne3meq5aSn9XLyUdCD',
-    name: 'Jax Thorne',
-    description: 'A young Australian male with a confident and energetic voice.',
-    category: 'preset',
-    color: '#06b6d4',
-    avatarUrl: '/voices/jax.jpg',
-    sampleUrl: '/voices/samples/IKne3meq5aSn9XLyUdCD.mp3',
-    initials: 'JT',
-    gender: 'Male',
-    tags: ['Australian', 'Conversational', 'Hyped'],
-  },
-  {
-    id: 'voice-alistair',
-    elevenLabsVoiceId: 'JBFqnCBsd6RMkjVDRZzb',
-    name: 'Alistair Finch',
-    description: 'Warm resonance that instantly captivates listeners.',
-    category: 'preset',
-    color: '#d97706',
-    avatarUrl: '/voices/alistair.jpg',
-    sampleUrl: '/voices/samples/JBFqnCBsd6RMkjVDRZzb.mp3',
-    initials: 'AF',
-    gender: 'Male',
-    tags: ['British', 'Narrative story', 'Warm'],
-  },
-  {
-    id: 'voice-dorian',
-    elevenLabsVoiceId: 'N2lVS1w4EtoT3dr4eOWO',
-    name: 'Dorian Cross',
-    description: 'Deceptively gravelly, yet unsettling edge.',
-    category: 'preset',
-    color: '#8b5cf6',
-    avatarUrl: '/voices/dorian.jpg',
-    sampleUrl: '/voices/samples/N2lVS1w4EtoT3dr4eOWO.mp3',
-    initials: 'DC',
-    gender: 'Male',
-    tags: ['American', 'Characters', 'Gravelly'],
-  },
-  {
-    id: 'voice-rowan',
-    elevenLabsVoiceId: 'SAz9YHcvj6GT2YYXdXww',
-    name: 'Rowan Quinn',
-    description: 'Relaxed, neutral voice ready for narrations or conversations.',
-    category: 'preset',
-    color: '#10b981',
-    avatarUrl: '/voices/rowan.jpg',
-    sampleUrl: '/voices/samples/SAz9YHcvj6GT2YYXdXww.mp3',
-    initials: 'RQ',
-    gender: 'Neutral',
-    tags: ['American', 'Conversational', 'Calm'],
-  },
-  {
-    id: 'voice-kaelen',
-    elevenLabsVoiceId: 'SOYHLrjzK2X1ezoPC6cr',
-    name: 'Kaelen Drake',
-    description: 'An animated warrior ready to charge forward.',
-    category: 'preset',
-    color: '#ef4444',
-    avatarUrl: '/voices/kaelen.jpg',
-    sampleUrl: '/voices/samples/SOYHLrjzK2X1ezoPC6cr.mp3',
-    initials: 'KD',
-    gender: 'Male',
-    tags: ['American', 'Animation', 'Fierce'],
-  },
-  {
-    id: 'voice-leo',
-    elevenLabsVoiceId: 'TX3LPaxmHKxFdv7VOQHJ',
-    name: 'Leo Sterling',
-    description: 'Young adult with energy and warmth for reels and shorts.',
-    category: 'preset',
-    color: '#a855f7',
-    avatarUrl: '/voices/leo.jpg',
-    sampleUrl: '/voices/samples/TX3LPaxmHKxFdv7VOQHJ.mp3',
-    initials: 'LS',
-    gender: 'Male',
-    tags: ['American', 'Social media', 'Creator'],
-  },
-  {
-    id: 'voice-eleanor',
-    elevenLabsVoiceId: 'Xb7hH8MSUJpSbSDYk0k2',
-    name: 'Eleanor Brooks',
-    description: 'Clear and engaging, friendly woman with a British accent.',
-    category: 'preset',
-    color: '#3b82f6',
-    avatarUrl: '/voices/eleanor.jpg',
-    sampleUrl: '/voices/samples/Xb7hH8MSUJpSbSDYk0k2.mp3',
-    initials: 'EB',
-    gender: 'Female',
-    tags: ['British', 'Educational', 'Articulate'],
-  },
-  {
-    id: 'voice-helena',
-    elevenLabsVoiceId: 'XrExE9yKIg1WjnnlVkGX',
-    name: 'Dr. Helena Ross',
-    description: 'Professional woman with a pleasing alto pitch.',
-    category: 'preset',
-    color: '#6366f1',
-    avatarUrl: '/voices/helena.jpg',
-    sampleUrl: '/voices/samples/XrExE9yKIg1WjnnlVkGX.mp3',
-    initials: 'HR',
-    gender: 'Female',
-    tags: ['American', 'Educational', 'Professional'],
-  },
-  {
-    id: 'voice-milo',
-    elevenLabsVoiceId: 'bIHbv24MWmeRgasZH58o',
-    name: 'Milo Bennett',
-    description: 'Conversational, relaxed, and cheerful optimist.',
-    category: 'preset',
-    color: '#84cc16',
-    avatarUrl: '/voices/milo.jpg',
-    sampleUrl: '/voices/samples/bIHbv24MWmeRgasZH58o.mp3',
-    initials: 'MB',
-    gender: 'Male',
-    tags: ['American', 'Conversational', 'Optimist'],
-  },
-  {
-    id: 'voice-sienna',
-    elevenLabsVoiceId: 'cgSgspJ2msm6clMCkdW9',
-    name: 'Sienna Ray',
-    description: 'Young and popular playful female voice perfect for trendy content.',
-    category: 'preset',
-    color: '#10b981',
-    avatarUrl: '/voices/serena.jpg',
-    sampleUrl: '/voices/samples/cgSgspJ2msm6clMCkdW9.mp3',
-    initials: 'SR',
-    gender: 'Female',
-    tags: ['American', 'Conversational', 'Warm'],
-  },
-  {
-    id: 'voice-julian',
-    elevenLabsVoiceId: 'cjVigY5qzO86Huf0OWal',
-    name: 'Julian Mercer',
-    description: 'Smooth tenor pitch, perfect for agentic and assistant use cases.',
-    category: 'preset',
-    color: '#14b8a6',
-    avatarUrl: '/voices/sterling.jpg',
-    sampleUrl: '/voices/samples/cjVigY5qzO86Huf0OWal.mp3',
-    initials: 'JM',
-    gender: 'Male',
-    tags: ['American', 'Conversational', 'Trustworthy'],
-  },
-  {
-    id: 'voice-clara',
-    elevenLabsVoiceId: 'hpp4J3VqNfWAUOO0d1Us',
-    name: 'Clara Montgomery',
-    description: 'Warm, bright, polished narrative quality with crisp diction.',
-    category: 'preset',
-    color: '#c084fc',
-    avatarUrl: '/voices/eleanor.jpg',
-    sampleUrl: '/voices/samples/hpp4J3VqNfWAUOO0d1Us.mp3',
-    initials: 'CM',
-    gender: 'Female',
-    tags: ['American', 'Narrative', 'Prestigious'],
-  },
-  {
-    id: 'voice-caleb',
-    elevenLabsVoiceId: 'iP95p4xoKVk53GoZ742B',
-    name: 'Caleb Miller',
-    description: 'Natural and real, down-to-earth voice great across use-cases.',
-    category: 'preset',
-    color: '#0ea5e9',
-    avatarUrl: '/voices/jax.jpg',
-    sampleUrl: '/voices/samples/iP95p4xoKVk53GoZ742B.mp3',
-    initials: 'CM',
-    gender: 'Male',
-    tags: ['American', 'Conversational', 'Down to Earth'],
-  },
-  {
-    id: 'voice-solomon',
-    elevenLabsVoiceId: 'nPczCjzI2devNBz1zQrb',
-    name: 'Solomon Stone',
-    description: 'Resonant and comforting tone for narrations and stories.',
-    category: 'preset',
-    color: '#eab308',
-    avatarUrl: '/voices/alistair.jpg',
-    sampleUrl: '/voices/samples/nPczCjzI2devNBz1zQrb.mp3',
-    initials: 'SS',
-    gender: 'Male',
-    tags: ['American', 'Narration', 'Resonant'],
-  },
-  {
-    id: 'voice-edward',
-    elevenLabsVoiceId: 'onwK4e9ZLuTAKqWW03F9',
-    name: 'Edward Sterling',
-    description: 'Strong voice perfect for delivering professional broadcasts.',
-    category: 'preset',
-    color: '#38bdf8',
-    avatarUrl: '/voices/dorian.jpg',
-    sampleUrl: '/voices/samples/onwK4e9ZLuTAKqWW03F9.mp3',
-    initials: 'ES',
-    gender: 'Male',
-    tags: ['British', 'Advertisement', 'Broadcast', 'News'],
-  },
-  {
-    id: 'voice-vivienne',
-    elevenLabsVoiceId: 'pFZP5JQG7iQjIQuC4Bku',
-    name: 'Vivienne Delacroix',
-    description: 'Velvety British female voice with warmth and clarity.',
-    category: 'preset',
-    color: '#f43f5e',
-    avatarUrl: '/voices/helena.jpg',
-    sampleUrl: '/voices/samples/pFZP5JQG7iQjIQuC4Bku.mp3',
-    initials: 'VD',
-    gender: 'Female',
-    tags: ['British', 'Entertainment', 'Theatrical', 'Velvety'],
-  },
-  {
-    id: 'voice-dominic',
-    elevenLabsVoiceId: 'pNInz6obpgDQGcFmaJgB',
-    name: 'Dominic Cruz',
-    description: 'Bright tenor pitch, confident and unwavering delivery.',
-    category: 'preset',
-    color: '#e11d48',
-    avatarUrl: '/voices/kaelen.jpg',
-    sampleUrl: '/voices/samples/pNInz6obpgDQGcFmaJgB.mp3',
-    initials: 'DC',
-    gender: 'Male',
-    tags: ['American', 'Social media', 'Dominant'],
-  },
-  {
-    id: 'voice-silas',
-    elevenLabsVoiceId: 'pqHfZKP75CvOlQylNhV4',
-    name: 'Silas Bradford',
-    description: 'Friendly, wise, and comforting voice ready to narrate lore.',
-    category: 'preset',
-    color: '#d97706',
-    avatarUrl: '/voices/milo.jpg',
-    sampleUrl: '/voices/samples/pqHfZKP75CvOlQylNhV4.mp3',
-    initials: 'SB',
-    gender: 'Male',
-    tags: ['American', 'Narration', 'Wisdom', 'Balanced'],
-  },
-]
+export {
+  scanVoiceSamples,
+  loadVoicesForLanguage,
+  loadVoicesForPackage,
+  loadAllVoices,
+  getCachedVoices,
+  isLanguageLoaded,
+  subscribeToVoicePackages,
+  type VoicePackageInfo,
+}
+
+// Voices are queried dynamically from public/voices/samples/<folder>/json/voices.json
+export const MULTILINGUAL_VOICES: Record<string, Voice[]> = {}
+
+export const ALL_MULTILINGUAL_VOICES: Voice[] = []
+
+export const INITIAL_VOICES: Voice[] = []
+
+export const ALL_VOICES: Voice[] = []
 
 export const PRESET_AVATARS = [
   { name: 'Sterling', url: '/voices/sterling.jpg' },
@@ -291,34 +45,9 @@ export const PRESET_AVATARS = [
   { name: 'Milo', url: '/voices/milo.jpg' },
 ]
 
-import multilingualVoicesJson from '../../data/multilingual-voices.json'
-
-export const MULTILINGUAL_VOICES: Record<string, Voice[]> =
-  multilingualVoicesJson as unknown as Record<string, Voice[]>
-
-export const ALL_MULTILINGUAL_VOICES: Voice[] = Object.values(MULTILINGUAL_VOICES).flat()
-
-export const ALL_VOICES: Voice[] = [...INITIAL_VOICES, ...ALL_MULTILINGUAL_VOICES]
-
+/**
+ * Gets voices for a language from the dynamic cache.
+ */
 export function getVoicesForLanguage(langNameOrCode?: string): Voice[] {
-  if (!langNameOrCode || langNameOrCode === 'Auto Detect' || langNameOrCode === 'auto') {
-    return ALL_VOICES
-  }
-  const normalized = langNameOrCode.toLowerCase()
-  if (normalized.includes('english') || normalized === 'en' || normalized === 'en-gb') {
-    return INITIAL_VOICES
-  }
-  if (MULTILINGUAL_VOICES[normalized]) {
-    return MULTILINGUAL_VOICES[normalized]
-  }
-  for (const list of Object.values(MULTILINGUAL_VOICES)) {
-    if (
-      list[0]?.languageName?.toLowerCase() === normalized ||
-      list[0]?.tags.some((t) => t.toLowerCase() === normalized)
-    ) {
-      return list
-    }
-  }
-  return ALL_VOICES
+  return getCachedVoices(langNameOrCode)
 }
-

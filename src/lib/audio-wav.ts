@@ -59,140 +59,24 @@ export function audioBufferToWavBlob(buffer: AudioBuffer): Blob {
   return new Blob([arrayBuffer], { type: 'audio/wav' })
 }
 
-/**
- * Synthesize a speech preview WAV audio buffer using OfflineAudioContext.
- * Renders in a couple of milliseconds and returns a blob URL for Wavesurfer.
- */
-export async function createSyntheticSpeechWavUrl(
-  text: string,
-  speed = 1.0,
-  pitchOffset = 0
-): Promise<{ url: string; duration: number; blob: Blob }> {
-  try {
-    const sampleRate = 24000
-    const words = text.split(/\s+/).filter(Boolean)
-    const totalDuration = Math.max(3, Math.min(16, (Math.max(1, words.length) * 0.42) / speed))
-    const length = Math.ceil(sampleRate * totalDuration)
-
-    const OfflineCtxClass =
-      window.OfflineAudioContext ||
-      (window as unknown as { webkitOfflineAudioContext: typeof OfflineAudioContext }).webkitOfflineAudioContext
-
-    const offlineCtx = new OfflineCtxClass(1, length, sampleRate)
-    const now = 0
-
-    const masterGain = offlineCtx.createGain()
-    masterGain.gain.setValueAtTime(0.2, now)
-    masterGain.gain.exponentialRampToValueAtTime(0.0001, now + totalDuration)
-    masterGain.connect(offlineCtx.destination)
-
-    const osc1 = offlineCtx.createOscillator()
-    const osc2 = offlineCtx.createOscillator()
-    const filter = offlineCtx.createBiquadFilter()
-
-    osc1.type = 'sawtooth'
-    osc2.type = 'triangle'
-
-    const baseFreq = 160 + (text.length % 40) + pitchOffset
-    osc1.frequency.setValueAtTime(baseFreq, now)
-    osc2.frequency.setValueAtTime(baseFreq * 1.5, now)
-
-    for (let i = 0; i < words.length; i++) {
-      const t = now + (i * 0.42) / speed
-      if (t < now + totalDuration - 0.2) {
-        const stepFreq = baseFreq + Math.sin(i * 1.3) * 25
-        osc1.frequency.setValueAtTime(stepFreq, t)
-        osc2.frequency.setValueAtTime(stepFreq * 1.5, t)
-      }
-    }
-
-    filter.type = 'bandpass'
-    filter.frequency.setValueAtTime(950, now)
-    filter.Q.setValueAtTime(3, now)
-
-    osc1.connect(filter)
-    osc2.connect(filter)
-    filter.connect(masterGain)
-
-    osc1.start(now)
-    osc2.start(now)
-    osc1.stop(now + totalDuration)
-    osc2.stop(now + totalDuration)
-
-    const renderedBuffer = await offlineCtx.startRendering()
-    const blob = audioBufferToWavBlob(renderedBuffer)
-    const url = URL.createObjectURL(blob)
-
-    return { url, duration: Math.round(totalDuration), blob }
-  } catch (err) {
-    console.error('Error synthesizing WAV preview:', err)
-    const emptyBlob = new Blob([], { type: 'audio/wav' })
-    return { url: '', duration: 8, blob: emptyBlob }
-  }
-}
 
 /**
- * Synchronously generate a pleasant speech formant WAV file.
- * Takes < 1ms and returns an instantly playable blob URL.
+ * NOTE: Synthetic oscillator-based speech generation has been removed.
+ *
+ * Previously this file contained createSyntheticSpeechWavUrl() and
+ * createSyntheticWavUrlSync(), which used Web Audio API oscillators
+ * (sawtooth/triangle waves) to produce buzzy tone noise — not real speech.
+ *
+ * The only supported audio generation path is the QVAC / CosyVoice 3 neural
+ * TTS pipeline running in the Electron main process
+ * (electron/core/tts/services/voice-engine.service.ts). It produces
+ * 24 kHz native or 48 kHz (LavaSR-enhanced) studio-grade audio and requires
+ * the required models to be downloaded first (see InstallRequiredModelsView).
+ *
+ * Do not re-add oscillator-based "speech" synthesis here — it generates
+ * noise, not high-fidelity audio.
  */
-export function createSyntheticWavUrlSync(
-  text: string = 'Generated speech preview',
-  durationSec = 8
-): { url: string; duration: number } {
-  try {
-    const sampleRate = 22050
-    const duration = Math.max(3, Math.min(16, durationSec))
-    const numSamples = Math.floor(sampleRate * duration)
-    const arrayBuffer = new ArrayBuffer(44 + numSamples * 2)
-    const view = new DataView(arrayBuffer)
 
-    const writeString = (offset: number, str: string) => {
-      for (let i = 0; i < str.length; i++) {
-        view.setUint8(offset + i, str.charCodeAt(i))
-      }
-    }
-
-    // RIFF Chunk
-    writeString(0, 'RIFF')
-    view.setUint32(4, 36 + numSamples * 2, true)
-    writeString(8, 'WAVE')
-
-    // fmt Subchunk
-    writeString(12, 'fmt ')
-    view.setUint32(16, 16, true) // PCM
-    view.setUint16(20, 1, true)  // Linear quantization
-    view.setUint16(22, 1, true)  // Mono
-    view.setUint32(24, sampleRate, true)
-    view.setUint32(28, sampleRate * 2, true) // Byte rate
-    view.setUint16(32, 2, true)  // Block align
-    view.setUint16(34, 16, true) // Bits per sample
-
-    // data Subchunk
-    writeString(36, 'data')
-    view.setUint32(40, numSamples * 2, true)
-
-    // Formant speech-like audio synthesis
-    const baseFreq = 160 + (text.length % 40)
-    for (let i = 0; i < numSamples; i++) {
-      const t = i / sampleRate
-      const wordMod = Math.sin(t * 8) * 0.5 + 0.5
-      const s1 = Math.sin(2 * Math.PI * baseFreq * t) * 0.18
-      const s2 = Math.sin(2 * Math.PI * (baseFreq * 1.5) * t) * 0.12
-      const s3 = Math.sin(2 * Math.PI * (baseFreq * 2.2) * t) * 0.08
-      const env = Math.max(0, 1 - t / duration) * (0.3 + 0.7 * wordMod)
-      const sample = Math.max(-1, Math.min(1, (s1 + s2 + s3) * env))
-      const intSample = sample < 0 ? sample * 0x8000 : sample * 0x7fff
-      view.setInt16(44 + i * 2, intSample, true)
-    }
-
-    const blob = new Blob([arrayBuffer], { type: 'audio/wav' })
-    const url = URL.createObjectURL(blob)
-    return { url, duration }
-  } catch (err) {
-    console.error('Error creating synchronous WAV:', err)
-    return { url: '', duration: durationSec }
-  }
-}
 
 /**
  * Merges multiple audio blobs/URLs sequentially with natural conversational pause gaps.

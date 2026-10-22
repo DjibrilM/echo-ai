@@ -1,6 +1,11 @@
-import { Voice, SpeechRound, Generation, HistoryEntry } from './voice'
+import { Voice, SpeechRound, Generation, HistoryEntry, ParlerSpeaker } from './voice'
 
 export interface TextToSpeechState {
+  // Voice engine
+  engine?: 'cosyvoice3' | 'parler'
+  parlerSpeakers?: ParlerSpeaker[]
+  selectedParlerSpeakerId?: string
+
   // Voice & Language selection
   language: string
   searchLangQuery: string
@@ -40,6 +45,7 @@ export interface TextToSpeechState {
   isPlayingRecording: boolean
 
   // Model parameters (Side drawer)
+  voicePrompt: string
   stability: number
   similarity: number
   styleExaggeration: number

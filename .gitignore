@@ -26,3 +26,4 @@ dist-ssr
 # Build outputs
 release/
 dist-electron/
+assets/

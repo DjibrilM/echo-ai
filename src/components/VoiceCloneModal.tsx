@@ -10,6 +10,7 @@ import {
   User,
   Camera,
   RefreshCw,
+  Sparkles,
 } from 'lucide-react'
 import {
   Dialog,
@@ -20,11 +21,14 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { LiveWaveform } from '@/components/ui/live-waveform'
+import ExpandableContainer from '@/components/ExpandableContainer'
 import { cn } from '@/lib/utils'
 import { PRESET_AVATARS, Voice } from '@/modules/text-to-speech'
 
 export interface VoiceCloneModalProps {
   isOpen: boolean
+  engine?: 'cosyvoice3' | 'parler'
+  onSwitchToCosyVoice?: () => void
   cloneMode: 'upload' | 'record'
   isRecording: boolean
   recordedDuration: number
@@ -42,6 +46,8 @@ export interface VoiceCloneModalProps {
 
 export function VoiceCloneModal({
   isOpen,
+  engine = 'cosyvoice3',
+  onSwitchToCosyVoice,
   cloneMode,
   isRecording,
   recordedDuration,
@@ -100,6 +106,32 @@ export function VoiceCloneModal({
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto px-5 py-4 space-y-4 sidebar-scrollbar">
+          {/* Parler Warning / Quick Switcher (ExpandableContainer) */}
+          <ExpandableContainer isExpanded={engine === 'parler'}>
+            <div className="pb-1">
+              <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-amber-200 text-xs">
+                <div className="flex items-start gap-2.5 min-w-0">
+                  <Sparkles className="size-4 text-amber-400 shrink-0 mt-0.5" />
+                  <div className="min-w-0">
+                    <div className="font-semibold text-amber-100">Audio Cloning runs on CosyVoice 3</div>
+                    <p className="text-[11px] text-amber-300/80 leading-relaxed mt-0.5">
+                      Parler-TTS synthesizes voices from descriptive text prompts. Switch to CosyVoice 3 to apply cloned reference audio samples.
+                    </p>
+                  </div>
+                </div>
+                {onSwitchToCosyVoice && (
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={onSwitchToCosyVoice}
+                    className="shrink-0 bg-amber-500 hover:bg-amber-400 text-black font-semibold text-xs px-2.5 py-1 h-7 rounded-lg transition-transform active:scale-95 cursor-pointer"
+                  >
+                    Switch Engine
+                  </Button>
+                )}
+              </div>
+            </div>
+          </ExpandableContainer>
           {/* Audio Source Segmented Control */}
           <LayoutGroup id="cloneModalTabs">
             <div className="flex rounded-xl bg-[#18181b] p-1 border-none relative select-none">

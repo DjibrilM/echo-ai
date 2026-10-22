@@ -1,4 +1,5 @@
-import { ChevronRight, Check, Play } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ChevronRight, Check, Play, Sparkles, Cpu } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,10 +7,14 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Slider } from '@/components/ui/slider'
+import ExpandableContainer from '@/components/ExpandableContainer'
 import { cn } from '@/lib/utils'
-import { Voice, LanguageOption, LANGUAGES } from '../types'
+import { Voice, LanguageOption, LANGUAGES, useDynamicLanguages } from '../types'
 
 export interface SettingsDrawerProps {
+  engine?: 'cosyvoice3' | 'parler'
+  onEngineChange?: (engine: 'cosyvoice3' | 'parler') => void
+  onSwitchToCosyVoice?: () => void
   activeVoice: Voice
   voices: Voice[]
   selectedVoiceId: string
@@ -17,6 +22,8 @@ export interface SettingsDrawerProps {
   totalRounds?: number
   playingVoiceId?: string | null
   onTogglePreview?: (voice: Voice, e?: React.MouseEvent) => void
+  voicePrompt?: string
+  onVoicePromptChange?: (val: string) => void
   stability: number
   similarity: number
   cfgScale: number
@@ -33,13 +40,18 @@ export interface SettingsDrawerProps {
 }
 
 export function SettingsDrawer({
+  engine = 'cosyvoice3',
+  onEngineChange,
+  onSwitchToCosyVoice: _onSwitchToCosyVoice,
   activeVoice,
   voices: _voices,
   selectedVoiceId: _selectedVoiceId,
   focusedRoundNumber,
-  totalRounds,
+  totalRounds: _totalRounds,
   playingVoiceId,
   onTogglePreview,
+  voicePrompt = '',
+  onVoicePromptChange,
   stability,
   similarity,
   cfgScale,
@@ -54,101 +66,285 @@ export function SettingsDrawer({
   onToggleLavaSr,
   onSelectLanguage,
 }: SettingsDrawerProps) {
+  const dynamicLanguages = useDynamicLanguages()
+  const languagesList = dynamicLanguages.length > 0 ? dynamicLanguages : LANGUAGES
+
+  const cosyVoiceSuggestions = [
+    'Whispering softly with quiet emotional tears',
+    'Warm, calm, and soothing female voice with gentle pauses',
+    'Excited and energetic podcast host with crisp articulation',
+    'Authoritative cinematic narrator with deep resonant tone',
+    'Furious and breathless, speaking rapidly with high emotion',
+    'Robot-like synthesized delivery with steady monotonic cadence',
+  ]
+
+  const parlerSuggestions = [
+    'A Black American woman in a podcast environment.',
+    'A Black American man with a deep voice in a podcast studio.',
+    'A woman speaking naturally in a podcast setting.',
+    'A man speaking casually in a podcast environment.',
+    'A friendly woman chatting in a quiet room.',
+    'A male host talking with clear audio.',
+  ]
+
+  const activeSuggestions = engine === 'cosyvoice3' ? cosyVoiceSuggestions : parlerSuggestions
+
   return (
     <div className="w-full shrink-0 h-full overflow-y-auto px-4 py-3 space-y-5 pb-28 sidebar-scrollbar">
-      {/* VOICE CONFIGURATION */}
-      <div className="space-y-2.5">
+      {/* ENGINE SELECTOR (COSYVOICE 3 vs PARLER-TTS) */}
+      <div className="space-y-2.5 rounded-xl border border-[#27272a] bg-[#161619] p-3 shadow-xs">
         <div className="flex items-center justify-between">
-          <label className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
-            <span>Voice</span>
-            {totalRounds !== undefined && totalRounds > 1 && focusedRoundNumber !== undefined && (
-              <span className="text-[10px] font-medium text-zinc-400 bg-white/[0.06] border border-white/10 px-1.5 py-0.5 rounded font-mono">
-                Turn {focusedRoundNumber}
-              </span>
-            )}
+          <label className="text-xs font-semibold text-zinc-300">
+            Voice Engine
           </label>
-          <div className="flex items-center gap-2">
-            {onOpenExplorerModal && (
+          <motion.span
+            key={engine}
+            initial={{ opacity: 0, y: -4 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-[10px] text-zinc-400 font-mono"
+          >
+            {engine === 'cosyvoice3' ? '0.5B Apple Silicon' : '880M Emotional'}
+          </motion.span>
+        </div>
+
+        <div className="relative grid grid-cols-2 gap-1.5 p-1 bg-[#111114] border border-[#222226] rounded-lg">
+          <button
+            type="button"
+            onClick={() => onEngineChange?.('cosyvoice3')}
+            className={cn(
+              'relative z-10 flex flex-col items-center justify-center py-2 px-2.5 rounded-md text-xs transition-colors cursor-pointer text-center select-none',
+              engine === 'cosyvoice3' ? 'text-white font-medium' : 'text-zinc-400 hover:text-zinc-200'
+            )}
+          >
+            {engine === 'cosyvoice3' && (
+              <motion.div
+                layoutId="engineDrawerActivePill"
+                transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                className="absolute inset-0 bg-white/10 rounded-md border border-white/15 shadow-xs"
+              />
+            )}
+            <span className="relative z-10 font-semibold text-[11px] flex items-center gap-1.5">
+              <Cpu className="size-3 text-emerald-400" />
+              CosyVoice 3
+            </span>
+            <span className="relative z-10 text-[9px] text-zinc-400">M-Series / Clone</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onEngineChange?.('parler')}
+            className={cn(
+              'relative z-10 flex flex-col items-center justify-center py-2 px-2.5 rounded-md text-xs transition-colors cursor-pointer text-center select-none',
+              engine === 'parler' ? 'text-white font-medium' : 'text-zinc-400 hover:text-zinc-200'
+            )}
+          >
+            {engine === 'parler' && (
+              <motion.div
+                layoutId="engineDrawerActivePill"
+                transition={{ type: 'spring', stiffness: 450, damping: 35 }}
+                className="absolute inset-0 bg-white/10 rounded-md border border-white/15 shadow-xs"
+              />
+            )}
+            <span className="relative z-10 font-semibold text-[11px] flex items-center gap-1.5">
+              <Sparkles className="size-3 text-purple-400" />
+              Parler-TTS
+            </span>
+            <span className="relative z-10 text-[9px] text-zinc-400">12 Emotions / Fast</span>
+          </button>
+        </div>
+
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={engine}
+            initial={{ opacity: 0, y: 3 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -3 }}
+            transition={{ duration: 0.18 }}
+            className="text-[10.5px] text-zinc-400 leading-normal"
+          >
+            {engine === 'cosyvoice3'
+              ? '⚡ CosyVoice 3 (0.5B): Built for Apple Silicon unified memory / Metal GPU. Supports audio voice cloning & instruct prompts.'
+              : '🎭 Parler-TTS Mini (880M): High-speed description-driven engine with 12 distinct emotions (happy, anger, sad, etc.).'}
+          </motion.p>
+        </AnimatePresence>
+      </div>
+
+      {/* VOICE SELECTION (CosyVoice 3 only - smoothly collapses on Parler) */}
+      <ExpandableContainer isExpanded={engine === 'cosyvoice3'}>
+        <div className="space-y-2.5 pb-2">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-semibold text-zinc-300">
+              Voice Selection
+            </label>
+            <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={onOpenExplorerModal}
-                className="text-[11px] font-medium text-sky-400 hover:text-white transition-colors cursor-pointer"
+                className="text-[11px] text-zinc-400 hover:text-white transition-colors cursor-pointer flex items-center gap-1"
               >
-                <span>Browse All</span>
+                Browse All
               </button>
-            )}
-            {onOpenExplorerModal && <span className="text-zinc-600">•</span>}
-            <button
-              type="button"
-              onClick={onOpenCloneModal}
-              className="text-[11px] font-medium text-zinc-400 hover:text-white transition-colors cursor-pointer"
-            >
-              <span>Clone Voice</span>
-            </button>
-          </div>
-        </div>
-
-        {/* ACTIVE VOICE CARD -> Opens Language & Voice Explorer */}
-        <div
-          onClick={onOpenExplorerModal}
-          className="flex items-center justify-between rounded-xl border border-[#27272a] bg-[#161619] hover:bg-[#1c1c20] hover:border-zinc-600 p-2.5 transition-all cursor-pointer group shadow-xs"
-        >
-          <div className="flex items-center gap-2.5 min-w-0 flex-1">
-            <img
-              src={activeVoice.avatarUrl || '/voices/sterling.jpg'}
-              alt={activeVoice.name}
-              className="size-7 rounded-full object-cover shrink-0 ring-1 ring-white/15"
-            />
-            <div className="min-w-0 flex-1">
-              <div className="text-xs font-semibold text-white truncate flex items-center gap-1.5">
-                <span>{activeVoice.name}</span>
-                {activeVoice.category === 'cloned' && (
-                  <span className="text-[9px] bg-white/10 border border-white/10 text-zinc-300 px-1 rounded font-medium">
-                    Custom
-                  </span>
-                )}
-                {activeVoice.languageName && (
-                  <span className="text-[10px] text-zinc-400 font-normal">
-                    • {activeVoice.languageName}
-                  </span>
-                )}
-              </div>
-              <div className="text-[11px] text-zinc-400 truncate">
-                {activeVoice.description}
-              </div>
+              <span className="text-zinc-600">·</span>
+              <button
+                type="button"
+                onClick={onOpenCloneModal}
+                className="text-[11px] text-zinc-400 hover:text-white transition-colors cursor-pointer flex items-center gap-1"
+              >
+                Clone Voice
+              </button>
             </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0 ml-2">
-            {activeVoice.sampleUrl && onTogglePreview && (
-              <button
-                type="button"
-                title={playingVoiceId === activeVoice.id ? 'Pause Voice Sample' : 'Test Voice'}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  e.preventDefault()
-                  onTogglePreview(activeVoice, e)
-                }}
-                className={cn(
-                  'size-7 rounded-full flex items-center justify-center transition-all cursor-pointer',
-                  playingVoiceId === activeVoice.id
-                    ? 'bg-white text-black shadow-sm shadow-white/20'
-                    : 'bg-white/[0.08] hover:bg-white/20 text-zinc-300 hover:text-white'
-                )}
-              >
-                {playingVoiceId === activeVoice.id ? (
-                  <div className="flex items-center gap-0.5">
-                    <span className="w-0.5 h-2.5 bg-black rounded-full animate-pulse" />
-                    <span className="w-0.5 h-3.5 bg-black rounded-full animate-pulse delay-75" />
-                    <span className="w-0.5 h-2 bg-black rounded-full animate-pulse delay-150" />
-                  </div>
-                ) : (
-                  <Play className="size-3 fill-current ml-0.5" />
-                )}
-              </button>
-            )}
-            <ChevronRight className="size-4 text-zinc-500 group-hover:text-white transition-colors shrink-0" />
+          <div
+            onClick={onOpenExplorerModal}
+            className="w-full flex items-center justify-between p-2 rounded-xl border border-[#27272a] bg-[#161619] hover:border-zinc-700/80 transition-all cursor-pointer group text-left"
+          >
+            <div className="flex items-center gap-2.5 min-w-0">
+              {activeVoice.avatarUrl ? (
+                <img
+                  src={activeVoice.avatarUrl}
+                  alt={activeVoice.name}
+                  className="size-8 rounded-lg object-cover shrink-0 ring-1 ring-white/10"
+                />
+              ) : (
+                <div
+                  className={cn(
+                    'size-8 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 select-none shadow-xs text-white',
+                    activeVoice.color || 'bg-blue-600'
+                  )}
+                >
+                  {activeVoice.initials || activeVoice.name.slice(0, 2).toUpperCase()}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-medium text-xs text-white truncate">
+                    {activeVoice.name}
+                  </span>
+                  {activeVoice.category === 'cloned' && (
+                    <span className="text-[9px] px-1.5 py-0.2 bg-white/10 text-zinc-300 rounded font-medium shrink-0">
+                      Cloned
+                    </span>
+                  )}
+                </div>
+                <div className="text-[11px] text-zinc-400 truncate">
+                  {activeVoice.description}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0 ml-2">
+              {activeVoice.sampleUrl && onTogglePreview && (
+                <button
+                  type="button"
+                  title={playingVoiceId === activeVoice.id ? 'Pause Voice Sample' : 'Test Voice'}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    e.preventDefault()
+                    onTogglePreview(activeVoice, e)
+                  }}
+                  className={cn(
+                    'size-7 rounded-full flex items-center justify-center transition-all cursor-pointer',
+                    playingVoiceId === activeVoice.id
+                      ? 'bg-white text-black shadow-sm shadow-white/20'
+                      : 'bg-white/[0.08] hover:bg-white/20 text-zinc-300 hover:text-white'
+                  )}
+                >
+                  {playingVoiceId === activeVoice.id ? (
+                    <div className="flex items-center gap-0.5">
+                      <span className="w-0.5 h-2.5 bg-black rounded-full animate-pulse" />
+                      <span className="w-0.5 h-3.5 bg-black rounded-full animate-pulse delay-75" />
+                      <span className="w-0.5 h-2 bg-black rounded-full animate-pulse delay-150" />
+                    </div>
+                  ) : (
+                    <Play className="size-3 fill-current ml-0.5" />
+                  )}
+                </button>
+              )}
+              <ChevronRight className="size-4 text-zinc-500 group-hover:text-white transition-colors shrink-0" />
+            </div>
           </div>
+        </div>
+      </ExpandableContainer>
+
+      {/* VOICE PROMPT & PERFORMANCE DIRECTION */}
+      <div className="space-y-2.5 rounded-xl border border-[#27272a] bg-[#161619] p-3 shadow-xs">
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
+            <span>{engine === 'cosyvoice3' ? 'Voice Prompt' : 'Voice Description'}</span>
+            <span className="text-[10px] text-zinc-500 font-normal">
+              {engine === 'cosyvoice3' ? '(Instruction)' : '(Persona)'}
+            </span>
+          </label>
+          <span className="text-[10px] px-2 py-0.5 rounded-md bg-white/[0.06] border border-white/10 text-zinc-300 font-medium">
+            {focusedRoundNumber
+              ? `Speaker ${focusedRoundNumber}`
+              : 'Speaker Persona'}
+          </span>
+        </div>
+
+        <AnimatePresence mode="wait">
+          <motion.p
+            key={engine}
+            initial={{ opacity: 0, y: 2 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -2 }}
+            transition={{ duration: 0.15 }}
+            className="text-[11px] text-zinc-400 leading-relaxed"
+          >
+            {engine === 'cosyvoice3'
+              ? 'Instruct performance, emotion, whispering, tone, or pacing in natural language.'
+              : `Sculpt the persona (gender, pitch, tone, pacing) for Speaker ${focusedRoundNumber || 1}.`}
+          </motion.p>
+        </AnimatePresence>
+
+        <div className="relative">
+          <textarea
+            value={voicePrompt}
+            onChange={(e) => onVoicePromptChange?.(e.target.value)}
+            rows={3}
+            placeholder={
+              engine === 'cosyvoice3'
+                ? 'e.g. Whispering softly with quiet emotional tears, or A calm authoritative narrator...'
+                : 'e.g. A clear, warm female voice speaks in a calm, soothing tone with gentle pauses...'
+            }
+            className="w-full rounded-lg border border-[#27272a] bg-[#111114] px-3 py-2 text-xs text-zinc-200 placeholder:text-zinc-600 focus:border-zinc-500 focus:outline-hidden focus:ring-1 focus:ring-zinc-500/30 resize-none transition-all"
+          />
+        </div>
+
+        {/* Quick Suggestion Chips with Smooth Entrance */}
+        <div className="space-y-1.5 pt-0.5">
+          <div className="flex items-center justify-between">
+            <span className="text-[10px] font-medium text-zinc-500">
+              Presets ({engine === 'cosyvoice3' ? 'CosyVoice' : 'Parler'}):
+            </span>
+          </div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={engine}
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -4 }}
+              transition={{ duration: 0.2 }}
+              className="flex flex-wrap gap-1.5"
+            >
+              {activeSuggestions.map((suggestion) => (
+                <button
+                  key={suggestion}
+                  type="button"
+                  onClick={() => onVoicePromptChange?.(suggestion)}
+                  className={cn(
+                    'text-[10px] px-2 py-1 rounded-md border transition-all text-left truncate max-w-full cursor-pointer',
+                    voicePrompt === suggestion
+                      ? 'border-zinc-400 bg-white/10 text-white font-medium'
+                      : 'border-white/5 bg-white/[0.03] text-zinc-400 hover:border-white/15 hover:text-zinc-200 hover:bg-white/[0.06]'
+                  )}
+                >
+                  {suggestion.split(' ').slice(0, 3).join(' ')}...
+                </button>
+              ))}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
 
@@ -177,24 +373,26 @@ export function SettingsDrawer({
           </div>
         </div>
 
-        {/* Similarity / Reference Top-P Slider */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-xs">
-            <span className="font-semibold text-zinc-300">Cloning Fidelity (Top-P)</span>
-            <span className="font-mono text-zinc-400">{similarity.toFixed(2)}</span>
+        {/* Similarity / Reference Top-P Slider (CosyVoice 3 only) */}
+        <ExpandableContainer isExpanded={engine === 'cosyvoice3'}>
+          <div className="space-y-2 pb-1">
+            <div className="flex items-center justify-between text-xs">
+              <span className="font-semibold text-zinc-300">Cloning Fidelity (Top-P)</span>
+              <span className="font-mono text-zinc-400">{similarity.toFixed(2)}</span>
+            </div>
+            <Slider
+              value={[similarity * 100]}
+              min={30}
+              max={100}
+              step={1}
+              onValueChange={(val) => onSimilarityChange((val[0] || 85) / 100)}
+            />
+            <div className="flex justify-between text-[10px] text-zinc-500">
+              <span>Low Variation</span>
+              <span>High Precision</span>
+            </div>
           </div>
-          <Slider
-            value={[similarity * 100]}
-            min={30}
-            max={100}
-            step={1}
-            onValueChange={(val) => onSimilarityChange((val[0] || 85) / 100)}
-          />
-          <div className="flex justify-between text-[10px] text-zinc-500">
-            <span>Low Variation</span>
-            <span>High Precision</span>
-          </div>
-        </div>
+        </ExpandableContainer>
 
         {/* Emotion / Exaggeration CFG Scale Slider */}
         <div className="space-y-2">
@@ -216,28 +414,30 @@ export function SettingsDrawer({
           </div>
         </div>
 
-        {/* Studio Voice Clarity Enhancer */}
-        <div className="flex items-center justify-between py-1">
-          <div>
-            <div className="text-xs text-zinc-300">Voice Clarity</div>
-            <div className="text-[11px] text-zinc-500">Enhances Speech To 48kHz Ultra HD</div>
-          </div>
-          <button
-            type="button"
-            onClick={onToggleLavaSr}
-            className={cn(
-              'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
-              lavaSrEnabled ? 'bg-white' : 'bg-zinc-700'
-            )}
-          >
-            <span
+        {/* Studio Voice Clarity Enhancer (CosyVoice 3 only) */}
+        <ExpandableContainer isExpanded={engine === 'cosyvoice3'}>
+          <div className="flex items-center justify-between py-1">
+            <div>
+              <div className="text-xs text-zinc-300">Voice Clarity</div>
+              <div className="text-[11px] text-zinc-500">Enhances Speech To 48kHz Ultra HD</div>
+            </div>
+            <button
+              type="button"
+              onClick={onToggleLavaSr}
               className={cn(
-                'pointer-events-none inline-block size-4 transform rounded-full bg-[#0f0f10] shadow ring-0 transition duration-200 ease-in-out',
-                lavaSrEnabled ? 'translate-x-4' : 'translate-x-0'
+                'relative inline-flex h-5 w-9 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out',
+                lavaSrEnabled ? 'bg-white' : 'bg-zinc-700'
               )}
-            />
-          </button>
-        </div>
+            >
+              <span
+                className={cn(
+                  'pointer-events-none inline-block size-4 transform rounded-full bg-[#0f0f10] shadow ring-0 transition duration-200 ease-in-out',
+                  lavaSrEnabled ? 'translate-x-4' : 'translate-x-0'
+                )}
+              />
+            </button>
+          </div>
+        </ExpandableContainer>
 
         {/* Language Selection Dropdown */}
         <div className="flex items-center justify-between py-1">
@@ -266,7 +466,7 @@ export function SettingsDrawer({
                 Select Language
               </div>
 
-              {LANGUAGES.map((langItem) => (
+              {languagesList.map((langItem) => (
                 <DropdownMenuItem
                   key={langItem.code}
                   onClick={() => onSelectLanguage(langItem.name)}

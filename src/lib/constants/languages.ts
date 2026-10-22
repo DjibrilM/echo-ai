@@ -1,21 +1,32 @@
 import { LanguageOption } from '../interfaces/model'
+import {
+  scanVoiceSamples,
+  getDynamicLanguages,
+  useDynamicLanguages,
+  subscribeToLanguages,
+  packagesToLanguageOptions,
+  DYNAMIC_LANGUAGES_REF,
+} from '../services/voiceLoader'
 
-export const LANGUAGES: LanguageOption[] = [
-  { code: 'auto', name: 'Auto Detect', nativeName: 'Automatic detection', isAuto: true },
-  { code: 'en', name: 'English (US)', nativeName: 'English (United States)', flag: '🇺🇸' },
-  { code: 'en-gb', name: 'English (UK)', nativeName: 'English (United Kingdom)', flag: '🇬🇧' },
-  { code: 'es', name: 'Spanish', nativeName: 'Español', flag: '🇪🇸' },
-  { code: 'fr', name: 'French', nativeName: 'Français', flag: '🇫🇷' },
-  { code: 'de', name: 'German', nativeName: 'Deutsch', flag: '🇩🇪' },
-  { code: 'it', name: 'Italian', nativeName: 'Italiano', flag: '🇮🇹' },
-  { code: 'pt', name: 'Portuguese', nativeName: 'Português', flag: '🇧🇷' },
-  { code: 'ja', name: 'Japanese', nativeName: '日本語', flag: '🇯🇵' },
-  { code: 'zh', name: 'Chinese', nativeName: '中文 (Mandarin)', flag: '🇨🇳' },
-  { code: 'ko', name: 'Korean', nativeName: '한국어', flag: '🇰🇷' },
-  { code: 'hi', name: 'Hindi', nativeName: 'हिन्दी', flag: '🇮🇳' },
-  { code: 'ar', name: 'Arabic', nativeName: 'العربية', flag: '🇸🇦' },
-  { code: 'ru', name: 'Russian', nativeName: 'Русский', flag: '🇷🇺' },
-  { code: 'sw', name: 'Swahili', nativeName: 'Kiswahili', flag: '🇰🇪' },
-]
+export {
+  scanVoiceSamples,
+  getDynamicLanguages,
+  useDynamicLanguages,
+  subscribeToLanguages,
+  packagesToLanguageOptions,
+}
+
+export const AUTO_LANGUAGE: LanguageOption = {
+  code: 'auto',
+  name: 'Auto Detect',
+  nativeName: 'Automatic detection',
+  isAuto: true,
+}
 
 export const DEFAULT_LANGUAGE = 'English (US)'
+
+/**
+ * Dynamically queried languages array.
+ * Populated at runtime by scanning the voices/samples directory and reading each folder's info.json header file.
+ */
+export const LANGUAGES: LanguageOption[] = DYNAMIC_LANGUAGES_REF

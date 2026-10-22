@@ -23,7 +23,7 @@ import {
   AudiobooksIcon,
   DevelopersIcon,
 } from "@/components/icons"
-import { Sparkles, Play } from "lucide-react"
+import { Play } from "lucide-react"
 
 function getRouteData(pathname: string) {
   switch (pathname) {
@@ -71,8 +71,6 @@ function getRouteData(pathname: string) {
       return { title: "Settings", icon: SettingsIcon }
     case "/playground":
       return { title: "Playground", icon: Play }
-    case "/models":
-      return { title: "Models", icon: Sparkles }
     default:
       return { title: "Voice Isolator", icon: VoiceIsolatorIcon }
   }
@@ -86,6 +84,7 @@ interface HeaderProps {
 export function Header({ isSidebarOpen, onToggleSidebar }: HeaderProps) {
   const location = useLocation()
   const { title, icon: PageIcon } = getRouteData(location.pathname)
+
 
   return (
     <header className="flex h-10 shrink-0 items-center justify-between border-b border-[#262629] bg-[#0f0f10] px-4 select-none">
@@ -101,7 +100,7 @@ export function Header({ isSidebarOpen, onToggleSidebar }: HeaderProps) {
           <SidebarToggleIcon className="size-[18px]" />
         </button>
 
-        <div className="h-4 w-px bg-white/[0.08] mx-0.5" aria-hidden="true" />
+        <div className="h-4 w-px bg-white/8 mx-0.5" aria-hidden="true" />
 
         <div className="flex items-center gap-2">
           <PageIcon className="size-4 text-zinc-300 shrink-0" />
@@ -111,11 +110,10 @@ export function Header({ isSidebarOpen, onToggleSidebar }: HeaderProps) {
         </div>
       </div>
 
-      {/* Right side: Setting Icon */}
-      <div className="flex items-center gap-1.5">
+      <div className="">
         <Link
           to="/settings"
-          className="flex size-7 items-center justify-center rounded-md text-[#9d9da4] hover:bg-white/[0.06] hover:text-white transition-colors"
+          className="flex size-7 items-center justify-center rounded-md bg-white/6 text-white/75 hover:text-white hover:bg-white/10 transition-colors"
           title="Settings"
           aria-label="Settings"
         >

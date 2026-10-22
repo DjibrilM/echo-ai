@@ -2,7 +2,6 @@ import { createHashRouter, Navigate } from 'react-router-dom'
 import { RootLayout } from '@/layouts/RootLayout'
 import { Dashboard } from '@/pages/Dashboard'
 import { Playground } from '@/pages/Playground'
-import { Models } from '@/pages/Models'
 import { Settings } from '@/pages/Settings'
 import { TextToSpeechPage } from '@/pages/TextToSpeech'
 import {
@@ -114,10 +113,6 @@ export const router = createHashRouter([
       {
         path: 'playground',
         element: <Playground />,
-      },
-      {
-        path: 'models',
-        element: <Models />,
       },
       {
         path: 'settings',
