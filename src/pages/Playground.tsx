@@ -23,7 +23,7 @@ export function Playground() {
               <AudioWaveform className="size-5 text-primary" />
               <h2 className="text-base font-semibold">Live Speech & Synthesis</h2>
             </div>
-            <Badge variant="secondary">ElevenLabs</Badge>
+            <Badge variant="secondary">Echo Neural Engine</Badge>
           </div>
           <p className="text-sm text-muted-foreground">
             Interact with speech streaming and realtime audio transcription.

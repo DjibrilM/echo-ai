@@ -1,6 +1,5 @@
 import { useRef, useEffect, useCallback } from 'react'
 import { TextToSpeechState } from '../types'
-import { createSyntheticAudioBlob, playSyntheticTone } from '../services/tts-service'
 
 export interface UseVoiceCloneRecordingProps {
   state: TextToSpeechState
@@ -77,7 +76,7 @@ export function useVoiceCloneRecording({ state, updateState }: UseVoiceCloneReco
     }
   }, [state.isRecording, state.recordedDuration, updateState])
 
-  const handleStartRecord = useCallback(() => {
+  const handleStartRecord = useCallback(async () => {
     if (activeAudioRef.current) {
       try {
         activeAudioRef.current.pause()
@@ -86,32 +85,49 @@ export function useVoiceCloneRecording({ state, updateState }: UseVoiceCloneReco
     }
     stopMicrophone()
     audioChunksRef.current = []
-    updateState({
-      isPlayingRecording: false,
-      recordedDuration: 0,
-      recordedAudioUrl: null,
-      isRecording: true,
-    })
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      recordedStreamRef.current = stream
+      const mediaRecorder = new MediaRecorder(stream)
+      mediaRecorderRef.current = mediaRecorder
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+          audioChunksRef.current.push(event.data)
+        }
+      }
+
+      mediaRecorder.onstop = () => {
+        if (audioChunksRef.current.length > 0) {
+          const mimeType = mediaRecorder.mimeType || 'audio/webm'
+          const blob = new Blob(audioChunksRef.current, { type: mimeType })
+          const url = URL.createObjectURL(blob)
+          updateState({ recordedAudioUrl: url })
+        }
+      }
+
+      mediaRecorder.start(250)
+      updateState({
+        isPlayingRecording: false,
+        recordedDuration: 0,
+        recordedAudioUrl: null,
+        isRecording: true,
+      })
+    } catch (err) {
+      console.error('Microphone access failed:', err)
+      updateState({ isRecording: false })
+    }
   }, [stopMicrophone, updateState])
 
   const handleStopRecord = useCallback(() => {
     stopMicrophone()
     updateState({ isRecording: false })
 
-    // Ensure audio URL is immediately generated if chunks were not ready
-    setTimeout(() => {
-      if (!state.recordedAudioUrl) {
-        try {
-          const blob = createSyntheticAudioBlob(Math.max(2, state.recordedDuration))
-          updateState({ recordedAudioUrl: URL.createObjectURL(blob) })
-        } catch {}
-      }
-    }, 120)
-
     if (!state.cloneVoiceName) {
-      updateState({ cloneVoiceName: 'My Voice' })
+      updateState({ cloneVoiceName: 'My Cloned Voice' })
     }
-  }, [stopMicrophone, state.recordedAudioUrl, state.recordedDuration, state.cloneVoiceName, updateState])
+  }, [stopMicrophone, state.cloneVoiceName, updateState])
 
   const handleSetCloneMode = useCallback(
     (mode: 'upload' | 'record') => {
@@ -143,60 +159,43 @@ export function useVoiceCloneRecording({ state, updateState }: UseVoiceCloneReco
       activeAudioRef.current = null
     }
 
-    let currentUrl = state.recordedAudioUrl
+    const currentUrl = state.recordedAudioUrl
     if (!currentUrl) {
-      try {
-        const fallbackBlob = createSyntheticAudioBlob(Math.max(2, state.recordedDuration))
-        currentUrl = URL.createObjectURL(fallbackBlob)
-        updateState({ recordedAudioUrl: currentUrl })
-      } catch {}
+      updateState({ isPlayingRecording: false })
+      return
     }
 
-    if (currentUrl) {
-      try {
-        const audio = new Audio(currentUrl)
-        activeAudioRef.current = audio
+    try {
+      const audio = new Audio(currentUrl)
+      activeAudioRef.current = audio
 
-        audio.onended = () => {
-          updateState({ isPlayingRecording: false })
-          activeAudioRef.current = null
-        }
+      audio.onended = () => {
+        updateState({ isPlayingRecording: false })
+        activeAudioRef.current = null
+      }
 
-        audio.onerror = () => {
+      audio.onerror = (err) => {
+        console.error('Error playing recording:', err)
+        updateState({ isPlayingRecording: false })
+        activeAudioRef.current = null
+      }
+
+      audio
+        .play()
+        .then(() => {
           updateState({ isPlayingRecording: true })
-          playSyntheticTone('preview audio recording playback sample', 1.0, undefined, () => {
-            updateState({ isPlayingRecording: false })
-            activeAudioRef.current = null
-          })
-        }
-
-        audio
-          .play()
-          .then(() => {
-            updateState({ isPlayingRecording: true })
-          })
-          .catch(() => {
-            updateState({ isPlayingRecording: true })
-            playSyntheticTone('preview audio recording playback sample', 1.0, undefined, () => {
-              updateState({ isPlayingRecording: false })
-              activeAudioRef.current = null
-            })
-          })
-      } catch {
-        updateState({ isPlayingRecording: true })
-        playSyntheticTone('preview audio recording playback sample', 1.0, undefined, () => {
+        })
+        .catch((err) => {
+          console.error('Playback prevented or failed:', err)
           updateState({ isPlayingRecording: false })
           activeAudioRef.current = null
         })
-      }
-    } else {
-      updateState({ isPlayingRecording: true })
-      playSyntheticTone('preview audio recording playback sample', 1.0, undefined, () => {
-        updateState({ isPlayingRecording: false })
-        activeAudioRef.current = null
-      })
+    } catch (err) {
+      console.error('Audio initialization error:', err)
+      updateState({ isPlayingRecording: false })
+      activeAudioRef.current = null
     }
-  }, [state.isPlayingRecording, state.recordedAudioUrl, state.recordedDuration, updateState])
+  }, [state.isPlayingRecording, state.recordedAudioUrl, updateState])
 
   return {
     recordedStreamRef,

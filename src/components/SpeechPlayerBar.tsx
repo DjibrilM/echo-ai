@@ -42,7 +42,7 @@ export function SpeechPlayerBar({
   onDownload,
 }: SpeechPlayerBarProps) {
   return (
-    <div className="absolute bottom-0 left-0 right-0 h-16 border-t border-[#1f1f23] bg-[#0c0c0e] px-6 flex items-center justify-between z-20">
+    <div className="absolute bottom-0 left-0 right-0 h-[60px] border-t border-[#1f1f23] bg-[#0c0c0e] px-6 flex items-center justify-between z-20">
       {/* Left: Active snippet info */}
       <div className="flex flex-col min-w-[200px] max-w-[280px]">
         <span className="text-xs font-medium text-zinc-200 truncate">

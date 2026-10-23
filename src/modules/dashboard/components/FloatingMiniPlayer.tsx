@@ -79,7 +79,7 @@ export function FloatingMiniPlayer({
             )}
           </button>
         </div>
-        {/* Scrubber bar with ElevenLabs AudioScrubber */}
+        {/* Scrubber bar with AudioScrubber */}
         <div className="w-full flex items-center gap-2.5 text-[11px] text-zinc-400 tabular-nums">
           <span>01:14</span>
           <div className="flex-1">

@@ -1,20 +1,25 @@
-import { useReducer } from 'react'
-import { TextToSpeechState, INITIAL_VOICES, INITIAL_HISTORY } from '../types'
+import { useAtom } from 'jotai'
+import { TextToSpeechState, INITIAL_HISTORY, INITIAL_PARLER_SPEAKERS } from '../types'
+import { ttsCompositeStateAtom } from '../store/ttsStore'
 
 export const initialTextToSpeechState: TextToSpeechState = {
+  // Voice engine & Per-Speaker Personas
+  parlerSpeakers: INITIAL_PARLER_SPEAKERS,
+  selectedParlerSpeakerId: 'speaker-1',
+
   // Voice & Language selection
   language: 'English (US)',
   searchLangQuery: '',
   isLanguageSelectorOpen: false,
-  selectedVoiceId: 'voice-jessica',
-  voices: INITIAL_VOICES,
+  selectedVoiceId: 'voice-en-male-1',
+  voices: [],
 
   // Multi-speaker dialogue rounds
   rounds: [
     {
       id: 'round-1',
-      voiceId: 'voice-jessica',
-      text: 'I trusted you with everything. Every secret, every fear. And you used it against me.',
+      voiceId: 'voice-en-male-1',
+      text: '',
       speed: 1.0,
       emotion: 'Neutral',
       pace: 'Moderate',
@@ -50,6 +55,7 @@ export const initialTextToSpeechState: TextToSpeechState = {
   isPlayingRecording: false,
 
   // Model parameters (Right drawer)
+  voicePrompt: '',
   stability: 0.5,
   similarity: 0.75,
   styleExaggeration: 0.0,
@@ -65,13 +71,7 @@ export const initialTextToSpeechState: TextToSpeechState = {
 }
 
 export function useTextToSpeechState() {
-  const [state, updateState] = useReducer(
-    (prev: TextToSpeechState, next: Partial<TextToSpeechState>) => ({ ...prev, ...next }),
-    {
-      ...initialTextToSpeechState,
-      activeGeneration: initialTextToSpeechState.generations[0] || null,
-    }
-  )
+  const [state, updateState] = useAtom(ttsCompositeStateAtom)
 
   return [state, updateState] as const
 }

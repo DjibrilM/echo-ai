@@ -1,0 +1,3105 @@
+{
+  "en": [
+    {
+      "id": "voice-en-male-1",
+      "name": "Roger",
+      "description": "Easy going and perfect for casual conversations.",
+      "category": "preset",
+      "color": "#38bdf8",
+      "avatarUrl": "/voices/sterling.jpg",
+      "sampleUrl": "/voices/samples/en/voice_en_male_1.mp3",
+      "initials": "RO",
+      "gender": "Male",
+      "languageCode": "en",
+      "languageName": "English (US)",
+      "tags": [
+        "English (US)",
+        "Male",
+        "Conversational",
+        "Classy",
+        "American"
+      ]
+    },
+    {
+      "id": "voice-en-male-2",
+      "name": "Charlie",
+      "description": "A young Australian male with a confident and energetic voice.",
+      "category": "preset",
+      "color": "#f59e0b",
+      "avatarUrl": "/voices/jax.jpg",
+      "sampleUrl": "/voices/samples/en/voice_en_male_2.mp3",
+      "initials": "CH",
+      "gender": "Male",
+      "languageCode": "en",
+      "languageName": "English (US)",
+      "tags": [
+        "English (US)",
+        "Male",
+        "Conversational",
+        "Hyped",
+        "Australian"
+      ]
+    },
+    {
+      "id": "voice-en-male-3",
+      "name": "George",
+      "description": "Warm resonance that instantly captivates listeners.",
+      "category": "preset",
+      "color": "#d97706",
+      "avatarUrl": "/voices/alistair.jpg",
+      "sampleUrl": "/voices/samples/en/voice_en_male_3.mp3",
+      "initials": "GE",
+      "gender": "Male",
+      "languageCode": "en",
+      "languageName": "English (US)",
+      "tags": [
+        "English (US)",
+        "Male",
+        "Narrative story",
+        "Mature",
+        "British"
+      ]
+    },
+    {
+      "id": "voice-en-male-4",
+      "name": "Callum",
+      "description": "Deceptively gravelly, yet unsettling edge.",
+      "category": "preset",
+      "color": "#10b981",
+      "avatarUrl": "/voices/george.jpg",
+      "sampleUrl": "/voices/samples/en/voice_en_male_4.mp3",
+      "initials": "CA",
+      "gender": "Male",
+      "languageCode": "en",
+      "languageName": "English (US)",
+      "tags": [
+        "English (US)",
+        "Male",
+        "Characters animation",
+        "American"
+      ]
+    },
+    {
+      "id": "voice-en-male-5",
+      "name": "Harry",
+      "description": "An animated warrior ready to charge forward.",
+      "category": "preset",
+      "color": "#a855f7",
+      "avatarUrl": "/voices/roger.jpg",
+      "sampleUrl": "/voices/samples/en/voice_en_male_5.mp3",
+      "initials": "HA",
+      "gender": "Male",
+      "languageCode": "en",
+      "languageName": "English (US)",
+      "tags": [
+        "English (US)",
+        "Male",
+        "Characters animation",
+        "Rough",
+        "American"
+      ]
+    },
+    {
+      "id": "voice-en-female-1",
+      "name": "Bella",
+      "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
+      "category": "preset",
+      "color": "#ec4899",
+      "avatarUrl": "/voices/serena.jpg",
+      "sampleUrl": "/voices/samples/en/voice_en_female_1.mp3",
+      "initials": "BE",
+      "gender": "Female",
+      "languageCode": "en",
+      "languageName": "English (US)",
+      "tags": [
+        "English (US)",
+        "Female",
+        "Informative educational",
+        "Professional",
+        "American"
+      ]
+    },
+    {
+      "id": "voice-en-female-2",
+      "name": "Sarah",
+      "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
+      "category": "preset",
+      "color": "#06b6d4",
+      "avatarUrl": "/voices/chloe.jpg",
+      "sampleUrl": "/voices/samples/en/voice_en_female_2.mp3",
+      "initials": "SA",
+      "gender": "Female",
+      "languageCode": "en",
+      "languageName": "English (US)",
+      "tags": [
+        "English (US)",
+        "Female",
+        "Entertainment tv",
+        "Professional",
+        "American"
+      ]
+    },
+    {
+      "id": "voice-en-female-3",
+      "name": "Laura",
+      "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
+      "category": "preset",
+      "color": "#8b5cf6",
+      "avatarUrl": "/voices/sarah.jpg",
+      "sampleUrl": "/voices/samples/en/voice_en_female_3.mp3",
+      "initials": "LA",
+      "gender": "Female",
+      "languageCode": "en",
+      "languageName": "English (US)",
+      "tags": [
+        "English (US)",
+        "Female",
+        "Social media",
+        "Sassy",
+        "American"
+      ]
+    },
+    {
+      "id": "voice-en-female-4",
+      "name": "Alice",
+      "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
+      "category": "preset",
+      "color": "#ef4444",
+      "avatarUrl": "/voices/jessica.jpg",
+      "sampleUrl": "/voices/samples/en/voice_en_female_4.mp3",
+      "initials": "AL",
+      "gender": "Female",
+      "languageCode": "en",
+      "languageName": "English (US)",
+      "tags": [
+        "English (US)",
+        "Female",
+        "Informative educational",
+        "Professional",
+        "British"
+      ]
+    },
+    {
+      "id": "voice-en-female-5",
+      "name": "Matilda",
+      "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
+      "category": "preset",
+      "color": "#3b82f6",
+      "avatarUrl": "/voices/eleanor.jpg",
+      "sampleUrl": "/voices/samples/en/voice_en_female_5.mp3",
+      "initials": "MA",
+      "gender": "Female",
+      "languageCode": "en",
+      "languageName": "English (US)",
+      "tags": [
+        "English (US)",
+        "Female",
+        "Informative educational",
+        "Upbeat",
+        "American"
+      ]
+    }
+  ],
+  "en-gb": [
+    {
+      "id": "voice-en-gb-male-1",
+      "name": "Roger",
+      "description": "Easy going and perfect for casual conversations.",
+      "category": "preset",
+      "color": "#38bdf8",
+      "avatarUrl": "/voices/sterling.jpg",
+      "sampleUrl": "/voices/samples/en-gb/voice_en-gb_male_1.mp3",
+      "initials": "RO",
+      "gender": "Male",
+      "languageCode": "en-gb",
+      "languageName": "English (UK)",
+      "tags": [
+        "English (UK)",
+        "Male",
+        "Conversational",
+        "Classy",
+        "American"
+      ]
+    },
+    {
+      "id": "voice-en-gb-male-2",
+      "name": "Charlie",
+      "description": "A young Australian male with a confident and energetic voice.",
+      "category": "preset",
+      "color": "#f59e0b",
+      "avatarUrl": "/voices/jax.jpg",
+      "sampleUrl": "/voices/samples/en-gb/voice_en-gb_male_2.mp3",
+      "initials": "CH",
+      "gender": "Male",
+      "languageCode": "en-gb",
+      "languageName": "English (UK)",
+      "tags": [
+        "English (UK)",
+        "Male",
+        "Conversational",
+        "Hyped",
+        "Australian"
+      ]
+    },
+    {
+      "id": "voice-en-gb-male-3",
+      "name": "George",
+      "description": "Warm resonance that instantly captivates listeners.",
+      "category": "preset",
+      "color": "#d97706",
+      "avatarUrl": "/voices/alistair.jpg",
+      "sampleUrl": "/voices/samples/en-gb/voice_en-gb_male_3.mp3",
+      "initials": "GE",
+      "gender": "Male",
+      "languageCode": "en-gb",
+      "languageName": "English (UK)",
+      "tags": [
+        "English (UK)",
+        "Male",
+        "Narrative story",
+        "Mature",
+        "British"
+      ]
+    },
+    {
+      "id": "voice-en-gb-male-4",
+      "name": "Callum",
+      "description": "Deceptively gravelly, yet unsettling edge.",
+      "category": "preset",
+      "color": "#10b981",
+      "avatarUrl": "/voices/george.jpg",
+      "sampleUrl": "/voices/samples/en-gb/voice_en-gb_male_4.mp3",
+      "initials": "CA",
+      "gender": "Male",
+      "languageCode": "en-gb",
+      "languageName": "English (UK)",
+      "tags": [
+        "English (UK)",
+        "Male",
+        "Characters animation",
+        "American"
+      ]
+    },
+    {
+      "id": "voice-en-gb-male-5",
+      "name": "Harry",
+      "description": "An animated warrior ready to charge forward.",
+      "category": "preset",
+      "color": "#a855f7",
+      "avatarUrl": "/voices/roger.jpg",
+      "sampleUrl": "/voices/samples/en-gb/voice_en-gb_male_5.mp3",
+      "initials": "HA",
+      "gender": "Male",
+      "languageCode": "en-gb",
+      "languageName": "English (UK)",
+      "tags": [
+        "English (UK)",
+        "Male",
+        "Characters animation",
+        "Rough",
+        "American"
+      ]
+    },
+    {
+      "id": "voice-en-gb-female-1",
+      "name": "Bella",
+      "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
+      "category": "preset",
+      "color": "#ec4899",
+      "avatarUrl": "/voices/serena.jpg",
+      "sampleUrl": "/voices/samples/en-gb/voice_en-gb_female_1.mp3",
+      "initials": "BE",
+      "gender": "Female",
+      "languageCode": "en-gb",
+      "languageName": "English (UK)",
+      "tags": [
+        "English (UK)",
+        "Female",
+        "Informative educational",
+        "Professional",
+        "American"
+      ]
+    },
+    {
+      "id": "voice-en-gb-female-2",
+      "name": "Sarah",
+      "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
+      "category": "preset",
+      "color": "#06b6d4",
+      "avatarUrl": "/voices/chloe.jpg",
+      "sampleUrl": "/voices/samples/en-gb/voice_en-gb_female_2.mp3",
+      "initials": "SA",
+      "gender": "Female",
+      "languageCode": "en-gb",
+      "languageName": "English (UK)",
+      "tags": [
+        "English (UK)",
+        "Female",
+        "Entertainment tv",
+        "Professional",
+        "American"
+      ]
+    },
+    {
+      "id": "voice-en-gb-female-3",
+      "name": "Laura",
+      "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
+      "category": "preset",
+      "color": "#8b5cf6",
+      "avatarUrl": "/voices/sarah.jpg",
+      "sampleUrl": "/voices/samples/en-gb/voice_en-gb_female_3.mp3",
+      "initials": "LA",
+      "gender": "Female",
+      "languageCode": "en-gb",
+      "languageName": "English (UK)",
+      "tags": [
+        "English (UK)",
+        "Female",
+        "Social media",
+        "Sassy",
+        "American"
+      ]
+    },
+    {
+      "id": "voice-en-gb-female-4",
+      "name": "Alice",
+      "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
+      "category": "preset",
+      "color": "#ef4444",
+      "avatarUrl": "/voices/jessica.jpg",
+      "sampleUrl": "/voices/samples/en-gb/voice_en-gb_female_4.mp3",
+      "initials": "AL",
+      "gender": "Female",
+      "languageCode": "en-gb",
+      "languageName": "English (UK)",
+      "tags": [
+        "English (UK)",
+        "Female",
+        "Informative educational",
+        "Professional",
+        "British"
+      ]
+    },
+    {
+      "id": "voice-en-gb-female-5",
+      "name": "Matilda",
+      "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
+      "category": "preset",
+      "color": "#3b82f6",
+      "avatarUrl": "/voices/eleanor.jpg",
+      "sampleUrl": "/voices/samples/en-gb/voice_en-gb_female_5.mp3",
+      "initials": "MA",
+      "gender": "Female",
+      "languageCode": "en-gb",
+      "languageName": "English (UK)",
+      "tags": [
+        "English (UK)",
+        "Female",
+        "Informative educational",
+        "Upbeat",
+        "American"
+      ]
+    }
+  ],
+  "es": [
+    {
+      "id": "voice-es-male-1",
+      "name": "Roger (Spanish)",
+      "description": "Easy going and perfect for casual conversations.",
+      "category": "preset",
+      "color": "#38bdf8",
+      "avatarUrl": "/voices/sterling.jpg",
+      "sampleUrl": "/voices/samples/es/voice_es_male_1.mp3",
+      "initials": "RO",
+      "gender": "Male",
+      "languageCode": "es",
+      "languageName": "Spanish",
+      "tags": [
+        "Spanish",
+        "Male",
+        "Conversational",
+        "Classy"
+      ]
+    },
+    {
+      "id": "voice-es-male-2",
+      "name": "Charlie (Spanish)",
+      "description": "A young Australian male with a confident and energetic voice.",
+      "category": "preset",
+      "color": "#f59e0b",
+      "avatarUrl": "/voices/jax.jpg",
+      "sampleUrl": "/voices/samples/es/voice_es_male_2.mp3",
+      "initials": "CH",
+      "gender": "Male",
+      "languageCode": "es",
+      "languageName": "Spanish",
+      "tags": [
+        "Spanish",
+        "Male",
+        "Conversational",
+        "Hyped"
+      ]
+    },
+    {
+      "id": "voice-es-male-3",
+      "name": "George (Spanish)",
+      "description": "Warm resonance that instantly captivates listeners.",
+      "category": "preset",
+      "color": "#d97706",
+      "avatarUrl": "/voices/alistair.jpg",
+      "sampleUrl": "/voices/samples/es/voice_es_male_3.mp3",
+      "initials": "GE",
+      "gender": "Male",
+      "languageCode": "es",
+      "languageName": "Spanish",
+      "tags": [
+        "Spanish",
+        "Male",
+        "Narrative story",
+        "Mature"
+      ]
+    },
+    {
+      "id": "voice-es-male-4",
+      "name": "Will (Spanish)",
+      "description": "Conversational and laid back.",
+      "category": "preset",
+      "color": "#10b981",
+      "avatarUrl": "/voices/george.jpg",
+      "sampleUrl": "/voices/samples/es/voice_es_male_4.mp3",
+      "initials": "WI",
+      "gender": "Male",
+      "languageCode": "es",
+      "languageName": "Spanish",
+      "tags": [
+        "Spanish",
+        "Male",
+        "Conversational",
+        "Chill"
+      ]
+    },
+    {
+      "id": "voice-es-male-5",
+      "name": "Eric (Spanish)",
+      "description": "A smooth tenor pitch from a man in his 40s - perfect for agentic use cases.",
+      "category": "preset",
+      "color": "#a855f7",
+      "avatarUrl": "/voices/roger.jpg",
+      "sampleUrl": "/voices/samples/es/voice_es_male_5.mp3",
+      "initials": "ER",
+      "gender": "Male",
+      "languageCode": "es",
+      "languageName": "Spanish",
+      "tags": [
+        "Spanish",
+        "Male",
+        "Conversational",
+        "Classy"
+      ]
+    },
+    {
+      "id": "voice-es-female-1",
+      "name": "Sarah (Spanish)",
+      "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
+      "category": "preset",
+      "color": "#ec4899",
+      "avatarUrl": "/voices/serena.jpg",
+      "sampleUrl": "/voices/samples/es/voice_es_female_1.mp3",
+      "initials": "SA",
+      "gender": "Female",
+      "languageCode": "es",
+      "languageName": "Spanish",
+      "tags": [
+        "Spanish",
+        "Female",
+        "Entertainment tv",
+        "Professional"
+      ]
+    },
+    {
+      "id": "voice-es-female-2",
+      "name": "Matilda (Spanish)",
+      "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
+      "category": "preset",
+      "color": "#06b6d4",
+      "avatarUrl": "/voices/chloe.jpg",
+      "sampleUrl": "/voices/samples/es/voice_es_female_2.mp3",
+      "initials": "MA",
+      "gender": "Female",
+      "languageCode": "es",
+      "languageName": "Spanish",
+      "tags": [
+        "Spanish",
+        "Female",
+        "Informative educational",
+        "Upbeat"
+      ]
+    },
+    {
+      "id": "voice-es-female-3",
+      "name": "Bella (Spanish)",
+      "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
+      "category": "preset",
+      "color": "#8b5cf6",
+      "avatarUrl": "/voices/sarah.jpg",
+      "sampleUrl": "/voices/samples/es/voice_es_female_3.mp3",
+      "initials": "BE",
+      "gender": "Female",
+      "languageCode": "es",
+      "languageName": "Spanish",
+      "tags": [
+        "Spanish",
+        "Female",
+        "Informative educational",
+        "Professional"
+      ]
+    },
+    {
+      "id": "voice-es-female-4",
+      "name": "Laura (Spanish)",
+      "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
+      "category": "preset",
+      "color": "#ef4444",
+      "avatarUrl": "/voices/jessica.jpg",
+      "sampleUrl": "/voices/samples/es/voice_es_female_4.mp3",
+      "initials": "LA",
+      "gender": "Female",
+      "languageCode": "es",
+      "languageName": "Spanish",
+      "tags": [
+        "Spanish",
+        "Female",
+        "Social media",
+        "Sassy"
+      ]
+    },
+    {
+      "id": "voice-es-female-5",
+      "name": "Alice (Spanish)",
+      "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
+      "category": "preset",
+      "color": "#3b82f6",
+      "avatarUrl": "/voices/eleanor.jpg",
+      "sampleUrl": "/voices/samples/es/voice_es_female_5.mp3",
+      "initials": "AL",
+      "gender": "Female",
+      "languageCode": "es",
+      "languageName": "Spanish",
+      "tags": [
+        "Spanish",
+        "Female",
+        "Informative educational",
+        "Professional"
+      ]
+    }
+  ],
+  "fr": [
+    {
+      "id": "voice-fr-male-1",
+      "name": "Roger (French)",
+      "description": "Easy going and perfect for casual conversations.",
+      "category": "preset",
+      "color": "#38bdf8",
+      "avatarUrl": "/voices/sterling.jpg",
+      "sampleUrl": "/voices/samples/fr/voice_fr_male_1.mp3",
+      "initials": "RO",
+      "gender": "Male",
+      "languageCode": "fr",
+      "languageName": "French",
+      "tags": [
+        "French",
+        "Male",
+        "Conversational",
+        "Classy"
+      ]
+    },
+    {
+      "id": "voice-fr-male-2",
+      "name": "George (French)",
+      "description": "Warm resonance that instantly captivates listeners.",
+      "category": "preset",
+      "color": "#f59e0b",
+      "avatarUrl": "/voices/jax.jpg",
+      "sampleUrl": "/voices/samples/fr/voice_fr_male_2.mp3",
+      "initials": "GE",
+      "gender": "Male",
+      "languageCode": "fr",
+      "languageName": "French",
+      "tags": [
+        "French",
+        "Male",
+        "Narrative story",
+        "Mature"
+      ]
+    },
+    {
+      "id": "voice-fr-male-3",
+      "name": "Callum (French)",
+      "description": "Deceptively gravelly, yet unsettling edge.",
+      "category": "preset",
+      "color": "#d97706",
+      "avatarUrl": "/voices/alistair.jpg",
+      "sampleUrl": "/voices/samples/fr/voice_fr_male_3.mp3",
+      "initials": "CA",
+      "gender": "Male",
+      "languageCode": "fr",
+      "languageName": "French",
+      "tags": [
+        "French",
+        "Male",
+        "Characters animation"
+      ]
+    },
+    {
+      "id": "voice-fr-male-4",
+      "name": "Will (French)",
+      "description": "Conversational and laid back.",
+      "category": "preset",
+      "color": "#10b981",
+      "avatarUrl": "/voices/george.jpg",
+      "sampleUrl": "/voices/samples/fr/voice_fr_male_4.mp3",
+      "initials": "WI",
+      "gender": "Male",
+      "languageCode": "fr",
+      "languageName": "French",
+      "tags": [
+        "French",
+        "Male",
+        "Conversational",
+        "Chill"
+      ]
+    },
+    {
+      "id": "voice-fr-male-5",
+      "name": "Eric (French)",
+      "description": "A smooth tenor pitch from a man in his 40s - perfect for agentic use cases.",
+      "category": "preset",
+      "color": "#a855f7",
+      "avatarUrl": "/voices/roger.jpg",
+      "sampleUrl": "/voices/samples/fr/voice_fr_male_5.mp3",
+      "initials": "ER",
+      "gender": "Male",
+      "languageCode": "fr",
+      "languageName": "French",
+      "tags": [
+        "French",
+        "Male",
+        "Conversational",
+        "Classy"
+      ]
+    },
+    {
+      "id": "voice-fr-female-1",
+      "name": "Sarah (French)",
+      "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
+      "category": "preset",
+      "color": "#ec4899",
+      "avatarUrl": "/voices/serena.jpg",
+      "sampleUrl": "/voices/samples/fr/voice_fr_female_1.mp3",
+      "initials": "SA",
+      "gender": "Female",
+      "languageCode": "fr",
+      "languageName": "French",
+      "tags": [
+        "French",
+        "Female",
+        "Entertainment tv",
+        "Professional"
+      ]
+    },
+    {
+      "id": "voice-fr-female-2",
+      "name": "Laura (French)",
+      "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
+      "category": "preset",
+      "color": "#06b6d4",
+      "avatarUrl": "/voices/chloe.jpg",
+      "sampleUrl": "/voices/samples/fr/voice_fr_female_2.mp3",
+      "initials": "LA",
+      "gender": "Female",
+      "languageCode": "fr",
+      "languageName": "French",
+      "tags": [
+        "French",
+        "Female",
+        "Social media",
+        "Sassy"
+      ]
+    },
+    {
+      "id": "voice-fr-female-3",
+      "name": "Alice (French)",
+      "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
+      "category": "preset",
+      "color": "#8b5cf6",
+      "avatarUrl": "/voices/sarah.jpg",
+      "sampleUrl": "/voices/samples/fr/voice_fr_female_3.mp3",
+      "initials": "AL",
+      "gender": "Female",
+      "languageCode": "fr",
+      "languageName": "French",
+      "tags": [
+        "French",
+        "Female",
+        "Informative educational",
+        "Professional"
+      ]
+    },
+    {
+      "id": "voice-fr-female-4",
+      "name": "Matilda (French)",
+      "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
+      "category": "preset",
+      "color": "#ef4444",
+      "avatarUrl": "/voices/jessica.jpg",
+      "sampleUrl": "/voices/samples/fr/voice_fr_female_4.mp3",
+      "initials": "MA",
+      "gender": "Female",
+      "languageCode": "fr",
+      "languageName": "French",
+      "tags": [
+        "French",
+        "Female",
+        "Informative educational",
+        "Upbeat"
+      ]
+    },
+    {
+      "id": "voice-fr-female-5",
+      "name": "Jessica (French)",
+      "description": "Young and popular, this playful American female voice is perfect for trendy content.",
+      "category": "preset",
+      "color": "#3b82f6",
+      "avatarUrl": "/voices/eleanor.jpg",
+      "sampleUrl": "/voices/samples/fr/voice_fr_female_5.mp3",
+      "initials": "JE",
+      "gender": "Female",
+      "languageCode": "fr",
+      "languageName": "French",
+      "tags": [
+        "French",
+        "Female",
+        "Conversational",
+        "Cute"
+      ]
+    }
+  ],
+  "de": [
+    {
+      "id": "voice-de-male-1",
+      "name": "Roger (German)",
+      "description": "Easy going and perfect for casual conversations.",
+      "category": "preset",
+      "color": "#38bdf8",
+      "avatarUrl": "/voices/sterling.jpg",
+      "sampleUrl": "/voices/samples/de/voice_de_male_1.mp3",
+      "initials": "RO",
+      "gender": "Male",
+      "languageCode": "de",
+      "languageName": "German",
+      "tags": [
+        "German",
+        "Male",
+        "Conversational",
+        "Classy"
+      ]
+    },
+    {
+      "id": "voice-de-male-2",
+      "name": "Liam (German)",
+      "description": "A young adult with energy and warmth - suitable for reels and shorts.",
+      "category": "preset",
+      "color": "#f59e0b",
+      "avatarUrl": "/voices/jax.jpg",
+      "sampleUrl": "/voices/samples/de/voice_de_male_2.mp3",
+      "initials": "LI",
+      "gender": "Male",
+      "languageCode": "de",
+      "languageName": "German",
+      "tags": [
+        "German",
+        "Male",
+        "Social media",
+        "Confident"
+      ]
+    },
+    {
+      "id": "voice-de-male-3",
+      "name": "Will (German)",
+      "description": "Conversational and laid back.",
+      "category": "preset",
+      "color": "#d97706",
+      "avatarUrl": "/voices/alistair.jpg",
+      "sampleUrl": "/voices/samples/de/voice_de_male_3.mp3",
+      "initials": "WI",
+      "gender": "Male",
+      "languageCode": "de",
+      "languageName": "German",
+      "tags": [
+        "German",
+        "Male",
+        "Conversational",
+        "Chill"
+      ]
+    },
+    {
+      "id": "voice-de-male-4",
+      "name": "Eric (German)",
+      "description": "A smooth tenor pitch from a man in his 40s - perfect for agentic use cases.",
+      "category": "preset",
+      "color": "#10b981",
+      "avatarUrl": "/voices/george.jpg",
+      "sampleUrl": "/voices/samples/de/voice_de_male_4.mp3",
+      "initials": "ER",
+      "gender": "Male",
+      "languageCode": "de",
+      "languageName": "German",
+      "tags": [
+        "German",
+        "Male",
+        "Conversational",
+        "Classy"
+      ]
+    },
+    {
+      "id": "voice-de-male-5",
+      "name": "Brian (German)",
+      "description": "Middle-aged man with a resonant and comforting tone. Great for narrations and advertisements.",
+      "category": "preset",
+      "color": "#a855f7",
+      "avatarUrl": "/voices/roger.jpg",
+      "sampleUrl": "/voices/samples/de/voice_de_male_5.mp3",
+      "initials": "BR",
+      "gender": "Male",
+      "languageCode": "de",
+      "languageName": "German",
+      "tags": [
+        "German",
+        "Male",
+        "Social media",
+        "Classy"
+      ]
+    },
+    {
+      "id": "voice-de-female-1",
+      "name": "Laura (German)",
+      "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
+      "category": "preset",
+      "color": "#ec4899",
+      "avatarUrl": "/voices/serena.jpg",
+      "sampleUrl": "/voices/samples/de/voice_de_female_1.mp3",
+      "initials": "LA",
+      "gender": "Female",
+      "languageCode": "de",
+      "languageName": "German",
+      "tags": [
+        "German",
+        "Female",
+        "Social media",
+        "Sassy"
+      ]
+    },
+    {
+      "id": "voice-de-female-2",
+      "name": "Matilda (German)",
+      "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
+      "category": "preset",
+      "color": "#06b6d4",
+      "avatarUrl": "/voices/chloe.jpg",
+      "sampleUrl": "/voices/samples/de/voice_de_female_2.mp3",
+      "initials": "MA",
+      "gender": "Female",
+      "languageCode": "de",
+      "languageName": "German",
+      "tags": [
+        "German",
+        "Female",
+        "Informative educational",
+        "Upbeat"
+      ]
+    },
+    {
+      "id": "voice-de-female-3",
+      "name": "Jessica (German)",
+      "description": "Young and popular, this playful American female voice is perfect for trendy content.",
+      "category": "preset",
+      "color": "#8b5cf6",
+      "avatarUrl": "/voices/sarah.jpg",
+      "sampleUrl": "/voices/samples/de/voice_de_female_3.mp3",
+      "initials": "JE",
+      "gender": "Female",
+      "languageCode": "de",
+      "languageName": "German",
+      "tags": [
+        "German",
+        "Female",
+        "Conversational",
+        "Cute"
+      ]
+    },
+    {
+      "id": "voice-de-female-4",
+      "name": "Lily (German)",
+      "description": "Velvety British female voice delivers news and narrations with warmth and clarity.",
+      "category": "preset",
+      "color": "#ef4444",
+      "avatarUrl": "/voices/jessica.jpg",
+      "sampleUrl": "/voices/samples/de/voice_de_female_4.mp3",
+      "initials": "LI",
+      "gender": "Female",
+      "languageCode": "de",
+      "languageName": "German",
+      "tags": [
+        "German",
+        "Female",
+        "Informative educational",
+        "Confident"
+      ]
+    },
+    {
+      "id": "voice-de-female-5",
+      "name": "Bella (German)",
+      "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
+      "category": "preset",
+      "color": "#3b82f6",
+      "avatarUrl": "/voices/eleanor.jpg",
+      "sampleUrl": "/voices/samples/de/voice_de_female_5.mp3",
+      "initials": "BE",
+      "gender": "Female",
+      "languageCode": "de",
+      "languageName": "German",
+      "tags": [
+        "German",
+        "Female",
+        "Informative educational",
+        "Professional"
+      ]
+    }
+  ],
+  "it": [
+    {
+      "id": "voice-it-male-1",
+      "name": "Roger (Italian)",
+      "description": "Easy going and perfect for casual conversations.",
+      "category": "preset",
+      "color": "#38bdf8",
+      "avatarUrl": "/voices/sterling.jpg",
+      "sampleUrl": "/voices/samples/it/voice_it_male_1.mp3",
+      "initials": "RO",
+      "gender": "Male",
+      "languageCode": "it",
+      "languageName": "Italian",
+      "tags": [
+        "Italian",
+        "Male",
+        "Conversational",
+        "Classy"
+      ]
+    },
+    {
+      "id": "voice-it-male-2",
+      "name": "Charlie (Italian)",
+      "description": "A young Australian male with a confident and energetic voice.",
+      "category": "preset",
+      "color": "#f59e0b",
+      "avatarUrl": "/voices/jax.jpg",
+      "sampleUrl": "/voices/samples/it/voice_it_male_2.mp3",
+      "initials": "CH",
+      "gender": "Male",
+      "languageCode": "it",
+      "languageName": "Italian",
+      "tags": [
+        "Italian",
+        "Male",
+        "Conversational",
+        "Hyped"
+      ]
+    },
+    {
+      "id": "voice-it-male-3",
+      "name": "George (Italian)",
+      "description": "Warm resonance that instantly captivates listeners.",
+      "category": "preset",
+      "color": "#d97706",
+      "avatarUrl": "/voices/alistair.jpg",
+      "sampleUrl": "/voices/samples/it/voice_it_male_3.mp3",
+      "initials": "GE",
+      "gender": "Male",
+      "languageCode": "it",
+      "languageName": "Italian",
+      "tags": [
+        "Italian",
+        "Male",
+        "Narrative story",
+        "Mature"
+      ]
+    },
+    {
+      "id": "voice-it-male-4",
+      "name": "Callum (Italian)",
+      "description": "Deceptively gravelly, yet unsettling edge.",
+      "category": "preset",
+      "color": "#10b981",
+      "avatarUrl": "/voices/george.jpg",
+      "sampleUrl": "/voices/samples/it/voice_it_male_4.mp3",
+      "initials": "CA",
+      "gender": "Male",
+      "languageCode": "it",
+      "languageName": "Italian",
+      "tags": [
+        "Italian",
+        "Male",
+        "Characters animation"
+      ]
+    },
+    {
+      "id": "voice-it-male-5",
+      "name": "Harry (Italian)",
+      "description": "An animated warrior ready to charge forward.",
+      "category": "preset",
+      "color": "#a855f7",
+      "avatarUrl": "/voices/roger.jpg",
+      "sampleUrl": "/voices/samples/it/voice_it_male_5.mp3",
+      "initials": "HA",
+      "gender": "Male",
+      "languageCode": "it",
+      "languageName": "Italian",
+      "tags": [
+        "Italian",
+        "Male",
+        "Characters animation",
+        "Rough"
+      ]
+    },
+    {
+      "id": "voice-it-female-1",
+      "name": "Alice (Italian)",
+      "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
+      "category": "preset",
+      "color": "#ec4899",
+      "avatarUrl": "/voices/serena.jpg",
+      "sampleUrl": "/voices/samples/it/voice_it_female_1.mp3",
+      "initials": "AL",
+      "gender": "Female",
+      "languageCode": "it",
+      "languageName": "Italian",
+      "tags": [
+        "Italian",
+        "Female",
+        "Informative educational",
+        "Professional"
+      ]
+    },
+    {
+      "id": "voice-it-female-2",
+      "name": "Matilda (Italian)",
+      "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
+      "category": "preset",
+      "color": "#06b6d4",
+      "avatarUrl": "/voices/chloe.jpg",
+      "sampleUrl": "/voices/samples/it/voice_it_female_2.mp3",
+      "initials": "MA",
+      "gender": "Female",
+      "languageCode": "it",
+      "languageName": "Italian",
+      "tags": [
+        "Italian",
+        "Female",
+        "Informative educational",
+        "Upbeat"
+      ]
+    },
+    {
+      "id": "voice-it-female-3",
+      "name": "Lily (Italian)",
+      "description": "Velvety British female voice delivers news and narrations with warmth and clarity.",
+      "category": "preset",
+      "color": "#8b5cf6",
+      "avatarUrl": "/voices/sarah.jpg",
+      "sampleUrl": "/voices/samples/it/voice_it_female_3.mp3",
+      "initials": "LI",
+      "gender": "Female",
+      "languageCode": "it",
+      "languageName": "Italian",
+      "tags": [
+        "Italian",
+        "Female",
+        "Informative educational",
+        "Confident"
+      ]
+    },
+    {
+      "id": "voice-it-female-4",
+      "name": "Bella (Italian)",
+      "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
+      "category": "preset",
+      "color": "#ef4444",
+      "avatarUrl": "/voices/jessica.jpg",
+      "sampleUrl": "/voices/samples/it/voice_it_female_4.mp3",
+      "initials": "BE",
+      "gender": "Female",
+      "languageCode": "it",
+      "languageName": "Italian",
+      "tags": [
+        "Italian",
+        "Female",
+        "Informative educational",
+        "Professional"
+      ]
+    },
+    {
+      "id": "voice-it-female-5",
+      "name": "Sarah (Italian)",
+      "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
+      "category": "preset",
+      "color": "#3b82f6",
+      "avatarUrl": "/voices/eleanor.jpg",
+      "sampleUrl": "/voices/samples/it/voice_it_female_5.mp3",
+      "initials": "SA",
+      "gender": "Female",
+      "languageCode": "it",
+      "languageName": "Italian",
+      "tags": [
+        "Italian",
+        "Female",
+        "Entertainment tv",
+        "Professional"
+      ]
+    }
+  ],
+  "pt": [
+    {
+      "id": "voice-pt-male-1",
+      "name": "Charlie (Portuguese)",
+      "description": "A young Australian male with a confident and energetic voice.",
+      "category": "preset",
+      "color": "#38bdf8",
+      "avatarUrl": "/voices/sterling.jpg",
+      "sampleUrl": "/voices/samples/pt/voice_pt_male_1.mp3",
+      "initials": "CH",
+      "gender": "Male",
+      "languageCode": "pt",
+      "languageName": "Portuguese",
+      "tags": [
+        "Portuguese",
+        "Male",
+        "Conversational",
+        "Hyped"
+      ]
+    },
+    {
+      "id": "voice-pt-male-2",
+      "name": "Liam (Portuguese)",
+      "description": "A young adult with energy and warmth - suitable for reels and shorts.",
+      "category": "preset",
+      "color": "#f59e0b",
+      "avatarUrl": "/voices/jax.jpg",
+      "sampleUrl": "/voices/samples/pt/voice_pt_male_2.mp3",
+      "initials": "LI",
+      "gender": "Male",
+      "languageCode": "pt",
+      "languageName": "Portuguese",
+      "tags": [
+        "Portuguese",
+        "Male",
+        "Social media",
+        "Confident"
+      ]
+    },
+    {
+      "id": "voice-pt-male-3",
+      "name": "Will (Portuguese)",
+      "description": "Conversational and laid back.",
+      "category": "preset",
+      "color": "#d97706",
+      "avatarUrl": "/voices/alistair.jpg",
+      "sampleUrl": "/voices/samples/pt/voice_pt_male_3.mp3",
+      "initials": "WI",
+      "gender": "Male",
+      "languageCode": "pt",
+      "languageName": "Portuguese",
+      "tags": [
+        "Portuguese",
+        "Male",
+        "Conversational",
+        "Chill"
+      ]
+    },
+    {
+      "id": "voice-pt-male-4",
+      "name": "Eric (Portuguese)",
+      "description": "A smooth tenor pitch from a man in his 40s - perfect for agentic use cases.",
+      "category": "preset",
+      "color": "#10b981",
+      "avatarUrl": "/voices/george.jpg",
+      "sampleUrl": "/voices/samples/pt/voice_pt_male_4.mp3",
+      "initials": "ER",
+      "gender": "Male",
+      "languageCode": "pt",
+      "languageName": "Portuguese",
+      "tags": [
+        "Portuguese",
+        "Male",
+        "Conversational",
+        "Classy"
+      ]
+    },
+    {
+      "id": "voice-pt-male-5",
+      "name": "Chris (Portuguese)",
+      "description": "Natural and real, this down-to-earth voice is great across many use-cases.",
+      "category": "preset",
+      "color": "#a855f7",
+      "avatarUrl": "/voices/roger.jpg",
+      "sampleUrl": "/voices/samples/pt/voice_pt_male_5.mp3",
+      "initials": "CH",
+      "gender": "Male",
+      "languageCode": "pt",
+      "languageName": "Portuguese",
+      "tags": [
+        "Portuguese",
+        "Male",
+        "Conversational",
+        "Casual"
+      ]
+    },
+    {
+      "id": "voice-pt-female-1",
+      "name": "Bella (Portuguese)",
+      "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
+      "category": "preset",
+      "color": "#ec4899",
+      "avatarUrl": "/voices/serena.jpg",
+      "sampleUrl": "/voices/samples/pt/voice_pt_female_1.mp3",
+      "initials": "BE",
+      "gender": "Female",
+      "languageCode": "pt",
+      "languageName": "Portuguese",
+      "tags": [
+        "Portuguese",
+        "Female",
+        "Informative educational",
+        "Professional"
+      ]
+    },
+    {
+      "id": "voice-pt-female-2",
+      "name": "Sarah (Portuguese)",
+      "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
+      "category": "preset",
+      "color": "#06b6d4",
+      "avatarUrl": "/voices/chloe.jpg",
+      "sampleUrl": "/voices/samples/pt/voice_pt_female_2.mp3",
+      "initials": "SA",
+      "gender": "Female",
+      "languageCode": "pt",
+      "languageName": "Portuguese",
+      "tags": [
+        "Portuguese",
+        "Female",
+        "Entertainment tv",
+        "Professional"
+      ]
+    },
+    {
+      "id": "voice-pt-female-3",
+      "name": "Laura (Portuguese)",
+      "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
+      "category": "preset",
+      "color": "#8b5cf6",
+      "avatarUrl": "/voices/sarah.jpg",
+      "sampleUrl": "/voices/samples/pt/voice_pt_female_3.mp3",
+      "initials": "LA",
+      "gender": "Female",
+      "languageCode": "pt",
+      "languageName": "Portuguese",
+      "tags": [
+        "Portuguese",
+        "Female",
+        "Social media",
+        "Sassy"
+      ]
+    },
+    {
+      "id": "voice-pt-female-4",
+      "name": "Alice (Portuguese)",
+      "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
+      "category": "preset",
+      "color": "#ef4444",
+      "avatarUrl": "/voices/jessica.jpg",
+      "sampleUrl": "/voices/samples/pt/voice_pt_female_4.mp3",
+      "initials": "AL",
+      "gender": "Female",
+      "languageCode": "pt",
+      "languageName": "Portuguese",
+      "tags": [
+        "Portuguese",
+        "Female",
+        "Informative educational",
+        "Professional"
+      ]
+    },
+    {
+      "id": "voice-pt-female-5",
+      "name": "Matilda (Portuguese)",
+      "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
+      "category": "preset",
+      "color": "#3b82f6",
+      "avatarUrl": "/voices/eleanor.jpg",
+      "sampleUrl": "/voices/samples/pt/voice_pt_female_5.mp3",
+      "initials": "MA",
+      "gender": "Female",
+      "languageCode": "pt",
+      "languageName": "Portuguese",
+      "tags": [
+        "Portuguese",
+        "Female",
+        "Informative educational",
+        "Upbeat"
+      ]
+    }
+  ],
+  "ja": [
+    {
+      "id": "voice-ja-male-1",
+      "name": "George (Japanese)",
+      "description": "Warm resonance that instantly captivates listeners.",
+      "category": "preset",
+      "color": "#38bdf8",
+      "avatarUrl": "/voices/sterling.jpg",
+      "sampleUrl": "/voices/samples/ja/voice_ja_male_1.mp3",
+      "initials": "GE",
+      "gender": "Male",
+      "languageCode": "ja",
+      "languageName": "Japanese",
+      "tags": [
+        "Japanese",
+        "Male",
+        "Narrative story",
+        "Mature"
+      ]
+    },
+    {
+      "id": "voice-ja-male-2",
+      "name": "Roger (Japanese)",
+      "description": "Easy going and perfect for casual conversations.",
+      "category": "preset",
+      "color": "#f59e0b",
+      "avatarUrl": "/voices/jax.jpg",
+      "sampleUrl": "/voices/samples/ja/voice_ja_male_2.mp3",
+      "initials": "RO",
+      "gender": "Male",
+      "languageCode": "ja",
+      "languageName": "Japanese",
+      "tags": [
+        "Japanese",
+        "Male",
+        "Conversational",
+        "Classy"
+      ]
+    },
+    {
+      "id": "voice-ja-male-3",
+      "name": "Charlie (Japanese)",
+      "description": "A young Australian male with a confident and energetic voice.",
+      "category": "preset",
+      "color": "#d97706",
+      "avatarUrl": "/voices/alistair.jpg",
+      "sampleUrl": "/voices/samples/ja/voice_ja_male_3.mp3",
+      "initials": "CH",
+      "gender": "Male",
+      "languageCode": "ja",
+      "languageName": "Japanese",
+      "tags": [
+        "Japanese",
+        "Male",
+        "Conversational",
+        "Hyped"
+      ]
+    },
+    {
+      "id": "voice-ja-male-4",
+      "name": "Callum (Japanese)",
+      "description": "Deceptively gravelly, yet unsettling edge.",
+      "category": "preset",
+      "color": "#10b981",
+      "avatarUrl": "/voices/george.jpg",
+      "sampleUrl": "/voices/samples/ja/voice_ja_male_4.mp3",
+      "initials": "CA",
+      "gender": "Male",
+      "languageCode": "ja",
+      "languageName": "Japanese",
+      "tags": [
+        "Japanese",
+        "Male",
+        "Characters animation"
+      ]
+    },
+    {
+      "id": "voice-ja-male-5",
+      "name": "Harry (Japanese)",
+      "description": "An animated warrior ready to charge forward.",
+      "category": "preset",
+      "color": "#a855f7",
+      "avatarUrl": "/voices/roger.jpg",
+      "sampleUrl": "/voices/samples/ja/voice_ja_male_5.mp3",
+      "initials": "HA",
+      "gender": "Male",
+      "languageCode": "ja",
+      "languageName": "Japanese",
+      "tags": [
+        "Japanese",
+        "Male",
+        "Characters animation",
+        "Rough"
+      ]
+    },
+    {
+      "id": "voice-ja-female-1",
+      "name": "Alice (Japanese)",
+      "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
+      "category": "preset",
+      "color": "#ec4899",
+      "avatarUrl": "/voices/serena.jpg",
+      "sampleUrl": "/voices/samples/ja/voice_ja_female_1.mp3",
+      "initials": "AL",
+      "gender": "Female",
+      "languageCode": "ja",
+      "languageName": "Japanese",
+      "tags": [
+        "Japanese",
+        "Female",
+        "Informative educational",
+        "Professional"
+      ]
+    },
+    {
+      "id": "voice-ja-female-2",
+      "name": "Jessica (Japanese)",
+      "description": "Young and popular, this playful American female voice is perfect for trendy content.",
+      "category": "preset",
+      "color": "#06b6d4",
+      "avatarUrl": "/voices/chloe.jpg",
+      "sampleUrl": "/voices/samples/ja/voice_ja_female_2.mp3",
+      "initials": "JE",
+      "gender": "Female",
+      "languageCode": "ja",
+      "languageName": "Japanese",
+      "tags": [
+        "Japanese",
+        "Female",
+        "Conversational",
+        "Cute"
+      ]
+    },
+    {
+      "id": "voice-ja-female-3",
+      "name": "Bella (Japanese)",
+      "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
+      "category": "preset",
+      "color": "#8b5cf6",
+      "avatarUrl": "/voices/sarah.jpg",
+      "sampleUrl": "/voices/samples/ja/voice_ja_female_3.mp3",
+      "initials": "BE",
+      "gender": "Female",
+      "languageCode": "ja",
+      "languageName": "Japanese",
+      "tags": [
+        "Japanese",
+        "Female",
+        "Informative educational",
+        "Professional"
+      ]
+    },
+    {
+      "id": "voice-ja-female-4",
+      "name": "Sarah (Japanese)",
+      "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
+      "category": "preset",
+      "color": "#ef4444",
+      "avatarUrl": "/voices/jessica.jpg",
+      "sampleUrl": "/voices/samples/ja/voice_ja_female_4.mp3",
+      "initials": "SA",
+      "gender": "Female",
+      "languageCode": "ja",
+      "languageName": "Japanese",
+      "tags": [
+        "Japanese",
+        "Female",
+        "Entertainment tv",
+        "Professional"
+      ]
+    },
+    {
+      "id": "voice-ja-female-5",
+      "name": "Laura (Japanese)",
+      "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
+      "category": "preset",
+      "color": "#3b82f6",
+      "avatarUrl": "/voices/eleanor.jpg",
+      "sampleUrl": "/voices/samples/ja/voice_ja_female_5.mp3",
+      "initials": "LA",
+      "gender": "Female",
+      "languageCode": "ja",
+      "languageName": "Japanese",
+      "tags": [
+        "Japanese",
+        "Female",
+        "Social media",
+        "Sassy"
+      ]
+    }
+  ],
+  "zh": [
+    {
+      "id": "voice-zh-male-1",
+      "name": "Charlie (Chinese)",
+      "description": "A young Australian male with a confident and energetic voice.",
+      "category": "preset",
+      "color": "#38bdf8",
+      "avatarUrl": "/voices/sterling.jpg",
+      "sampleUrl": "/voices/samples/zh/voice_zh_male_1.mp3",
+      "initials": "CH",
+      "gender": "Male",
+      "languageCode": "zh",
+      "languageName": "Chinese",
+      "tags": [
+        "Chinese",
+        "Male",
+        "Conversational",
+        "Hyped"
+      ]
+    },
+    {
+      "id": "voice-zh-male-2",
+      "name": "Will (Chinese)",
+      "description": "Conversational and laid back.",
+      "category": "preset",
+      "color": "#f59e0b",
+      "avatarUrl": "/voices/jax.jpg",
+      "sampleUrl": "/voices/samples/zh/voice_zh_male_2.mp3",
+      "initials": "WI",
+      "gender": "Male",
+      "languageCode": "zh",
+      "languageName": "Chinese",
+      "tags": [
+        "Chinese",
+        "Male",
+        "Conversational",
+        "Chill"
+      ]
+    },
+    {
+      "id": "voice-zh-male-3",
+      "name": "Brian (Chinese)",
+      "description": "Middle-aged man with a resonant and comforting tone. Great for narrations and advertisements.",
+      "category": "preset",
+      "color": "#d97706",
+      "avatarUrl": "/voices/alistair.jpg",
+      "sampleUrl": "/voices/samples/zh/voice_zh_male_3.mp3",
+      "initials": "BR",
+      "gender": "Male",
+      "languageCode": "zh",
+      "languageName": "Chinese",
+      "tags": [
+        "Chinese",
+        "Male",
+        "Social media",
+        "Classy"
+      ]
+    },
+    {
+      "id": "voice-zh-male-4",
+      "name": "Bill (Chinese)",
+      "description": "Friendly and comforting voice ready to narrate your stories.",
+      "category": "preset",
+      "color": "#10b981",
+      "avatarUrl": "/voices/george.jpg",
+      "sampleUrl": "/voices/samples/zh/voice_zh_male_4.mp3",
+      "initials": "BI",
+      "gender": "Male",
+      "languageCode": "zh",
+      "languageName": "Chinese",
+      "tags": [
+        "Chinese",
+        "Male",
+        "Advertisement",
+        "Crisp"
+      ]
+    },
+    {
+      "id": "voice-zh-male-5",
+      "name": "Roger (Chinese)",
+      "description": "Easy going and perfect for casual conversations.",
+      "category": "preset",
+      "color": "#a855f7",
+      "avatarUrl": "/voices/roger.jpg",
+      "sampleUrl": "/voices/samples/zh/voice_zh_male_5.mp3",
+      "initials": "RO",
+      "gender": "Male",
+      "languageCode": "zh",
+      "languageName": "Chinese",
+      "tags": [
+        "Chinese",
+        "Male",
+        "Conversational",
+        "Classy"
+      ]
+    },
+    {
+      "id": "voice-zh-female-1",
+      "name": "Sarah (Chinese)",
+      "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
+      "category": "preset",
+      "color": "#ec4899",
+      "avatarUrl": "/voices/serena.jpg",
+      "sampleUrl": "/voices/samples/zh/voice_zh_female_1.mp3",
+      "initials": "SA",
+      "gender": "Female",
+      "languageCode": "zh",
+      "languageName": "Chinese",
+      "tags": [
+        "Chinese",
+        "Female",
+        "Entertainment tv",
+        "Professional"
+      ]
+    },
+    {
+      "id": "voice-zh-female-2",
+      "name": "Laura (Chinese)",
+      "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
+      "category": "preset",
+      "color": "#06b6d4",
+      "avatarUrl": "/voices/chloe.jpg",
+      "sampleUrl": "/voices/samples/zh/voice_zh_female_2.mp3",
+      "initials": "LA",
+      "gender": "Female",
+      "languageCode": "zh",
+      "languageName": "Chinese",
+      "tags": [
+        "Chinese",
+        "Female",
+        "Social media",
+        "Sassy"
+      ]
+    },
+    {
+      "id": "voice-zh-female-3",
+      "name": "Jessica (Chinese)",
+      "description": "Young and popular, this playful American female voice is perfect for trendy content.",
+      "category": "preset",
+      "color": "#8b5cf6",
+      "avatarUrl": "/voices/sarah.jpg",
+      "sampleUrl": "/voices/samples/zh/voice_zh_female_3.mp3",
+      "initials": "JE",
+      "gender": "Female",
+      "languageCode": "zh",
+      "languageName": "Chinese",
+      "tags": [
+        "Chinese",
+        "Female",
+        "Conversational",
+        "Cute"
+      ]
+    },
+    {
+      "id": "voice-zh-female-4",
+      "name": "Lily (Chinese)",
+      "description": "Velvety British female voice delivers news and narrations with warmth and clarity.",
+      "category": "preset",
+      "color": "#ef4444",
+      "avatarUrl": "/voices/jessica.jpg",
+      "sampleUrl": "/voices/samples/zh/voice_zh_female_4.mp3",
+      "initials": "LI",
+      "gender": "Female",
+      "languageCode": "zh",
+      "languageName": "Chinese",
+      "tags": [
+        "Chinese",
+        "Female",
+        "Informative educational",
+        "Confident"
+      ]
+    },
+    {
+      "id": "voice-zh-female-5",
+      "name": "Bella (Chinese)",
+      "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
+      "category": "preset",
+      "color": "#3b82f6",
+      "avatarUrl": "/voices/eleanor.jpg",
+      "sampleUrl": "/voices/samples/zh/voice_zh_female_5.mp3",
+      "initials": "BE",
+      "gender": "Female",
+      "languageCode": "zh",
+      "languageName": "Chinese",
+      "tags": [
+        "Chinese",
+        "Female",
+        "Informative educational",
+        "Professional"
+      ]
+    }
+  ],
+  "ko": [
+    {
+      "id": "voice-ko-male-1",
+      "name": "Roger (Korean)",
+      "description": "Easy going and perfect for casual conversations.",
+      "category": "preset",
+      "color": "#38bdf8",
+      "avatarUrl": "/voices/sterling.jpg",
+      "sampleUrl": "/voices/samples/ko/voice_ko_male_1.mp3",
+      "initials": "RO",
+      "gender": "Male",
+      "languageCode": "ko",
+      "languageName": "Korean",
+      "tags": [
+        "Korean",
+        "Male",
+        "Conversational",
+        "Classy"
+      ]
+    },
+    {
+      "id": "voice-ko-male-2",
+      "name": "Charlie (Korean)",
+      "description": "A young Australian male with a confident and energetic voice.",
+      "category": "preset",
+      "color": "#f59e0b",
+      "avatarUrl": "/voices/jax.jpg",
+      "sampleUrl": "/voices/samples/ko/voice_ko_male_2.mp3",
+      "initials": "CH",
+      "gender": "Male",
+      "languageCode": "ko",
+      "languageName": "Korean",
+      "tags": [
+        "Korean",
+        "Male",
+        "Conversational",
+        "Hyped"
+      ]
+    },
+    {
+      "id": "voice-ko-male-3",
+      "name": "George (Korean)",
+      "description": "Warm resonance that instantly captivates listeners.",
+      "category": "preset",
+      "color": "#d97706",
+      "avatarUrl": "/voices/alistair.jpg",
+      "sampleUrl": "/voices/samples/ko/voice_ko_male_3.mp3",
+      "initials": "GE",
+      "gender": "Male",
+      "languageCode": "ko",
+      "languageName": "Korean",
+      "tags": [
+        "Korean",
+        "Male",
+        "Narrative story",
+        "Mature"
+      ]
+    },
+    {
+      "id": "voice-ko-male-4",
+      "name": "Callum (Korean)",
+      "description": "Deceptively gravelly, yet unsettling edge.",
+      "category": "preset",
+      "color": "#10b981",
+      "avatarUrl": "/voices/george.jpg",
+      "sampleUrl": "/voices/samples/ko/voice_ko_male_4.mp3",
+      "initials": "CA",
+      "gender": "Male",
+      "languageCode": "ko",
+      "languageName": "Korean",
+      "tags": [
+        "Korean",
+        "Male",
+        "Characters animation"
+      ]
+    },
+    {
+      "id": "voice-ko-male-5",
+      "name": "Harry (Korean)",
+      "description": "An animated warrior ready to charge forward.",
+      "category": "preset",
+      "color": "#a855f7",
+      "avatarUrl": "/voices/roger.jpg",
+      "sampleUrl": "/voices/samples/ko/voice_ko_male_5.mp3",
+      "initials": "HA",
+      "gender": "Male",
+      "languageCode": "ko",
+      "languageName": "Korean",
+      "tags": [
+        "Korean",
+        "Male",
+        "Characters animation",
+        "Rough"
+      ]
+    },
+    {
+      "id": "voice-ko-female-1",
+      "name": "Bella (Korean)",
+      "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
+      "category": "preset",
+      "color": "#ec4899",
+      "avatarUrl": "/voices/serena.jpg",
+      "sampleUrl": "/voices/samples/ko/voice_ko_female_1.mp3",
+      "initials": "BE",
+      "gender": "Female",
+      "languageCode": "ko",
+      "languageName": "Korean",
+      "tags": [
+        "Korean",
+        "Female",
+        "Informative educational",
+        "Professional"
+      ]
+    },
+    {
+      "id": "voice-ko-female-2",
+      "name": "Sarah (Korean)",
+      "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
+      "category": "preset",
+      "color": "#06b6d4",
+      "avatarUrl": "/voices/chloe.jpg",
+      "sampleUrl": "/voices/samples/ko/voice_ko_female_2.mp3",
+      "initials": "SA",
+      "gender": "Female",
+      "languageCode": "ko",
+      "languageName": "Korean",
+      "tags": [
+        "Korean",
+        "Female",
+        "Entertainment tv",
+        "Professional"
+      ]
+    },
+    {
+      "id": "voice-ko-female-3",
+      "name": "Laura (Korean)",
+      "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
+      "category": "preset",
+      "color": "#8b5cf6",
+      "avatarUrl": "/voices/sarah.jpg",
+      "sampleUrl": "/voices/samples/ko/voice_ko_female_3.mp3",
+      "initials": "LA",
+      "gender": "Female",
+      "languageCode": "ko",
+      "languageName": "Korean",
+      "tags": [
+        "Korean",
+        "Female",
+        "Social media",
+        "Sassy"
+      ]
+    },
+    {
+      "id": "voice-ko-female-4",
+      "name": "Alice (Korean)",
+      "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
+      "category": "preset",
+      "color": "#ef4444",
+      "avatarUrl": "/voices/jessica.jpg",
+      "sampleUrl": "/voices/samples/ko/voice_ko_female_4.mp3",
+      "initials": "AL",
+      "gender": "Female",
+      "languageCode": "ko",
+      "languageName": "Korean",
+      "tags": [
+        "Korean",
+        "Female",
+        "Informative educational",
+        "Professional"
+      ]
+    },
+    {
+      "id": "voice-ko-female-5",
+      "name": "Matilda (Korean)",
+      "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
+      "category": "preset",
+      "color": "#3b82f6",
+      "avatarUrl": "/voices/eleanor.jpg",
+      "sampleUrl": "/voices/samples/ko/voice_ko_female_5.mp3",
+      "initials": "MA",
+      "gender": "Female",
+      "languageCode": "ko",
+      "languageName": "Korean",
+      "tags": [
+        "Korean",
+        "Female",
+        "Informative educational",
+        "Upbeat"
+      ]
+    }
+  ],
+  "hi": [
+    {
+      "id": "voice-hi-male-1",
+      "name": "George (Hindi)",
+      "description": "Warm resonance that instantly captivates listeners.",
+      "category": "preset",
+      "color": "#38bdf8",
+      "avatarUrl": "/voices/sterling.jpg",
+      "sampleUrl": "/voices/samples/hi/voice_hi_male_1.mp3",
+      "initials": "GE",
+      "gender": "Male",
+      "languageCode": "hi",
+      "languageName": "Hindi",
+      "tags": [
+        "Hindi",
+        "Male",
+        "Narrative story",
+        "Mature"
+      ]
+    },
+    {
+      "id": "voice-hi-male-2",
+      "name": "Callum (Hindi)",
+      "description": "Deceptively gravelly, yet unsettling edge.",
+      "category": "preset",
+      "color": "#f59e0b",
+      "avatarUrl": "/voices/jax.jpg",
+      "sampleUrl": "/voices/samples/hi/voice_hi_male_2.mp3",
+      "initials": "CA",
+      "gender": "Male",
+      "languageCode": "hi",
+      "languageName": "Hindi",
+      "tags": [
+        "Hindi",
+        "Male",
+        "Characters animation"
+      ]
+    },
+    {
+      "id": "voice-hi-male-3",
+      "name": "Liam (Hindi)",
+      "description": "A young adult with energy and warmth - suitable for reels and shorts.",
+      "category": "preset",
+      "color": "#d97706",
+      "avatarUrl": "/voices/alistair.jpg",
+      "sampleUrl": "/voices/samples/hi/voice_hi_male_3.mp3",
+      "initials": "LI",
+      "gender": "Male",
+      "languageCode": "hi",
+      "languageName": "Hindi",
+      "tags": [
+        "Hindi",
+        "Male",
+        "Social media",
+        "Confident"
+      ]
+    },
+    {
+      "id": "voice-hi-male-4",
+      "name": "Chris (Hindi)",
+      "description": "Natural and real, this down-to-earth voice is great across many use-cases.",
+      "category": "preset",
+      "color": "#10b981",
+      "avatarUrl": "/voices/george.jpg",
+      "sampleUrl": "/voices/samples/hi/voice_hi_male_4.mp3",
+      "initials": "CH",
+      "gender": "Male",
+      "languageCode": "hi",
+      "languageName": "Hindi",
+      "tags": [
+        "Hindi",
+        "Male",
+        "Conversational",
+        "Casual"
+      ]
+    },
+    {
+      "id": "voice-hi-male-5",
+      "name": "Brian (Hindi)",
+      "description": "Middle-aged man with a resonant and comforting tone. Great for narrations and advertisements.",
+      "category": "preset",
+      "color": "#a855f7",
+      "avatarUrl": "/voices/roger.jpg",
+      "sampleUrl": "/voices/samples/hi/voice_hi_male_5.mp3",
+      "initials": "BR",
+      "gender": "Male",
+      "languageCode": "hi",
+      "languageName": "Hindi",
+      "tags": [
+        "Hindi",
+        "Male",
+        "Social media",
+        "Classy"
+      ]
+    },
+    {
+      "id": "voice-hi-female-1",
+      "name": "Sarah (Hindi)",
+      "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
+      "category": "preset",
+      "color": "#ec4899",
+      "avatarUrl": "/voices/serena.jpg",
+      "sampleUrl": "/voices/samples/hi/voice_hi_female_1.mp3",
+      "initials": "SA",
+      "gender": "Female",
+      "languageCode": "hi",
+      "languageName": "Hindi",
+      "tags": [
+        "Hindi",
+        "Female",
+        "Entertainment tv",
+        "Professional"
+      ]
+    },
+    {
+      "id": "voice-hi-female-2",
+      "name": "Alice (Hindi)",
+      "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
+      "category": "preset",
+      "color": "#06b6d4",
+      "avatarUrl": "/voices/chloe.jpg",
+      "sampleUrl": "/voices/samples/hi/voice_hi_female_2.mp3",
+      "initials": "AL",
+      "gender": "Female",
+      "languageCode": "hi",
+      "languageName": "Hindi",
+      "tags": [
+        "Hindi",
+        "Female",
+        "Informative educational",
+        "Professional"
+      ]
+    },
+    {
+      "id": "voice-hi-female-3",
+      "name": "Jessica (Hindi)",
+      "description": "Young and popular, this playful American female voice is perfect for trendy content.",
+      "category": "preset",
+      "color": "#8b5cf6",
+      "avatarUrl": "/voices/sarah.jpg",
+      "sampleUrl": "/voices/samples/hi/voice_hi_female_3.mp3",
+      "initials": "JE",
+      "gender": "Female",
+      "languageCode": "hi",
+      "languageName": "Hindi",
+      "tags": [
+        "Hindi",
+        "Female",
+        "Conversational",
+        "Cute"
+      ]
+    },
+    {
+      "id": "voice-hi-female-4",
+      "name": "Bella (Hindi)",
+      "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
+      "category": "preset",
+      "color": "#ef4444",
+      "avatarUrl": "/voices/jessica.jpg",
+      "sampleUrl": "/voices/samples/hi/voice_hi_female_4.mp3",
+      "initials": "BE",
+      "gender": "Female",
+      "languageCode": "hi",
+      "languageName": "Hindi",
+      "tags": [
+        "Hindi",
+        "Female",
+        "Informative educational",
+        "Professional"
+      ]
+    },
+    {
+      "id": "voice-hi-female-5",
+      "name": "Laura (Hindi)",
+      "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
+      "category": "preset",
+      "color": "#3b82f6",
+      "avatarUrl": "/voices/eleanor.jpg",
+      "sampleUrl": "/voices/samples/hi/voice_hi_female_5.mp3",
+      "initials": "LA",
+      "gender": "Female",
+      "languageCode": "hi",
+      "languageName": "Hindi",
+      "tags": [
+        "Hindi",
+        "Female",
+        "Social media",
+        "Sassy"
+      ]
+    }
+  ],
+  "ar": [
+    {
+      "id": "voice-ar-male-1",
+      "name": "George (Arabic)",
+      "description": "Warm resonance that instantly captivates listeners.",
+      "category": "preset",
+      "color": "#38bdf8",
+      "avatarUrl": "/voices/sterling.jpg",
+      "sampleUrl": "/voices/samples/ar/voice_ar_male_1.mp3",
+      "initials": "GE",
+      "gender": "Male",
+      "languageCode": "ar",
+      "languageName": "Arabic",
+      "tags": [
+        "Arabic",
+        "Male",
+        "Narrative story",
+        "Mature"
+      ]
+    },
+    {
+      "id": "voice-ar-male-2",
+      "name": "Chris (Arabic)",
+      "description": "Natural and real, this down-to-earth voice is great across many use-cases.",
+      "category": "preset",
+      "color": "#f59e0b",
+      "avatarUrl": "/voices/jax.jpg",
+      "sampleUrl": "/voices/samples/ar/voice_ar_male_2.mp3",
+      "initials": "CH",
+      "gender": "Male",
+      "languageCode": "ar",
+      "languageName": "Arabic",
+      "tags": [
+        "Arabic",
+        "Male",
+        "Conversational",
+        "Casual"
+      ]
+    },
+    {
+      "id": "voice-ar-male-3",
+      "name": "Brian (Arabic)",
+      "description": "Middle-aged man with a resonant and comforting tone. Great for narrations and advertisements.",
+      "category": "preset",
+      "color": "#d97706",
+      "avatarUrl": "/voices/alistair.jpg",
+      "sampleUrl": "/voices/samples/ar/voice_ar_male_3.mp3",
+      "initials": "BR",
+      "gender": "Male",
+      "languageCode": "ar",
+      "languageName": "Arabic",
+      "tags": [
+        "Arabic",
+        "Male",
+        "Social media",
+        "Classy"
+      ]
+    },
+    {
+      "id": "voice-ar-male-4",
+      "name": "Bill (Arabic)",
+      "description": "Friendly and comforting voice ready to narrate your stories.",
+      "category": "preset",
+      "color": "#10b981",
+      "avatarUrl": "/voices/george.jpg",
+      "sampleUrl": "/voices/samples/ar/voice_ar_male_4.mp3",
+      "initials": "BI",
+      "gender": "Male",
+      "languageCode": "ar",
+      "languageName": "Arabic",
+      "tags": [
+        "Arabic",
+        "Male",
+        "Advertisement",
+        "Crisp"
+      ]
+    },
+    {
+      "id": "voice-ar-male-5",
+      "name": "Roger (Arabic)",
+      "description": "Easy going and perfect for casual conversations.",
+      "category": "preset",
+      "color": "#a855f7",
+      "avatarUrl": "/voices/roger.jpg",
+      "sampleUrl": "/voices/samples/ar/voice_ar_male_5.mp3",
+      "initials": "RO",
+      "gender": "Male",
+      "languageCode": "ar",
+      "languageName": "Arabic",
+      "tags": [
+        "Arabic",
+        "Male",
+        "Conversational",
+        "Classy"
+      ]
+    },
+    {
+      "id": "voice-ar-female-1",
+      "name": "Sarah (Arabic)",
+      "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
+      "category": "preset",
+      "color": "#ec4899",
+      "avatarUrl": "/voices/serena.jpg",
+      "sampleUrl": "/voices/samples/ar/voice_ar_female_1.mp3",
+      "initials": "SA",
+      "gender": "Female",
+      "languageCode": "ar",
+      "languageName": "Arabic",
+      "tags": [
+        "Arabic",
+        "Female",
+        "Entertainment tv",
+        "Professional"
+      ]
+    },
+    {
+      "id": "voice-ar-female-2",
+      "name": "Laura (Arabic)",
+      "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
+      "category": "preset",
+      "color": "#06b6d4",
+      "avatarUrl": "/voices/chloe.jpg",
+      "sampleUrl": "/voices/samples/ar/voice_ar_female_2.mp3",
+      "initials": "LA",
+      "gender": "Female",
+      "languageCode": "ar",
+      "languageName": "Arabic",
+      "tags": [
+        "Arabic",
+        "Female",
+        "Social media",
+        "Sassy"
+      ]
+    },
+    {
+      "id": "voice-ar-female-3",
+      "name": "Alice (Arabic)",
+      "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
+      "category": "preset",
+      "color": "#8b5cf6",
+      "avatarUrl": "/voices/sarah.jpg",
+      "sampleUrl": "/voices/samples/ar/voice_ar_female_3.mp3",
+      "initials": "AL",
+      "gender": "Female",
+      "languageCode": "ar",
+      "languageName": "Arabic",
+      "tags": [
+        "Arabic",
+        "Female",
+        "Informative educational",
+        "Professional"
+      ]
+    },
+    {
+      "id": "voice-ar-female-4",
+      "name": "Matilda (Arabic)",
+      "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
+      "category": "preset",
+      "color": "#ef4444",
+      "avatarUrl": "/voices/jessica.jpg",
+      "sampleUrl": "/voices/samples/ar/voice_ar_female_4.mp3",
+      "initials": "MA",
+      "gender": "Female",
+      "languageCode": "ar",
+      "languageName": "Arabic",
+      "tags": [
+        "Arabic",
+        "Female",
+        "Informative educational",
+        "Upbeat"
+      ]
+    },
+    {
+      "id": "voice-ar-female-5",
+      "name": "Jessica (Arabic)",
+      "description": "Young and popular, this playful American female voice is perfect for trendy content.",
+      "category": "preset",
+      "color": "#3b82f6",
+      "avatarUrl": "/voices/eleanor.jpg",
+      "sampleUrl": "/voices/samples/ar/voice_ar_female_5.mp3",
+      "initials": "JE",
+      "gender": "Female",
+      "languageCode": "ar",
+      "languageName": "Arabic",
+      "tags": [
+        "Arabic",
+        "Female",
+        "Conversational",
+        "Cute"
+      ]
+    }
+  ],
+  "ru": [
+    {
+      "id": "voice-ru-male-1",
+      "name": "Roger (Russian)",
+      "description": "Easy going and perfect for casual conversations.",
+      "category": "preset",
+      "color": "#38bdf8",
+      "avatarUrl": "/voices/sterling.jpg",
+      "sampleUrl": "/voices/samples/ru/voice_ru_male_1.mp3",
+      "initials": "RO",
+      "gender": "Male",
+      "languageCode": "ru",
+      "languageName": "Russian",
+      "tags": [
+        "Russian",
+        "Male",
+        "Conversational",
+        "Classy"
+      ]
+    },
+    {
+      "id": "voice-ru-male-2",
+      "name": "Charlie (Russian)",
+      "description": "A young Australian male with a confident and energetic voice.",
+      "category": "preset",
+      "color": "#f59e0b",
+      "avatarUrl": "/voices/jax.jpg",
+      "sampleUrl": "/voices/samples/ru/voice_ru_male_2.mp3",
+      "initials": "CH",
+      "gender": "Male",
+      "languageCode": "ru",
+      "languageName": "Russian",
+      "tags": [
+        "Russian",
+        "Male",
+        "Conversational",
+        "Hyped"
+      ]
+    },
+    {
+      "id": "voice-ru-male-3",
+      "name": "George (Russian)",
+      "description": "Warm resonance that instantly captivates listeners.",
+      "category": "preset",
+      "color": "#d97706",
+      "avatarUrl": "/voices/alistair.jpg",
+      "sampleUrl": "/voices/samples/ru/voice_ru_male_3.mp3",
+      "initials": "GE",
+      "gender": "Male",
+      "languageCode": "ru",
+      "languageName": "Russian",
+      "tags": [
+        "Russian",
+        "Male",
+        "Narrative story",
+        "Mature"
+      ]
+    },
+    {
+      "id": "voice-ru-male-4",
+      "name": "Callum (Russian)",
+      "description": "Deceptively gravelly, yet unsettling edge.",
+      "category": "preset",
+      "color": "#10b981",
+      "avatarUrl": "/voices/george.jpg",
+      "sampleUrl": "/voices/samples/ru/voice_ru_male_4.mp3",
+      "initials": "CA",
+      "gender": "Male",
+      "languageCode": "ru",
+      "languageName": "Russian",
+      "tags": [
+        "Russian",
+        "Male",
+        "Characters animation"
+      ]
+    },
+    {
+      "id": "voice-ru-male-5",
+      "name": "Harry (Russian)",
+      "description": "An animated warrior ready to charge forward.",
+      "category": "preset",
+      "color": "#a855f7",
+      "avatarUrl": "/voices/roger.jpg",
+      "sampleUrl": "/voices/samples/ru/voice_ru_male_5.mp3",
+      "initials": "HA",
+      "gender": "Male",
+      "languageCode": "ru",
+      "languageName": "Russian",
+      "tags": [
+        "Russian",
+        "Male",
+        "Characters animation",
+        "Rough"
+      ]
+    },
+    {
+      "id": "voice-ru-female-1",
+      "name": "Bella (Russian)",
+      "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
+      "category": "preset",
+      "color": "#ec4899",
+      "avatarUrl": "/voices/serena.jpg",
+      "sampleUrl": "/voices/samples/ru/voice_ru_female_1.mp3",
+      "initials": "BE",
+      "gender": "Female",
+      "languageCode": "ru",
+      "languageName": "Russian",
+      "tags": [
+        "Russian",
+        "Female",
+        "Informative educational",
+        "Professional"
+      ]
+    },
+    {
+      "id": "voice-ru-female-2",
+      "name": "Sarah (Russian)",
+      "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
+      "category": "preset",
+      "color": "#06b6d4",
+      "avatarUrl": "/voices/chloe.jpg",
+      "sampleUrl": "/voices/samples/ru/voice_ru_female_2.mp3",
+      "initials": "SA",
+      "gender": "Female",
+      "languageCode": "ru",
+      "languageName": "Russian",
+      "tags": [
+        "Russian",
+        "Female",
+        "Entertainment tv",
+        "Professional"
+      ]
+    },
+    {
+      "id": "voice-ru-female-3",
+      "name": "Laura (Russian)",
+      "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
+      "category": "preset",
+      "color": "#8b5cf6",
+      "avatarUrl": "/voices/sarah.jpg",
+      "sampleUrl": "/voices/samples/ru/voice_ru_female_3.mp3",
+      "initials": "LA",
+      "gender": "Female",
+      "languageCode": "ru",
+      "languageName": "Russian",
+      "tags": [
+        "Russian",
+        "Female",
+        "Social media",
+        "Sassy"
+      ]
+    },
+    {
+      "id": "voice-ru-female-4",
+      "name": "Alice (Russian)",
+      "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
+      "category": "preset",
+      "color": "#ef4444",
+      "avatarUrl": "/voices/jessica.jpg",
+      "sampleUrl": "/voices/samples/ru/voice_ru_female_4.mp3",
+      "initials": "AL",
+      "gender": "Female",
+      "languageCode": "ru",
+      "languageName": "Russian",
+      "tags": [
+        "Russian",
+        "Female",
+        "Informative educational",
+        "Professional"
+      ]
+    },
+    {
+      "id": "voice-ru-female-5",
+      "name": "Matilda (Russian)",
+      "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
+      "category": "preset",
+      "color": "#3b82f6",
+      "avatarUrl": "/voices/eleanor.jpg",
+      "sampleUrl": "/voices/samples/ru/voice_ru_female_5.mp3",
+      "initials": "MA",
+      "gender": "Female",
+      "languageCode": "ru",
+      "languageName": "Russian",
+      "tags": [
+        "Russian",
+        "Female",
+        "Informative educational",
+        "Upbeat"
+      ]
+    }
+  ],
+  "sw": [
+    {
+      "id": "voice-sw-male-1",
+      "name": "Roger (Swahili)",
+      "description": "Easy going and perfect for casual conversations.",
+      "category": "preset",
+      "color": "#38bdf8",
+      "avatarUrl": "/voices/sterling.jpg",
+      "sampleUrl": "/voices/samples/sw/voice_sw_male_1.mp3",
+      "initials": "RO",
+      "gender": "Male",
+      "languageCode": "sw",
+      "languageName": "Swahili",
+      "tags": [
+        "Swahili",
+        "Male",
+        "Conversational",
+        "Classy"
+      ]
+    },
+    {
+      "id": "voice-sw-male-2",
+      "name": "Charlie (Swahili)",
+      "description": "A young Australian male with a confident and energetic voice.",
+      "category": "preset",
+      "color": "#f59e0b",
+      "avatarUrl": "/voices/jax.jpg",
+      "sampleUrl": "/voices/samples/sw/voice_sw_male_2.mp3",
+      "initials": "CH",
+      "gender": "Male",
+      "languageCode": "sw",
+      "languageName": "Swahili",
+      "tags": [
+        "Swahili",
+        "Male",
+        "Conversational",
+        "Hyped"
+      ]
+    },
+    {
+      "id": "voice-sw-male-3",
+      "name": "George (Swahili)",
+      "description": "Warm resonance that instantly captivates listeners.",
+      "category": "preset",
+      "color": "#d97706",
+      "avatarUrl": "/voices/alistair.jpg",
+      "sampleUrl": "/voices/samples/sw/voice_sw_male_3.mp3",
+      "initials": "GE",
+      "gender": "Male",
+      "languageCode": "sw",
+      "languageName": "Swahili",
+      "tags": [
+        "Swahili",
+        "Male",
+        "Narrative story",
+        "Mature"
+      ]
+    },
+    {
+      "id": "voice-sw-male-4",
+      "name": "Callum (Swahili)",
+      "description": "Deceptively gravelly, yet unsettling edge.",
+      "category": "preset",
+      "color": "#10b981",
+      "avatarUrl": "/voices/george.jpg",
+      "sampleUrl": "/voices/samples/sw/voice_sw_male_4.mp3",
+      "initials": "CA",
+      "gender": "Male",
+      "languageCode": "sw",
+      "languageName": "Swahili",
+      "tags": [
+        "Swahili",
+        "Male",
+        "Characters animation"
+      ]
+    },
+    {
+      "id": "voice-sw-male-5",
+      "name": "Harry (Swahili)",
+      "description": "An animated warrior ready to charge forward.",
+      "category": "preset",
+      "color": "#a855f7",
+      "avatarUrl": "/voices/roger.jpg",
+      "sampleUrl": "/voices/samples/sw/voice_sw_male_5.mp3",
+      "initials": "HA",
+      "gender": "Male",
+      "languageCode": "sw",
+      "languageName": "Swahili",
+      "tags": [
+        "Swahili",
+        "Male",
+        "Characters animation",
+        "Rough"
+      ]
+    },
+    {
+      "id": "voice-sw-female-1",
+      "name": "Bella (Swahili)",
+      "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
+      "category": "preset",
+      "color": "#ec4899",
+      "avatarUrl": "/voices/serena.jpg",
+      "sampleUrl": "/voices/samples/sw/voice_sw_female_1.mp3",
+      "initials": "BE",
+      "gender": "Female",
+      "languageCode": "sw",
+      "languageName": "Swahili",
+      "tags": [
+        "Swahili",
+        "Female",
+        "Informative educational",
+        "Professional"
+      ]
+    },
+    {
+      "id": "voice-sw-female-2",
+      "name": "Sarah (Swahili)",
+      "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
+      "category": "preset",
+      "color": "#06b6d4",
+      "avatarUrl": "/voices/chloe.jpg",
+      "sampleUrl": "/voices/samples/sw/voice_sw_female_2.mp3",
+      "initials": "SA",
+      "gender": "Female",
+      "languageCode": "sw",
+      "languageName": "Swahili",
+      "tags": [
+        "Swahili",
+        "Female",
+        "Entertainment tv",
+        "Professional"
+      ]
+    },
+    {
+      "id": "voice-sw-female-3",
+      "name": "Laura (Swahili)",
+      "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
+      "category": "preset",
+      "color": "#8b5cf6",
+      "avatarUrl": "/voices/sarah.jpg",
+      "sampleUrl": "/voices/samples/sw/voice_sw_female_3.mp3",
+      "initials": "LA",
+      "gender": "Female",
+      "languageCode": "sw",
+      "languageName": "Swahili",
+      "tags": [
+        "Swahili",
+        "Female",
+        "Social media",
+        "Sassy"
+      ]
+    },
+    {
+      "id": "voice-sw-female-4",
+      "name": "Alice (Swahili)",
+      "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
+      "category": "preset",
+      "color": "#ef4444",
+      "avatarUrl": "/voices/jessica.jpg",
+      "sampleUrl": "/voices/samples/sw/voice_sw_female_4.mp3",
+      "initials": "AL",
+      "gender": "Female",
+      "languageCode": "sw",
+      "languageName": "Swahili",
+      "tags": [
+        "Swahili",
+        "Female",
+        "Informative educational",
+        "Professional"
+      ]
+    },
+    {
+      "id": "voice-sw-female-5",
+      "name": "Matilda (Swahili)",
+      "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
+      "category": "preset",
+      "color": "#3b82f6",
+      "avatarUrl": "/voices/eleanor.jpg",
+      "sampleUrl": "/voices/samples/sw/voice_sw_female_5.mp3",
+      "initials": "MA",
+      "gender": "Female",
+      "languageCode": "sw",
+      "languageName": "Swahili",
+      "tags": [
+        "Swahili",
+        "Female",
+        "Informative educational",
+        "Upbeat"
+      ]
+    }
+  ],
+  "en-af": [
+    {
+      "id": "voice-en-af-male-1",
+      "name": "Sizwe (English (Africa))",
+      "description": "Authentic South African male voice with natural delivery, ideal for product explanations and narration.",
+      "category": "preset",
+      "color": "#38bdf8",
+      "avatarUrl": "/voices/sterling.jpg",
+      "sampleUrl": "/voices/samples/en-af/voice_en-af_male_1.mp3",
+      "initials": "SI",
+      "gender": "Male",
+      "languageCode": "en-af",
+      "languageName": "English (Africa)",
+      "tags": [
+        "English (Africa)",
+        "Male",
+        "South African",
+        "Narrative",
+        "Clear"
+      ]
+    },
+    {
+      "id": "voice-en-af-male-2",
+      "name": "Sebotsa (English (Africa))",
+      "description": "A warm, clear South African male voice with a natural, friendly storytelling cadence.",
+      "category": "preset",
+      "color": "#ec4899",
+      "avatarUrl": "/voices/jax.jpg",
+      "sampleUrl": "/voices/samples/en-af/voice_en-af_male_2.mp3",
+      "initials": "SE",
+      "gender": "Male",
+      "languageCode": "en-af",
+      "languageName": "English (Africa)",
+      "tags": [
+        "English (Africa)",
+        "Male",
+        "South African",
+        "Warm",
+        "Conversational"
+      ]
+    },
+    {
+      "id": "voice-en-af-male-3",
+      "name": "Ola (English (Africa))",
+      "description": "A warm, calm, and balanced Nigerian English voice with smooth articulation.",
+      "category": "preset",
+      "color": "#f59e0b",
+      "avatarUrl": "/voices/alistair.jpg",
+      "sampleUrl": "/voices/samples/en-af/voice_en-af_male_3.mp3",
+      "initials": "OL",
+      "gender": "Male",
+      "languageCode": "en-af",
+      "languageName": "English (Africa)",
+      "tags": [
+        "English (Africa)",
+        "Male",
+        "Nigerian",
+        "Calm",
+        "Balanced"
+      ]
+    },
+    {
+      "id": "voice-en-af-male-4",
+      "name": "Kasalu (English (Africa))",
+      "description": "Low voice, authoritative, relaxed, documentary and lore style.",
+      "category": "preset",
+      "color": "#06b6d4",
+      "avatarUrl": "/voices/george.jpg",
+      "sampleUrl": "/voices/samples/en-af/voice_en-af_male_4.mp3",
+      "initials": "KA",
+      "gender": "Male",
+      "languageCode": "en-af",
+      "languageName": "English (Africa)",
+      "tags": [
+        "English (Africa)",
+        "Male",
+        "African",
+        "Authoritative",
+        "Deep"
+      ]
+    },
+    {
+      "id": "voice-en-af-male-5",
+      "name": "Matthew (English (Africa))",
+      "description": "Deep South African, Zulu-influenced accent, commanding and regal male tone.",
+      "category": "preset",
+      "color": "#d97706",
+      "avatarUrl": "/voices/roger.jpg",
+      "sampleUrl": "/voices/samples/en-af/voice_en-af_male_5.mp3",
+      "initials": "MA",
+      "gender": "Male",
+      "languageCode": "en-af",
+      "languageName": "English (Africa)",
+      "tags": [
+        "English (Africa)",
+        "Male",
+        "South African",
+        "Regal",
+        "Documentary"
+      ]
+    },
+    {
+      "id": "voice-en-af-female-1",
+      "name": "Annabel (English (Africa))",
+      "description": "Articulate and warm South African female voice, clear and engaging.",
+      "category": "preset",
+      "color": "#ec4899",
+      "avatarUrl": "/voices/serena.jpg",
+      "sampleUrl": "/voices/samples/en-af/voice_en-af_female_1.mp3",
+      "initials": "AN",
+      "gender": "Female",
+      "languageCode": "en-af",
+      "languageName": "English (Africa)",
+      "tags": [
+        "English (Africa)",
+        "Female",
+        "South African",
+        "Clear",
+        "Conversational"
+      ]
+    },
+    {
+      "id": "voice-en-af-female-2",
+      "name": "Bolanle (English (Africa))",
+      "description": "A warm, expressive, and versatile African-rooted female voice designed for natural storytelling.",
+      "category": "preset",
+      "color": "#06b6d4",
+      "avatarUrl": "/voices/chloe.jpg",
+      "sampleUrl": "/voices/samples/en-af/voice_en-af_female_2.mp3",
+      "initials": "BO",
+      "gender": "Female",
+      "languageCode": "en-af",
+      "languageName": "English (Africa)",
+      "tags": [
+        "English (Africa)",
+        "Female",
+        "African Root",
+        "Storytelling",
+        "Warm"
+      ]
+    },
+    {
+      "id": "voice-en-af-female-3",
+      "name": "Dolamade (English (Africa))",
+      "description": "Clear, steady, and calm Nigerian English female voice for explainers and corporate narration.",
+      "category": "preset",
+      "color": "#8b5cf6",
+      "avatarUrl": "/voices/sarah.jpg",
+      "sampleUrl": "/voices/samples/en-af/voice_en-af_female_3.mp3",
+      "initials": "DO",
+      "gender": "Female",
+      "languageCode": "en-af",
+      "languageName": "English (Africa)",
+      "tags": [
+        "English (Africa)",
+        "Female",
+        "Nigerian",
+        "Calm",
+        "Professional"
+      ]
+    },
+    {
+      "id": "voice-en-af-female-4",
+      "name": "Amara (English (Africa))",
+      "description": "Warm African-British professional female voice with smooth and reassuring cadence.",
+      "category": "preset",
+      "color": "#ef4444",
+      "avatarUrl": "/voices/jessica.jpg",
+      "sampleUrl": "/voices/samples/en-af/voice_en-af_female_4.mp3",
+      "initials": "AM",
+      "gender": "Female",
+      "languageCode": "en-af",
+      "languageName": "English (Africa)",
+      "tags": [
+        "English (Africa)",
+        "Female",
+        "African",
+        "Professional",
+        "Warm"
+      ]
+    },
+    {
+      "id": "voice-en-af-female-5",
+      "name": "Linet (English (Africa))",
+      "description": "Friendly, bright, and authentic East African voice with pleasant conversational tone.",
+      "category": "preset",
+      "color": "#3b82f6",
+      "avatarUrl": "/voices/eleanor.jpg",
+      "sampleUrl": "/voices/samples/en-af/voice_en-af_female_5.mp3",
+      "initials": "LI",
+      "gender": "Female",
+      "languageCode": "en-af",
+      "languageName": "English (Africa)",
+      "tags": [
+        "English (Africa)",
+        "Female",
+        "African",
+        "Friendly",
+        "Bright"
+      ]
+    }
+  ],
+  "en-au": [
+    {
+      "id": "voice-en-au-male-1",
+      "name": "Peter (English (Australia))",
+      "description": "A mid-30s Australian educator and narrator with clear and lively delivery.",
+      "category": "preset",
+      "color": "#38bdf8",
+      "avatarUrl": "/voices/sterling.jpg",
+      "sampleUrl": "/voices/samples/en-au/voice_en-au_male_1.mp3",
+      "initials": "PE",
+      "gender": "Male",
+      "languageCode": "en-au",
+      "languageName": "English (Australia)",
+      "tags": [
+        "English (Australia)",
+        "Male",
+        "Australian",
+        "Narrator",
+        "Educator"
+      ]
+    },
+    {
+      "id": "voice-en-au-male-2",
+      "name": "Marc (English (Australia))",
+      "description": "Rich, mid-deep Australian baritone delivering radio-quality resonance.",
+      "category": "preset",
+      "color": "#ec4899",
+      "avatarUrl": "/voices/jax.jpg",
+      "sampleUrl": "/voices/samples/en-au/voice_en-au_male_2.mp3",
+      "initials": "MA",
+      "gender": "Male",
+      "languageCode": "en-au",
+      "languageName": "English (Australia)",
+      "tags": [
+        "English (Australia)",
+        "Male",
+        "Australian",
+        "Deep",
+        "Baritone"
+      ]
+    },
+    {
+      "id": "voice-en-au-male-3",
+      "name": "David (English (Australia))",
+      "description": "Easy-going, trustworthy, fun Australian conversational friend.",
+      "category": "preset",
+      "color": "#f59e0b",
+      "avatarUrl": "/voices/alistair.jpg",
+      "sampleUrl": "/voices/samples/en-au/voice_en-au_male_3.mp3",
+      "initials": "DA",
+      "gender": "Male",
+      "languageCode": "en-au",
+      "languageName": "English (Australia)",
+      "tags": [
+        "English (Australia)",
+        "Male",
+        "Australian",
+        "Conversational",
+        "Friendly"
+      ]
+    },
+    {
+      "id": "voice-en-au-male-4",
+      "name": "Archie (English (Australia))",
+      "description": "24-year-old Australian male, casual and confident for social and modern content.",
+      "category": "preset",
+      "color": "#06b6d4",
+      "avatarUrl": "/voices/george.jpg",
+      "sampleUrl": "/voices/samples/en-au/voice_en-au_male_4.mp3",
+      "initials": "AR",
+      "gender": "Male",
+      "languageCode": "en-au",
+      "languageName": "English (Australia)",
+      "tags": [
+        "English (Australia)",
+        "Male",
+        "Australian",
+        "Youthful",
+        "Social Media"
+      ]
+    },
+    {
+      "id": "voice-en-au-male-5",
+      "name": "Brandon (English (Australia))",
+      "description": "Warm and professional Australian male, suited for explainers, advertising, and corporate content.",
+      "category": "preset",
+      "color": "#d97706",
+      "avatarUrl": "/voices/roger.jpg",
+      "sampleUrl": "/voices/samples/en-au/voice_en-au_male_5.mp3",
+      "initials": "BR",
+      "gender": "Male",
+      "languageCode": "en-au",
+      "languageName": "English (Australia)",
+      "tags": [
+        "English (Australia)",
+        "Male",
+        "Australian",
+        "Professional",
+        "Corporate"
+      ]
+    },
+    {
+      "id": "voice-en-au-female-1",
+      "name": "Carla (English (Australia))",
+      "description": "Warm, natural Australian female voice with a friendly, conversational tone.",
+      "category": "preset",
+      "color": "#ec4899",
+      "avatarUrl": "/voices/serena.jpg",
+      "sampleUrl": "/voices/samples/en-au/voice_en-au_female_1.mp3",
+      "initials": "CA",
+      "gender": "Female",
+      "languageCode": "en-au",
+      "languageName": "English (Australia)",
+      "tags": [
+        "English (Australia)",
+        "Female",
+        "Australian",
+        "Conversational",
+        "Warm"
+      ]
+    },
+    {
+      "id": "voice-en-au-female-2",
+      "name": "Naomy (English (Australia))",
+      "description": "Calm, educational tone with authentic Australian accent.",
+      "category": "preset",
+      "color": "#06b6d4",
+      "avatarUrl": "/voices/chloe.jpg",
+      "sampleUrl": "/voices/samples/en-au/voice_en-au_female_2.mp3",
+      "initials": "NA",
+      "gender": "Female",
+      "languageCode": "en-au",
+      "languageName": "English (Australia)",
+      "tags": [
+        "English (Australia)",
+        "Female",
+        "Australian",
+        "Calm",
+        "Educational"
+      ]
+    },
+    {
+      "id": "voice-en-au-female-3",
+      "name": "Gabby (English (Australia))",
+      "description": "Soft, young Australian female voice, pleasant and approachable.",
+      "category": "preset",
+      "color": "#8b5cf6",
+      "avatarUrl": "/voices/sarah.jpg",
+      "sampleUrl": "/voices/samples/en-au/voice_en-au_female_3.mp3",
+      "initials": "GA",
+      "gender": "Female",
+      "languageCode": "en-au",
+      "languageName": "English (Australia)",
+      "tags": [
+        "English (Australia)",
+        "Female",
+        "Australian",
+        "Soft",
+        "Young"
+      ]
+    },
+    {
+      "id": "voice-en-au-female-4",
+      "name": "Kez (English (Australia))",
+      "description": "Real Aussie, warm and clear, perfect for commercials, radio, and friendly narration.",
+      "category": "preset",
+      "color": "#ef4444",
+      "avatarUrl": "/voices/jessica.jpg",
+      "sampleUrl": "/voices/samples/en-au/voice_en-au_female_4.mp3",
+      "initials": "KE",
+      "gender": "Female",
+      "languageCode": "en-au",
+      "languageName": "English (Australia)",
+      "tags": [
+        "English (Australia)",
+        "Female",
+        "Australian",
+        "Clear",
+        "Commercial"
+      ]
+    },
+    {
+      "id": "voice-en-au-female-5",
+      "name": "Willow (English (Australia))",
+      "description": "Australian female storyteller with an engaging, narrative resonance.",
+      "category": "preset",
+      "color": "#3b82f6",
+      "avatarUrl": "/voices/eleanor.jpg",
+      "sampleUrl": "/voices/samples/en-au/voice_en-au_female_5.mp3",
+      "initials": "WI",
+      "gender": "Female",
+      "languageCode": "en-au",
+      "languageName": "English (Australia)",
+      "tags": [
+        "English (Australia)",
+        "Female",
+        "Australian",
+        "Storyteller",
+        "Resonant"
+      ]
+    }
+  ]
+}
