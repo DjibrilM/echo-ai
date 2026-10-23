@@ -43,7 +43,7 @@ export function TextToSpeechPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Text to Speech</h1>
           <p className="text-sm text-muted-foreground">
-            Convert written text into natural, emotive human speech using ElevenLabs neural models.
+            Convert written text into natural, emotive human speech using neural voice models.
           </p>
         </div>
       </div>
@@ -429,7 +429,7 @@ export function GenericFeaturePage({
         </div>
         <h3 className="text-base font-semibold">{title} Workspace</h3>
         <p className="text-xs text-muted-foreground max-w-md">
-          {description} Connect your ElevenLabs workspace or API key to begin.
+          {description} Connect your local workspace to begin.
         </p>
         <Button size="sm" className="mt-2">
           Open {title}

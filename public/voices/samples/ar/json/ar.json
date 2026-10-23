@@ -18,8 +18,7 @@
         "Male",
         "Narrative story",
         "Mature"
-      ],
-      "elevenLabsVoiceId": "JBFqnCBsd6RMkjVDRZzb"
+      ]
     },
     "name": "George (Arabic)",
     "description": "Warm resonance that instantly captivates listeners.",
@@ -35,8 +34,7 @@
       "Male",
       "Narrative story",
       "Mature"
-    ],
-    "elevenLabsVoiceId": "JBFqnCBsd6RMkjVDRZzb"
+    ]
   },
   {
     "id": "voice-ar-male-2",
@@ -57,8 +55,7 @@
         "Male",
         "Conversational",
         "Casual"
-      ],
-      "elevenLabsVoiceId": "iP95p4xoKVk53GoZ742B"
+      ]
     },
     "name": "Chris (Arabic)",
     "description": "Natural and real, this down-to-earth voice is great across many use-cases.",
@@ -74,8 +71,7 @@
       "Male",
       "Conversational",
       "Casual"
-    ],
-    "elevenLabsVoiceId": "iP95p4xoKVk53GoZ742B"
+    ]
   },
   {
     "id": "voice-ar-male-3",
@@ -96,8 +92,7 @@
         "Male",
         "Social media",
         "Classy"
-      ],
-      "elevenLabsVoiceId": "nPczCjzI2devNBz1zQrb"
+      ]
     },
     "name": "Brian (Arabic)",
     "description": "Middle-aged man with a resonant and comforting tone. Great for narrations and advertisements.",
@@ -113,8 +108,7 @@
       "Male",
       "Social media",
       "Classy"
-    ],
-    "elevenLabsVoiceId": "nPczCjzI2devNBz1zQrb"
+    ]
   },
   {
     "id": "voice-ar-male-4",
@@ -135,8 +129,7 @@
         "Male",
         "Advertisement",
         "Crisp"
-      ],
-      "elevenLabsVoiceId": "pqHfZKP75CvOlQylNhV4"
+      ]
     },
     "name": "Bill (Arabic)",
     "description": "Friendly and comforting voice ready to narrate your stories.",
@@ -152,8 +145,7 @@
       "Male",
       "Advertisement",
       "Crisp"
-    ],
-    "elevenLabsVoiceId": "pqHfZKP75CvOlQylNhV4"
+    ]
   },
   {
     "id": "voice-ar-male-5",
@@ -174,8 +166,7 @@
         "Male",
         "Conversational",
         "Classy"
-      ],
-      "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17"
+      ]
     },
     "name": "Roger (Arabic)",
     "description": "Easy going and perfect for casual conversations.",
@@ -191,8 +182,7 @@
       "Male",
       "Conversational",
       "Classy"
-    ],
-    "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17"
+    ]
   },
   {
     "id": "voice-ar-female-1",
@@ -213,8 +203,7 @@
         "Female",
         "Entertainment tv",
         "Professional"
-      ],
-      "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL"
+      ]
     },
     "name": "Sarah (Arabic)",
     "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
@@ -230,8 +219,7 @@
       "Female",
       "Entertainment tv",
       "Professional"
-    ],
-    "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL"
+    ]
   },
   {
     "id": "voice-ar-female-2",
@@ -252,8 +240,7 @@
         "Female",
         "Social media",
         "Sassy"
-      ],
-      "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5"
+      ]
     },
     "name": "Laura (Arabic)",
     "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
@@ -269,8 +256,7 @@
       "Female",
       "Social media",
       "Sassy"
-    ],
-    "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5"
+    ]
   },
   {
     "id": "voice-ar-female-3",
@@ -291,8 +277,7 @@
         "Female",
         "Informative educational",
         "Professional"
-      ],
-      "elevenLabsVoiceId": "Xb7hH8MSUJpSbSDYk0k2"
+      ]
     },
     "name": "Alice (Arabic)",
     "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
@@ -308,8 +293,7 @@
       "Female",
       "Informative educational",
       "Professional"
-    ],
-    "elevenLabsVoiceId": "Xb7hH8MSUJpSbSDYk0k2"
+    ]
   },
   {
     "id": "voice-ar-female-4",
@@ -330,8 +314,7 @@
         "Female",
         "Informative educational",
         "Upbeat"
-      ],
-      "elevenLabsVoiceId": "XrExE9yKIg1WjnnlVkGX"
+      ]
     },
     "name": "Matilda (Arabic)",
     "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
@@ -347,8 +330,7 @@
       "Female",
       "Informative educational",
       "Upbeat"
-    ],
-    "elevenLabsVoiceId": "XrExE9yKIg1WjnnlVkGX"
+    ]
   },
   {
     "id": "voice-ar-female-5",
@@ -369,8 +351,7 @@
         "Female",
         "Conversational",
         "Cute"
-      ],
-      "elevenLabsVoiceId": "cgSgspJ2msm6clMCkdW9"
+      ]
     },
     "name": "Jessica (Arabic)",
     "description": "Young and popular, this playful American female voice is perfect for trendy content.",
@@ -386,7 +367,6 @@
       "Female",
       "Conversational",
       "Cute"
-    ],
-    "elevenLabsVoiceId": "cgSgspJ2msm6clMCkdW9"
+    ]
   }
 ]

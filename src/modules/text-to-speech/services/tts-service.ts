@@ -5,15 +5,10 @@ import type {
   TtsErrorEvent,
   TerminalLogMessage,
 } from '@/lib/interfaces/ipc-gateway.interface'
-import type {
-  VoiceModelStatusResult,
-  ModelDownloadProgressPayload,
-} from '@/lib/interfaces/models.interface'
 import {
   ttsProgressListeners,
   ttsCompleteListeners,
   ttsErrorListeners,
-  modelsDownloadProgressListeners,
   terminalLogListeners,
 } from '@/components/providers/IpcProvider'
 
@@ -34,13 +29,27 @@ export interface TtsGenerateRequestOptions {
   lavaSrEnabled?: boolean
   speed?: number
   historyIndex?: number
-  engine?: 'cosyvoice3' | 'parler'
+  engine?: 'cosyvoice3' | 'chatterbox'
 }
 
-export interface IpcResponse<T = unknown> {
-  success: boolean
-  data?: T
-  error?: string
+import {
+  getModelStatus,
+  getModelInfo,
+  deleteAllModels,
+  downloadModel,
+  cancelModelDownload,
+  onModelDownloadProgress,
+  type IpcResponse,
+} from '@/modules/models'
+
+export {
+  getModelStatus,
+  getModelInfo,
+  deleteAllModels,
+  downloadModel,
+  cancelModelDownload,
+  onModelDownloadProgress,
+  type IpcResponse,
 }
 
 /**
@@ -74,88 +83,6 @@ export async function cancelSpeechGeneration(taskId: string): Promise<IpcRespons
   }
   return { success: false, error: 'IPC renderer is unavailable in current runtime' }
 }
-
-/**
- * Queries the current Echo Voice Engine models download & cache status via IPC ('models:get-status')
- */
-export async function getModelStatus(): Promise<IpcResponse<VoiceModelStatusResult>> {
-  if (typeof window !== 'undefined' && window.ipcRenderer) {
-    try {
-      const res = (await window.ipcRenderer.invoke('models:get-status')) as IpcResponse<VoiceModelStatusResult>
-      return res
-    } catch (err) {
-      console.error('[ttsService] getModelStatus IPC invoke failed:', err)
-      return { success: false, error: String(err) }
-    }
-  }
-  return { success: false, error: 'IPC renderer is unavailable in current runtime' }
-}
-
-/**
- * Queries QVAC model info (cache/download status) via IPC ('models:get-info')
- * Uses @qvac/sdk getModelInfo under the hood in the main process.
- */
-export async function getModelInfo(name: string): Promise<IpcResponse<{ isCached: boolean; isLoaded: boolean; modelId: string; expectedSize: number; addon: string }>> {
-  if (typeof window !== 'undefined' && window.ipcRenderer) {
-    try {
-      const res = (await window.ipcRenderer.invoke('models:get-info', { name })) as IpcResponse<{ isCached: boolean; isLoaded: boolean; modelId: string; expectedSize: number; addon: string }>
-      return res
-    } catch (err) {
-      console.error('[ttsService] getModelInfo IPC invoke failed:', err)
-      return { success: false, error: String(err) }
-    }
-  }
-  return { success: false, error: 'IPC renderer is unavailable in current runtime' }
-}
-
-/**
- * Deletes all installed voice engine models from disk via IPC ('models:delete-all')
- */
-export async function deleteAllModels(): Promise<IpcResponse<unknown>> {
-  if (typeof window !== 'undefined' && window.ipcRenderer) {
-    try {
-      const res = (await window.ipcRenderer.invoke('models:delete-all')) as IpcResponse<unknown>
-      return res
-    } catch (err) {
-      console.error('[ttsService] deleteAllModels IPC invoke failed:', err)
-      return { success: false, error: String(err) }
-    }
-  }
-  return { success: false, error: 'IPC renderer is unavailable in current runtime' }
-}
-
-/**
- * Downloads a voice engine neural model or all required models via IPC ('models:download')
- */
-export async function downloadModel(payload: { modelId?: string; allRequired?: boolean }): Promise<IpcResponse<unknown>> {
-  if (typeof window !== 'undefined' && window.ipcRenderer) {
-    try {
-      const res = (await window.ipcRenderer.invoke('models:download', payload)) as IpcResponse<unknown>
-      return res
-    } catch (err) {
-      console.error('[ttsService] downloadModel IPC invoke failed:', err)
-      return { success: false, error: String(err) }
-    }
-  }
-  return { success: false, error: 'IPC renderer is unavailable in current runtime' }
-}
-
-/**
- * Cancels an active model download via IPC ('models:cancel-download')
- */
-export async function cancelModelDownload(modelId: string): Promise<IpcResponse<unknown>> {
-  if (typeof window !== 'undefined' && window.ipcRenderer) {
-    try {
-      const res = (await window.ipcRenderer.invoke('models:cancel-download', { modelId })) as IpcResponse<unknown>
-      return res
-    } catch (err) {
-      console.error('[ttsService] cancelModelDownload IPC invoke failed:', err)
-      return { success: false, error: String(err) }
-    }
-  }
-  return { success: false, error: 'IPC renderer is unavailable in current runtime' }
-}
-
 /**
  * Subscribes to real-time TTS progress events
  */
@@ -200,16 +127,6 @@ export function onTerminalLog(callback: (log: TerminalLogMessage) => void): () =
   }
 }
 
-/**
- * Subscribes to neural model download progress events
- */
-export function onModelDownloadProgress(callback: (payload: ModelDownloadProgressPayload) => void): () => void {
-  const subId = `tts-dl-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
-  modelsDownloadProgressListeners.set(subId, callback)
-  return () => {
-    modelsDownloadProgressListeners.delete(subId)
-  }
-}
 
 /**
  * Format time in seconds to mm:ss format

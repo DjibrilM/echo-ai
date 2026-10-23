@@ -1,24 +1,22 @@
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
-import { app } from "electron";
+import { execFileSync } from "node:child_process";
 import * as qvacSdk from "@qvac/sdk";
 
 import type {
-  VoiceModelInfo,
-  VoiceModelStatusResult,
-  ModelDownloadProgressPayload,
   TtsGenerateOptions,
   TtsGenerateResult,
   TtsGenerationOutput,
   TtsProgressCallback,
   TtsLogCallback,
 } from "../interfaces";
+import type {
+  VoiceModelStatusResult,
+  ModelDownloadProgressPayload,
+} from "../../models/interfaces";
+import { ModelsService } from "../../models/services/models.service";
 
-type LoadedTtsModel = {
-  modelId: string;
-  key: string;
-};
 
 function pcmToWavDataUri(samples: number[], sampleRate: number): string {
   sampleRate = Number.isFinite(sampleRate) && sampleRate > 0 ? Math.round(sampleRate) : 24000;
@@ -123,262 +121,501 @@ interface TextOrPauseSegment {
   type: "speech" | "pause";
   text?: string;
   pauseSec?: number;
+  tone?: "normal" | "whisper" | "yell" | "raise";
+}
+
+/**
+ * Generates natural studio acoustic room tone for pauses instead of
+ * absolute digital zero silence, with smooth cosine cross-fade tapers
+ * at boundaries to eliminate digital clicking, ear-vacuum artifacts, and noise gating.
+ */
+function generateAcousticRoomPause(durationSec: number, sampleRate: number): number[] {
+  const numSamples = Math.floor(sampleRate * Math.max(0.015, durationSec));
+  const samples = new Array<number>(numSamples);
+
+  // Natural studio floor noise (~ -65dB to -70dB)
+  // 1-pole low-pass filtered to sound like soft microphone acoustic air
+  let lastNoise = 0;
+  for (let i = 0; i < numSamples; i++) {
+    const white = (Math.random() * 2 - 1) * 5.0;
+    lastNoise = lastNoise * 0.85 + white * 0.15;
+    samples[i] = lastNoise;
+  }
+
+  // Apply smooth cosine fade-in and fade-out (8ms)
+  const fadeLen = Math.min(Math.floor(sampleRate * 0.008), Math.floor(numSamples / 2));
+  for (let i = 0; i < fadeLen; i++) {
+    const gainIn = 0.5 * (1 - Math.cos((Math.PI * i) / fadeLen));
+    samples[i] *= gainIn;
+    const gainOut = 0.5 * (1 - Math.cos((Math.PI * (fadeLen - i)) / fadeLen));
+    samples[numSamples - 1 - i] *= gainOut;
+  }
+
+  return samples;
+}
+
+/**
+ * Trims leading and trailing model dead-air silence from a raw PCM chunk.
+ * Uses a dynamic energy threshold based on peak amplitude, leaving an 18ms pre-roll
+ * and 28ms post-roll so initial consonants and natural breath decays are never clipped.
+ */
+function trimPcmSilence(
+  samples: number[],
+  sampleRate: number,
+  preRollMs = 18,
+  postRollMs = 28
+): number[] {
+  if (samples.length === 0) return samples;
+
+  let maxAbs = 0;
+  for (let i = 0; i < samples.length; i++) {
+    const a = Math.abs(samples[i]);
+    if (a > maxAbs) maxAbs = a;
+  }
+  if (maxAbs === 0) return samples;
+
+  // Threshold calibrated to 0.8% of peak speech amplitude (~ -42dB relative to peak)
+  const threshold = Math.max(maxAbs * 0.008, maxAbs > 2 ? 60 : 0.002);
+  const preRoll = Math.floor((sampleRate * preRollMs) / 1000);
+  const postRoll = Math.floor((sampleRate * postRollMs) / 1000);
+
+  let startIdx = 0;
+  for (let i = 0; i < samples.length; i++) {
+    if (Math.abs(samples[i]) > threshold) {
+      startIdx = Math.max(0, i - preRoll);
+      break;
+    }
+  }
+
+  let endIdx = samples.length;
+  for (let i = samples.length - 1; i >= startIdx; i--) {
+    if (Math.abs(samples[i]) > threshold) {
+      endIdx = Math.min(samples.length, i + 1 + postRoll);
+      break;
+    }
+  }
+
+  if (startIdx >= endIdx || endIdx - startIdx < sampleRate * 0.08) {
+    return samples;
+  }
+
+  return samples.slice(startIdx, endIdx);
+}
+
+/**
+ * Appends new samples to target buffer using equal-power crossfading (12ms)
+ * to ensure seamless continuity in room ambiance and completely eliminate
+ * audible splices, clicks, phase dips, or unnatural gaps.
+ */
+function crossfadeAppend(
+  target: number[],
+  incoming: number[],
+  sampleRate: number,
+  crossfadeMs = 12
+): void {
+  if (incoming.length === 0) return;
+  if (target.length === 0) {
+    for (let i = 0; i < incoming.length; i++) target.push(incoming[i]);
+    return;
+  }
+
+  const crossLen = Math.min(
+    Math.floor((sampleRate * crossfadeMs) / 1000),
+    Math.floor(target.length / 2),
+    Math.floor(incoming.length / 2)
+  );
+
+  if (crossLen <= 0) {
+    for (let i = 0; i < incoming.length; i++) target.push(incoming[i]);
+    return;
+  }
+
+  const targetStart = target.length - crossLen;
+  for (let i = 0; i < crossLen; i++) {
+    const t = i / crossLen;
+    // Equal-power crossfade curve: cos^2(t) + sin^2(t) = 1
+    const gainOut = Math.cos(t * (Math.PI / 2));
+    const gainIn = Math.sin(t * (Math.PI / 2));
+    target[targetStart + i] = target[targetStart + i] * gainOut + incoming[i] * gainIn;
+  }
+
+  for (let i = crossLen; i < incoming.length; i++) {
+    target.push(incoming[i]);
+  }
+}
+
+interface ProcessedSpeechResult {
+  cleanedText: string;
+  detectedCues: string[];
+  tone: "normal" | "whisper" | "yell" | "raise";
+}
+
+/**
+ * Preprocesses conversational reaction cues ([laugh], [chuckle], [hmm], [sigh])
+ * and pointed tone manipulation tags ([whisper], [yell], [raise]).
+ *
+ * For CosyVoice 3:
+ * Translates cues to native FunAudioLLM instruct tags (<laughter>, <strong>, <breath>)
+ * as specified in FunAudioLLM/CosyVoice #191, which work both in zero-shot base mode
+ * and with custom cloned voices.
+ *
+ * For Chatterbox T3:
+ * Cleans XML tags and uses natural punctuation, pauses, and ellipses for speech conditioning.
+ */
+function processConversationalCues(
+  text: string,
+  engine: "cosyvoice3" | "chatterbox",
+  initialTone: "normal" | "whisper" | "yell" | "raise" = "normal"
+): ProcessedSpeechResult {
+  let cleaned = text;
+  let tone = initialTone;
+  const detectedCues: string[] = [];
+
+  // Pointed tone detection
+  if (tone === "whisper" || /\[(?:whisper|soft)\]/i.test(cleaned)) {
+    tone = "whisper";
+    detectedCues.push("whisper");
+    cleaned = cleaned.replace(/\[\/?(?:whisper|soft)\]/gi, " ");
+  }
+
+  if (tone === "yell" || /\[(?:yell|shout|loud)\]/i.test(cleaned)) {
+    tone = "yell";
+    detectedCues.push("yell");
+    cleaned = cleaned.replace(/\[\/?(?:yell|shout|loud)\]/gi, " ");
+    const trimmed = cleaned.trim();
+    const ending = /[!?]$/.test(trimmed) ? "" : "!";
+    cleaned = `${trimmed.toUpperCase()}${ending}`;
+  }
+
+  if (tone === "raise" || /\[(?:raise|emphasis)\]/i.test(cleaned) || /<\/?strong>/i.test(cleaned)) {
+    tone = "raise";
+    detectedCues.push("raise");
+  }
+
+  // Strip laughter and chuckle tags cleanly so they do not cause repeats or glitchy audio
+  cleaned = cleaned.replace(/\[\/?(?:laugh|laughter|giggle|chuckle)\]/gi, " ");
+  cleaned = cleaned.replace(/<\/?laughter>/gi, " ");
+
+  // Detect breath/sigh cues
+  if (/\[(?:sigh|breath)\]/i.test(cleaned) || /<\/?breath>/i.test(cleaned)) {
+    detectedCues.push("breath");
+  }
+
+  if (/\[(?:hmm+|thinking)\]/i.test(cleaned)) {
+    detectedCues.push("hmm");
+  }
+
+  if (/\[gasp\]/i.test(cleaned)) {
+    detectedCues.push("gasp");
+  }
+
+  if (engine === "cosyvoice3") {
+    // ----------------------------------------------------
+    // CosyVoice 3: Native Instruct Tags (<strong>, <breath>)
+    // ----------------------------------------------------
+
+    // 1. Breath / Sigh:
+    // Convert [breath] or [sigh] to native <breath>
+    cleaned = cleaned.replace(/\[(?:breath|sigh)\]/gi, " <breath> ");
+
+    // 2. Emphasis / Strong:
+    // Convert wrapped [raise]...[/raise] or [emphasis]...[/emphasis] to <strong>...</strong>
+    cleaned = cleaned.replace(
+      /\[(?:raise|emphasis)\]([\s\S]*?)\[\/(?:raise|emphasis)\]/gi,
+      "<strong>$1</strong>"
+    );
+    // If tone was raised or isolated [raise] is used, wrap with <strong> if not already wrapped
+    if (tone === "raise" && !/<strong>[\s\S]*?<\/strong>/i.test(cleaned)) {
+      cleaned = `<strong>${cleaned.trim()}</strong>`;
+    }
+    cleaned = cleaned.replace(/\[\/?(?:raise|emphasis)\]/gi, " ");
+
+    // 3. Reactions:
+    cleaned = cleaned.replace(/\[(?:hmm+|thinking)\]/gi, "Hmm... ");
+    cleaned = cleaned.replace(/\[gasp\]/gi, "<breath> ");
+
+    // Clean multiple consecutive duplicate tags or spaces
+    cleaned = cleaned
+      .replace(/(?:<breath>\s*)+<breath>/gi, "<breath>")
+      .replace(/\s+/g, " ")
+      .trim();
+
+    // Pad whisper with gentle breath pauses
+    if (tone === "whisper" && cleaned.length > 0) {
+      cleaned = `<breath> ${cleaned.toLowerCase()} <breath>`;
+    }
+  } else {
+    // ----------------------------------------------------
+    // Chatterbox T3: Strip XML markup & condition via natural punctuation / ellipses
+    // ----------------------------------------------------
+    cleaned = cleaned.replace(/<\/?(?:laughter|strong|breath)>/gi, " ");
+    cleaned = cleaned.replace(
+      /\[\/?(?:laugh|laughter|giggle|chuckle|breath|sigh|gasp|whisper|soft|yell|shout|loud|raise|emphasis)\]/gi,
+      " "
+    );
+
+    if (detectedCues.includes("hmm")) {
+      cleaned = cleaned.replace(/\[(?:hmm+|thinking)\]/gi, "Hmm... ");
+    }
+
+    if (detectedCues.includes("breath") || detectedCues.includes("sigh") || detectedCues.includes("gasp")) {
+      cleaned = cleaned.replace(/\[(?:breath|sigh|gasp)\]/gi, "... ");
+    }
+
+    if (tone === "raise") {
+      cleaned = cleaned.toUpperCase();
+    }
+
+    cleaned = cleaned.replace(/\s+/g, " ").replace(/\.{4,}/g, "...").trim();
+
+    if (tone === "whisper" && cleaned.length > 0) {
+      cleaned = `... ${cleaned.toLowerCase()} ...`;
+    }
+  }
+
+  return { cleanedText: cleaned, detectedCues, tone };
+}
+
+interface SpeechChunk {
+  text: string;
+  isSentenceEnd: boolean;
+}
+
+/**
+ * Splits speech text into natural, flowing sentence chunks (up to ~36 words / ~14-16s).
+ * Avoids breaking within single sentences unless a sentence is extraordinarily long (>38 words).
+ * Keeps prosody and intonation natural and unbroken, and preserves XML tags without splitting them.
+ */
+function splitSpeechIntoSentences(text: string, targetMaxWords = 36): SpeechChunk[] {
+  const trimmedText = text.trim();
+  if (!trimmedText) return [];
+
+  // Count words ignoring markup tags
+  const cleanForWordCount = trimmedText.replace(/<\/?[a-z0-9_-]+>/gi, " ").trim();
+  const words = cleanForWordCount.split(/\s+/).filter(Boolean);
+  if (words.length <= targetMaxWords) {
+    const isEnd = /[.!?]$/.test(cleanForWordCount);
+    return [{ text: trimmedText, isSentenceEnd: isEnd }];
+  }
+
+  // Split along sentence terminators (. ! ? or newline) that don't occur inside an XML tag
+  const sentenceMatches =
+    trimmedText.match(/(?:<[^>]+>|[^.!?\n])+([.!?\n]+(?=[\s<]|$)|$)/g) || [trimmedText];
+  const chunks: SpeechChunk[] = [];
+  let currentText = "";
+
+  for (const s of sentenceMatches) {
+    const sTrimmed = s.trim();
+    if (!sTrimmed) continue;
+
+    const candidate = currentText ? `${currentText} ${sTrimmed}` : sTrimmed;
+    const candidateWords = candidate.replace(/<\/?[a-z0-9_-]+>/gi, " ").split(/\s+/).filter(Boolean).length;
+
+    if (candidateWords <= targetMaxWords) {
+      currentText = candidate;
+    } else {
+      if (currentText) {
+        const cleanCurrent = currentText.replace(/<\/?[a-z0-9_-]+>/gi, "").trim();
+        const isEnd = /[.!?]$/.test(cleanCurrent);
+        chunks.push({ text: currentText, isSentenceEnd: isEnd });
+      }
+
+      // If a single standalone sentence is massive (>38 words without a period):
+      const sWords = sTrimmed.replace(/<\/?[a-z0-9_-]+>/gi, " ").split(/\s+/).filter(Boolean).length;
+      if (sWords > targetMaxWords) {
+        // Split on major clause punctuation (, ; : — -) outside tags
+        const clauseMatches =
+          sTrimmed.match(/(?:<[^>]+>|[^,;:—-])+([,;:—-]+(?=[\s<]|$)|$)/g) || [sTrimmed];
+        let subText = "";
+        for (const cl of clauseMatches) {
+          const clTrim = cl.trim();
+          if (!clTrim) continue;
+          const subCandidate = subText ? `${subText} ${clTrim}` : clTrim;
+          const subWords = subCandidate.replace(/<\/?[a-z0-9_-]+>/gi, " ").split(/\s+/).filter(Boolean).length;
+          if (subWords <= targetMaxWords) {
+            subText = subCandidate;
+          } else {
+            if (subText) {
+              chunks.push({ text: subText, isSentenceEnd: false });
+            }
+            subText = clTrim;
+          }
+        }
+        if (subText) {
+          currentText = subText;
+        } else {
+          currentText = "";
+        }
+      } else {
+        currentText = sTrimmed;
+      }
+    }
+  }
+
+  if (currentText.trim()) {
+    const cleanCurrent = currentText.replace(/<\/?[a-z0-9_-]+>/gi, "").trim();
+    const isEnd = /[.!?]$/.test(cleanCurrent);
+    chunks.push({ text: currentText.trim(), isSentenceEnd: isEnd });
+  }
+
+  return chunks.filter((c) => c.text.length > 0);
 }
 
 function parseTextAndPauses(rawText: string): TextOrPauseSegment[] {
-  const PAUSE_REGEX = /\[pause\s*([0-9.]+)\s*(?:s|sec|seconds)?\]/gi;
+  // Conversational micro-pauses (<= 1.2s) should NOT chop up the speech utterance.
+  // Converting micro-pauses into ellipses ('... ') lets the model naturally pause and breathe.
+  let text = rawText.replace(
+    /\[pause\s*([0-9.]+)\s*(?:s|sec|seconds)?\]/gi,
+    (fullMatch, secStr) => {
+      const sec = parseFloat(secStr);
+      if (Number.isFinite(sec) && sec <= 1.2) {
+        return "... ";
+      }
+      return fullMatch;
+    }
+  );
+
+  // Clean empty wrapper tags like [whisper][/whisper]
+  text = text.replace(/\[(whisper|soft|yell|shout|loud|raise|emphasis)\]\s*\[\/\1\]/gi, "");
+
+  // Match either [pause X.Xs] or pointed tone wrapper blocks
+  const TOKEN_REGEX = /\[pause\s*([0-9.]+)\s*(?:s|sec|seconds)?\]|\[(whisper|soft|yell|shout|loud|raise|emphasis)\]([\s\S]*?)\[\/\2\]/gi;
   const segments: TextOrPauseSegment[] = [];
   let lastIndex = 0;
   let match: RegExpExecArray | null;
 
-  while ((match = PAUSE_REGEX.exec(rawText)) !== null) {
-    const textBefore = rawText.slice(lastIndex, match.index).trim();
-    if (textBefore) segments.push({ type: "speech", text: textBefore });
-    const pauseSec = parseFloat(match[1]);
-    if (Number.isFinite(pauseSec) && pauseSec > 0)
-      segments.push({ type: "pause", pauseSec: Math.min(pauseSec, 30) });
+  while ((match = TOKEN_REGEX.exec(text)) !== null) {
+    const textBefore = text.slice(lastIndex, match.index).trim();
+    if (textBefore) {
+      segments.push({ type: "speech", text: textBefore, tone: "normal" });
+    }
+
+    if (match[1] !== undefined) {
+      const pauseSec = parseFloat(match[1]);
+      if (Number.isFinite(pauseSec) && pauseSec > 0) {
+        segments.push({ type: "pause", pauseSec: Math.min(pauseSec, 30) });
+      }
+    } else if (match[2] !== undefined) {
+      const toneTag = match[2].toLowerCase();
+      const content = (match[3] || "").trim();
+      if (content) {
+        let tone: "normal" | "whisper" | "yell" | "raise" = "normal";
+        if (toneTag === "whisper" || toneTag === "soft") tone = "whisper";
+        else if (toneTag === "yell" || toneTag === "shout" || toneTag === "loud") tone = "yell";
+        else if (toneTag === "raise" || toneTag === "emphasis") tone = "raise";
+        segments.push({ type: "speech", text: content, tone });
+      }
+    }
     lastIndex = match.index + match[0].length;
   }
 
-  const textAfter = rawText.slice(lastIndex).trim();
-  if (textAfter) segments.push({ type: "speech", text: textAfter });
+  const textAfter = text.slice(lastIndex).trim();
+  if (textAfter) {
+    segments.push({ type: "speech", text: textAfter, tone: "normal" });
+  }
+
   return segments;
 }
 
+/**
+ * Resolves a reference audio input (URL path, relative path, or absolute path)
+ * and ensures it is converted to a 24kHz 16-bit mono PCM WAV file required
+ * by QVAC/dr_wav for CosyVoice 3 voice cloning and speaker embeddings.
+ */
+function prepareReferenceAudioWav(inputPath?: string): string | undefined {
+  if (!inputPath || typeof inputPath !== "string") return undefined;
+
+  let resolved = inputPath;
+  if (!fs.existsSync(resolved)) {
+    const pub = path.resolve(process.cwd(), "public", inputPath.replace(/^\//, ""));
+    if (fs.existsSync(pub)) resolved = pub;
+  }
+  if (!fs.existsSync(resolved)) {
+    const ws = path.resolve(process.cwd(), inputPath);
+    if (fs.existsSync(ws)) resolved = ws;
+  }
+  if (!fs.existsSync(resolved)) return undefined;
+
+  const ext = path.extname(resolved).toLowerCase();
+  if (ext === ".wav") return resolved;
+
+  const cacheDir = path.join(os.tmpdir(), "echo-voice-cache");
+  fs.mkdirSync(cacheDir, { recursive: true });
+  const stat = fs.statSync(resolved);
+  const outName = `${path.basename(resolved, ext)}_${stat.size}_${Math.floor(stat.mtimeMs)}.wav`;
+  const outPath = path.join(cacheDir, outName);
+
+  if (fs.existsSync(outPath) && fs.statSync(outPath).size > 1000) {
+    return outPath;
+  }
+
+  // Convert on macOS using native CoreAudio afconvert
+  try {
+    execFileSync("afconvert", ["-f", "WAVE", "-d", "LEI16@24000", "-c", "1", resolved, outPath]);
+    if (fs.existsSync(outPath) && fs.statSync(outPath).size > 1000) {
+      return outPath;
+    }
+  } catch (err) {
+    console.warn(`[Echo Voice Engine] Audio conversion failed for ${resolved}:`, err);
+  }
+
+  return undefined;
+}
+
+/**
+ * Gets a valid WAV reference for CosyVoice 3 voice cloning.
+ * Returns undefined if no custom reference was provided so that
+ * CosyVoice uses its high-quality native baked voice.
+ */
+function getValidReferenceWav(userProvidedSrc?: string): string | undefined {
+  if (userProvidedSrc) {
+    const converted = prepareReferenceAudioWav(userProvidedSrc);
+    if (converted) return converted;
+  }
+  return undefined;
+}
+
 export class VoiceEngineService {
-  private cacheDir: string;
-  private stateFilePath: string;
-  private downloadedModelIds: Set<string> = new Set();
-  private activeDownloads: Map<string, { cancel: () => void }> = new Map();
-  private loadedModel: LoadedTtsModel | null = null;
+  private modelsService: ModelsService;
+  private loadedModels: Map<string, string> = new Map();
   private activeTtsRequestIds: Map<string, string> = new Map();
 
-  // Definition of CosyVoice 3 and Parler-TTS neural models
-  private modelDefinitions: Omit<VoiceModelInfo, "downloaded" | "status">[] = [
-    {
-      id: "parler-mini-v1-q8_0",
-      name: "Parler-TTS Mini V1 (880M, Q8_0)",
-      descriptorName: "TTS_MINI_V1_EN_PARLER_TTS_Q8_0",
-      sizeBytes: 1162597856,
-      sizeFormatted: "1.16 GB",
-      description:
-        "Description-conditioned neural speech transformer with 12 expressive emotions and natural prosody (fast on all hardware).",
-      category: "backbone",
-      engine: "parler",
-      required: false,
-    },
-    {
-      id: "cosyvoice3-llm-q8_0",
-      name: "CosyVoice 3 Neural Speech Backbone (0.5B, Q8_0)",
-      descriptorName: "TTS_COSYVOICE3_LLM_COSYVOICE_Q8_0",
-      sizeBytes: 973496000,
-      sizeFormatted: "973 MB",
-      description:
-        "Zero-shot neural speech generator with instruct conditioning for voice design & cloning (optimized for Apple Silicon / M-series).",
-      category: "backbone",
-      engine: "cosyvoice3",
-      required: false,
-    },
-    {
-      id: "lavasr-enhancer",
-      name: "Lava-SR 48kHz Neural Enhancer (FP16)",
-      descriptorName: "TTS_ENHANCER_LAVASR_FP16",
-      sizeBytes: 28051008,
-      sizeFormatted: "28 MB",
-      description:
-        "Deep spectral bandwidth upsampler and harmonic clarity enhancer for studio-grade 48kHz ultra-HD audio.",
-      category: "enhancer",
-      engine: "shared",
-      required: false,
-    },
-    {
-      id: "cosyvoice3-s3tok-fp16",
-      name: "CosyVoice 3 S3Tok Speech Tokenizer (FP16)",
-      descriptorName: "TTS_COSYVOICE3_S3TOK_COSYVOICE_FP16",
-      sizeBytes: 496605536,
-      sizeFormatted: "496 MB",
-      description:
-        "Neural speech tokenizer required for high-fidelity instant voice cloning in CosyVoice 3.",
-      category: "vocoder",
-      engine: "cosyvoice3",
-      required: false,
-    },
-    {
-      id: "cosyvoice3-campplus-fp32",
-      name: "CosyVoice 3 CAM++ Speaker Encoder (FP32)",
-      descriptorName: "TTS_COSYVOICE3_CAMPPLUS_COSYVOICE_FP32",
-      sizeBytes: 27530656,
-      sizeFormatted: "27 MB",
-      description:
-        "Deep acoustic timbre and speaker embedding extractor for voice cloning in CosyVoice 3.",
-      category: "multilingual",
-      engine: "cosyvoice3",
-      required: false,
-    },
-  ];
+  constructor(modelsService?: ModelsService) {
+    this.modelsService = modelsService || new ModelsService();
+  }
 
-  constructor() {
-    this.cacheDir = path.join(os.homedir(), ".qvac", "models");
-    const userData = app
-      ? app.getPath("userData")
-      : path.join(os.homedir(), ".echo-ai");
-    if (!fs.existsSync(userData)) {
-      try {
-        fs.mkdirSync(userData, { recursive: true });
-      } catch {}
-    }
-    this.stateFilePath = path.join(userData, "voice_engine_state.json");
-    this.loadState();
+  public getModelsService(): ModelsService {
+    return this.modelsService;
   }
 
   /**
-   * Load persisted downloaded model status and discover cached weights
+   * Scan disk cache directory for downloaded models
    */
-  private loadState(): void {
-    try {
-      if (fs.existsSync(this.stateFilePath)) {
-        const raw = fs.readFileSync(this.stateFilePath, "utf-8");
-        const data = JSON.parse(raw);
-        if (Array.isArray(data.downloadedModelIds)) {
-          this.downloadedModelIds = new Set(data.downloadedModelIds);
-        }
-      }
-    } catch (e) {
-      console.warn("[VoiceEngineService] Could not load state file:", e);
-    }
-
-    // Check physical model files in QVAC cache
-    try {
-      if (fs.existsSync(this.cacheDir)) {
-        const files = fs.readdirSync(this.cacheDir);
-        for (const file of files) {
-          if (file.includes("parler-mini") || file.includes("parler")) {
-            this.downloadedModelIds.add("parler-mini-v1-q8_0");
-          }
-          if (file.includes("cosyvoice3-llm") || file.includes("cosy_voice")) {
-            this.downloadedModelIds.add("cosyvoice3-llm-q8_0");
-          }
-          if (file.includes("lavasr") || file.includes("enhancer")) {
-            this.downloadedModelIds.add("lavasr-enhancer");
-          }
-          if (file.includes("cosyvoice3-s3tok")) {
-            this.downloadedModelIds.add("cosyvoice3-s3tok-fp16");
-          }
-          if (file.includes("cosyvoice3-campplus")) {
-            this.downloadedModelIds.add("cosyvoice3-campplus-fp32");
-          }
-        }
-
-        // Check companion sets layout
-        const setsDir = path.join(this.cacheDir, "sets");
-        if (fs.existsSync(setsDir)) {
-          const setDirs = fs.readdirSync(setsDir);
-          for (const sd of setDirs) {
-            const setPath = path.join(setsDir, sd);
-            try {
-              if (fs.existsSync(setPath)) {
-                const setFiles = fs.readdirSync(setPath);
-                if (setFiles.some((f) => f.includes("parler-mini") || f.includes("parler"))) {
-                  this.downloadedModelIds.add("parler-mini-v1-q8_0");
-                }
-                if (setFiles.some((f) => f.includes("cosyvoice3-llm"))) {
-                  this.downloadedModelIds.add("cosyvoice3-llm-q8_0");
-                }
-              }
-            } catch {}
-          }
-        }
-      }
-    } catch {}
-  }
-
-  /**
-   * Persist state to disk
-   */
-  private saveState(): void {
-    try {
-      const data = {
-        downloadedModelIds: Array.from(this.downloadedModelIds),
-        updatedAt: new Date().toISOString(),
-      };
-      fs.writeFileSync(
-        this.stateFilePath,
-        JSON.stringify(data, null, 2),
-        "utf-8",
-      );
-    } catch (e) {
-      console.warn("[VoiceEngineService] Could not save state file:", e);
-    }
+  public syncCacheFromDisk(): void {
+    this.modelsService.syncCacheFromDisk();
   }
 
   /**
    * Delete all installed models from disk and reset engine state
    */
   public async deleteAllModels(): Promise<boolean> {
-    if (this.loadedModel) {
+    for (const modelId of this.loadedModels.values()) {
       try {
         await (qvacSdk as any).unloadModel?.({
-          modelId: this.loadedModel.modelId,
+          modelId,
         });
       } catch {}
-      this.loadedModel = null;
     }
+    this.loadedModels.clear();
 
-    this.downloadedModelIds.clear();
-    this.saveState();
-
-    try {
-      if (fs.existsSync(this.cacheDir)) {
-        const files = fs.readdirSync(this.cacheDir);
-        for (const file of files) {
-          const fullPath = path.join(this.cacheDir, file);
-          try {
-            const st = fs.statSync(fullPath);
-            if (st.isDirectory()) {
-              fs.rmSync(fullPath, { recursive: true, force: true });
-            } else {
-              fs.unlinkSync(fullPath);
-            }
-          } catch {}
-        }
-      }
-    } catch {}
-
-    return true;
+    return this.modelsService.deleteAllModels();
   }
 
   /**
    * Get complete status of all voice engine models
    */
-  public getStatus(selectedEngine?: "cosyvoice3" | "parler"): VoiceModelStatusResult {
-    const models: VoiceModelInfo[] = this.modelDefinitions.map((def) => {
-      const isDownloaded = this.downloadedModelIds.has(def.id);
-      const isDownloading = this.activeDownloads.has(def.id);
-      const isRequired = selectedEngine
-        ? def.category === "backbone" && def.engine === selectedEngine
-        : def.category === "backbone";
-
-      return {
-        ...def,
-        required: isRequired,
-        downloaded: isDownloaded,
-        status: isDownloading ? "downloading" : isDownloaded ? "ready" : "idle",
-      };
-    });
-
-    const hasReadyBackbone = selectedEngine
-      ? this.downloadedModelIds.has(
-          selectedEngine === "parler" ? "parler-mini-v1-q8_0" : "cosyvoice3-llm-q8_0",
-        )
-      : this.downloadedModelIds.has("parler-mini-v1-q8_0") ||
-        this.downloadedModelIds.has("cosyvoice3-llm-q8_0");
-
-    return {
-      ready: hasReadyBackbone,
-      allRequiredDownloaded: hasReadyBackbone,
-      models,
-      cacheDirectory: this.cacheDir,
-    };
+  public getStatus(selectedEngine?: "cosyvoice3" | "chatterbox"): VoiceModelStatusResult {
+    return this.modelsService.getStatus(selectedEngine);
   }
 
   /**
@@ -388,189 +625,102 @@ export class VoiceEngineService {
     modelId: string,
     onProgress?: (p: ModelDownloadProgressPayload) => void,
   ): Promise<{ success: boolean; modelId: string; error?: string }> {
-    const def = this.modelDefinitions.find((m) => m.id === modelId);
-    if (!def) {
-      return { success: false, modelId, error: `Unknown model ID: ${modelId}` };
-    }
-
-    if (this.downloadedModelIds.has(modelId)) {
-      onProgress?.({
-        modelId,
-        percentage: 100,
-        downloaded: def.sizeBytes,
-        total: def.sizeBytes,
-        speed: "Ready",
-      });
-      return { success: true, modelId };
-    }
-
-    let isCancelled = false;
-    let lastPct = 0;
-    this.activeDownloads.set(modelId, {
-      cancel: () => {
-        isCancelled = true;
-      },
-    });
-
-    try {
-      const sdk: any = qvacSdk as any;
-      const sdkDescriptor: any = sdk[def.descriptorName] || null;
-
-      if (!sdkDescriptor || typeof qvacSdk.downloadAsset !== "function") {
-        return {
-          success: false,
-          modelId,
-          error: `No asset descriptor found for ${modelId}`,
-        };
-      }
-
-      const downloadPromise = qvacSdk.downloadAsset({
-        assetSrc: sdkDescriptor,
-        onProgress: (p: any) => {
-          if (isCancelled) return;
-          const pct = Math.min(100, Math.round(p.percentage || 0));
-          // Ignore backwards progress (QVAC may send non-monotonic percentages
-          // for multi-file model sets or post-processing events)
-          if (pct < lastPct) return;
-          lastPct = pct;
-          const dl = p.downloaded || Math.round((pct / 100) * def.sizeBytes);
-          const tot = p.total || def.sizeBytes;
-          const speed = p.speed || "Downloading...";
-          onProgress?.({
-            modelId,
-            percentage: pct,
-            downloaded: dl,
-            total: tot,
-            speed,
-          });
-        },
-      });
-
-      if (downloadPromise && downloadPromise.requestId) {
-        this.activeDownloads.set(modelId, {
-          cancel: () => {
-            isCancelled = true;
-            try {
-              if (typeof (qvacSdk as any).cancel === "function") {
-                (qvacSdk as any).cancel({
-                  requestId: downloadPromise.requestId,
-                });
-              }
-            } catch {}
-          },
-        });
-      }
-
-      await downloadPromise;
-
-      if (isCancelled) {
-        return { success: false, modelId, error: "Download cancelled" };
-      }
-
-      this.downloadedModelIds.add(modelId);
-      this.saveState();
-
-      onProgress?.({
-        modelId,
-        percentage: 100,
-        downloaded: def.sizeBytes,
-        total: def.sizeBytes,
-        speed: "Completed",
-      });
-
-      return { success: true, modelId };
-    } catch (err) {
-      console.error(`[VoiceEngineService] Download error for ${modelId}:`, err);
-      return { success: false, modelId, error: String(err) };
-    } finally {
-      this.activeDownloads.delete(modelId);
-    }
+    return this.modelsService.downloadModel(modelId, onProgress);
   }
 
   /**
    * Cancel an active model download
    */
   public cancelDownload(modelId: string): boolean {
-    const active = this.activeDownloads.get(modelId);
-    if (active) {
-      active.cancel();
-      this.activeDownloads.delete(modelId);
-      return true;
-    }
-    return false;
+    return this.modelsService.cancelDownload(modelId);
   }
 
-  /**
-   * Mark all required models as downloaded for fast setup
-   */
-  public markAllAsReady(): void {
-    for (const def of this.modelDefinitions) {
-      if (def.required) {
-        this.downloadedModelIds.add(def.id);
-      }
-    }
-    this.saveState();
-  }
 
   /**
-   * Ensures the requested engine (CosyVoice 3 or Parler-TTS) is loaded with configuration.
+   * Ensures the requested engine (CosyVoice 3 or Chatterbox T3) is loaded with configuration.
    */
   private async ensureModelLoaded(opts: {
-    engine?: "cosyvoice3" | "parler";
+    engine?: "cosyvoice3" | "chatterbox";
     language?: string;
     lavaSrEnabled?: boolean;
     instruct?: string;
     emotion?: string;
     pace?: string;
+    referenceAudioSrc?: string;
     taskId: string;
     onProgress?: TtsProgressCallback;
     onLog?: TtsLogCallback;
-  }): Promise<{ modelId: string; engine: "cosyvoice3" | "parler" }> {
-    const engine: "cosyvoice3" | "parler" = opts.engine || "cosyvoice3";
-    const lavaSr = opts.lavaSrEnabled !== false;
+  }): Promise<{ modelId: string; engine: "cosyvoice3" | "chatterbox" }> {
+    const engine: "cosyvoice3" | "chatterbox" = opts.engine || "cosyvoice3";
+    const lavaSr = opts.lavaSrEnabled !== false && this.modelsService.isModelDownloaded("lavasr-enhancer");
     const lavasrSrc = (qvacSdk as any).TTS_ENHANCER_LAVASR_FP16;
 
-    if (engine === "parler") {
-      const parlerDescriptor =
-        (qvacSdk as any).TTS_MINI_V1_EN_PARLER_TTS_Q8_0 ||
-        (qvacSdk as any).TTS_MINI_V1_EN_PARLER_TTS_FP16;
+    if (engine === "chatterbox") {
+      const isMultilingual =
+        opts.language &&
+        opts.language !== "en" &&
+        this.modelsService.isModelDownloaded("chatterbox-t3-multilingual-q8_0") &&
+        this.modelsService.isModelDownloaded("chatterbox-s3gen-multilingual-q8_0");
 
-      if (!parlerDescriptor) {
-        throw new Error("QVAC Parler-TTS descriptor missing from SDK");
+      let t3Descriptor = isMultilingual
+        ? (qvacSdk as any).TTS_T3_MULTILINGUAL_CHATTERBOX_Q8_0
+        : (qvacSdk as any).TTS_T3_TURBO_EN_CHATTERBOX_Q8_0;
+
+      let s3genDescriptor = isMultilingual
+        ? (qvacSdk as any).TTS_S3GEN_MULTILINGUAL_CHATTERBOX_Q8_0
+        : (qvacSdk as any).TTS_S3GEN_EN_CHATTERBOX_Q8_0;
+
+      const chatterboxModelLabel = isMultilingual
+        ? "Chatterbox T3 Multilingual (Q8_0 GGUF)"
+        : "Chatterbox T3 Turbo EN (Q8_0 GGUF)";
+
+      if (!t3Descriptor || !s3genDescriptor) {
+        throw new Error("QVAC Chatterbox descriptors (T3 and/or S3Gen) missing from SDK");
       }
 
-      const key = `parler|${process.arch === "arm64" ? "metal" : "cpu"}|native44k`;
-
-      if (this.loadedModel && this.loadedModel.key === key) {
-        return { modelId: this.loadedModel.modelId, engine: "parler" };
+      // Chatterbox uses a reference audio WAV for voice cloning
+      let refWavPath = getValidReferenceWav(opts.referenceAudioSrc);
+      if (!refWavPath) {
+        const defaultVoice = path.resolve(process.cwd(), "public", "voices", "samples", "en", "voice_en_male_1.mp3");
+        if (fs.existsSync(defaultVoice)) {
+          refWavPath = prepareReferenceAudioWav(defaultVoice);
+        }
       }
 
-      if (this.loadedModel) {
-        try {
-          await (qvacSdk as any).unloadModel?.({
-            modelId: this.loadedModel.modelId,
-          });
-        } catch {}
-        this.loadedModel = null;
+      const key = [
+        "chatterbox",
+        isMultilingual ? "multilingual" : "en",
+        refWavPath ? path.basename(refWavPath) : "default",
+        lavaSr ? "lavasr48k" : "native24k",
+        process.arch === "arm64" ? "metal" : "cpu",
+      ].join("|");
+
+      const cachedModelId = this.loadedModels.get(key);
+      if (cachedModelId) {
+        return { modelId: cachedModelId, engine: "chatterbox" };
       }
 
       opts.onLog?.({
-        text: `[Echo Voice Engine] Loading Parler-TTS Mini V1 (880M Q8_0, 44.1kHz native${process.arch === "arm64" ? " +Metal GPU" : " +CPU"})...`,
+        text: `[Echo Voice Engine] Loading ${chatterboxModelLabel} + S3Gen Vocoder (${lavaSr ? "48kHz LavaSR" : "24kHz native"}${process.arch === "arm64" ? " +Metal GPU" : " +CPU"})...`,
         stream: "stdout",
       });
 
-      // Parler natively outputs 44.1kHz high-fidelity speech. LavaSR is a 24k->48k upsampler
-      // meant for CosyVoice 3 and must NOT be attached to 44.1kHz Parler streams.
-      // Conditioning options (description or template fields like emotion/pace) are passed
-      // per-call to textToSpeech(), preventing mutual exclusion conflicts during load.
       const baseConfig: any = {
-        ttsEngine: "parler",
+        ttsEngine: "chatterbox",
+        language: opts.language || "en",
+        s3genModelSrc: s3genDescriptor?.src || s3genDescriptor,
+        streamChunkTokens: 25,
+        streamFirstChunkTokens: 10,
+        cfmSteps: 1,
+        threads: 8,
         useGPU: process.arch === "arm64",
         seed: 42,
+        ...(refWavPath ? { referenceAudioSrc: refWavPath } : {}),
+        ...(lavaSr && lavasrSrc ? { lavasrEnhancerModelSrc: lavasrSrc } : {}),
       };
 
       const modelId = await (qvacSdk as any).loadModel({
-        modelSrc: parlerDescriptor,
+        modelSrc: t3Descriptor,
         modelType: "tts",
         modelConfig: baseConfig,
         onProgress: (p: any) => {
@@ -578,14 +728,27 @@ export class VoiceEngineService {
           opts.onProgress?.({
             taskId: opts.taskId,
             progress: Math.min(40, Math.round(pct * 0.4)),
-            message: `Loading Parler-TTS weights ${pct}%...`,
+            message: `Loading ${chatterboxModelLabel} weights ${pct}%...`,
             phase: "loading",
           });
         },
       });
 
-      this.loadedModel = { modelId, key };
-      return { modelId, engine: "parler" };
+      if (this.loadedModels.size >= 4) {
+        const oldestKey = this.loadedModels.keys().next().value;
+        if (oldestKey) {
+          const oldId = this.loadedModels.get(oldestKey);
+          if (oldId) {
+            try {
+              await (qvacSdk as any).unloadModel?.({ modelId: oldId });
+            } catch {}
+          }
+          this.loadedModels.delete(oldestKey);
+        }
+      }
+
+      this.loadedModels.set(key, modelId);
+      return { modelId, engine: "chatterbox" };
     } else {
       // CosyVoice 3
       const cosyvoiceDescriptor =
@@ -596,36 +759,39 @@ export class VoiceEngineService {
         throw new Error("QVAC CosyVoice 3 descriptor missing from SDK");
       }
 
-      const instructPrompt = opts.instruct?.trim() || "";
       const rawEmotion = opts.emotion?.toLowerCase() || "";
       const validEmotions = ["anger", "happy", "neutral", "sad"];
       const emotion = validEmotions.includes(rawEmotion)
         ? rawEmotion
         : undefined;
 
+      const refWavPath = getValidReferenceWav(opts.referenceAudioSrc);
+      const hasCloningModels =
+        (this.modelsService.isModelDownloaded("cosyvoice3-s3tok-fp16") ||
+          this.modelsService.isModelDownloaded("cosyvoice3-s3tok")) &&
+        (this.modelsService.isModelDownloaded("cosyvoice3-campplus-fp32") ||
+          this.modelsService.isModelDownloaded("cosyvoice3-campplus"));
+
+      console.log(
+        `[Echo Voice Engine] CosyVoice 3 setup: refWavPath=${refWavPath}, hasCloningModels=${hasCloningModels}`,
+      );
+
       const key = [
         "cosyvoice3",
-        "baseline",
-        instructPrompt || "none",
+        refWavPath || "native",
         emotion || "none",
         lavaSr ? "lavasr48k" : "native24k",
       ].join("|");
 
-      if (this.loadedModel && this.loadedModel.key === key) {
-        return { modelId: this.loadedModel.modelId, engine: "cosyvoice3" };
+      const cachedModelId = this.loadedModels.get(key);
+      if (cachedModelId) {
+        return { modelId: cachedModelId, engine: "cosyvoice3" };
       }
 
-      if (this.loadedModel) {
-        try {
-          await (qvacSdk as any).unloadModel?.({
-            modelId: this.loadedModel.modelId,
-          });
-        } catch {}
-        this.loadedModel = null;
-      }
-
+      const voiceDesc = refWavPath ? ` voice="${path.basename(refWavPath)}"` : " (native studio voice)";
+      const emotionDesc = emotion ? ` emotion="${emotion}"` : "";
       opts.onLog?.({
-        text: `[Echo Voice Engine] Loading CosyVoice 3 Engine (0.5B Q8_0${lavaSr ? " +LavaSR 48kHz" : ""}${instructPrompt ? ` instruct="${instructPrompt.slice(0, 45)}..."` : ""})...`,
+        text: `[Echo Voice Engine] Loading CosyVoice 3 Engine (0.5B Q8_0 [FP32 Flow Matching]${lavaSr ? " +LavaSR 48kHz" : ""}${voiceDesc}${emotionDesc})...`,
         stream: "stdout",
       });
 
@@ -633,11 +799,17 @@ export class VoiceEngineService {
         ttsEngine: "cosyvoice3",
         useGPU: true,
         seed: 42,
-        ...(lavaSr && lavasrSrc?.src
-          ? { lavasrEnhancerModelSrc: lavasrSrc.src }
+        ...(refWavPath && hasCloningModels
+          ? {
+              cosyvoice3S3tokModelSrc: (qvacSdk as any).TTS_COSYVOICE3_S3TOK_COSYVOICE_FP16,
+              cosyvoice3CampplusModelSrc: (qvacSdk as any).TTS_COSYVOICE3_CAMPPLUS_COSYVOICE_FP32,
+              referenceAudioSrc: refWavPath,
+            }
           : {}),
-        ...(instructPrompt ? { instruct: instructPrompt } : {}),
-        ...(emotion && !instructPrompt ? { emotion } : {}),
+        ...(lavaSr && lavasrSrc
+          ? { lavasrEnhancerModelSrc: lavasrSrc }
+          : {}),
+        ...(emotion ? { emotion } : {}),
       };
 
       const modelId = await (qvacSdk as any).loadModel({
@@ -655,7 +827,20 @@ export class VoiceEngineService {
         },
       });
 
-      this.loadedModel = { modelId, key };
+      if (this.loadedModels.size >= 4) {
+        const oldestKey = this.loadedModels.keys().next().value;
+        if (oldestKey) {
+          const oldId = this.loadedModels.get(oldestKey);
+          if (oldId) {
+            try {
+              await (qvacSdk as any).unloadModel?.({ modelId: oldId });
+            } catch {}
+          }
+          this.loadedModels.delete(oldestKey);
+        }
+      }
+
+      this.loadedModels.set(key, modelId);
       return { modelId, engine: "cosyvoice3" };
     }
   }
@@ -671,7 +856,7 @@ export class VoiceEngineService {
   }
 
   /**
-   * High-fidelity speech synthesis pipeline with dynamic engine selection (CosyVoice 3 / Parler-TTS)
+   * High-fidelity speech synthesis pipeline with dynamic engine selection (CosyVoice 3 / Chatterbox T3)
    * and optional Lava-SR 48kHz neural enhancement.
    */
   public async synthesize(
@@ -681,7 +866,7 @@ export class VoiceEngineService {
     isCancelled?: () => boolean,
   ): Promise<TtsGenerateResult> {
     const { taskId, rounds } = options;
-    const activeEngine: "cosyvoice3" | "parler" = options.engine || "cosyvoice3";
+    const activeEngine: "cosyvoice3" | "chatterbox" = options.engine || "cosyvoice3";
     const activeRounds = rounds.filter((r) => r.text.trim().length > 0);
     if (activeRounds.length === 0) {
       return { success: false, error: "No active speech rounds to synthesize" };
@@ -699,11 +884,11 @@ export class VoiceEngineService {
       onProgress?.({
         taskId,
         progress: 8,
-        message: `Loading ${activeEngine === "parler" ? "Parler-TTS" : "CosyVoice 3"} Engine...`,
+        message: `Loading ${activeEngine === "chatterbox" ? "Chatterbox T3" : "CosyVoice 3"} Engine...`,
         phase: "loading",
       });
 
-      const lavaSrEnabled = options.lavaSrEnabled !== false;
+      const lavaSrEnabled = options.lavaSrEnabled !== false && this.modelsService.isModelDownloaded("lavasr-enhancer");
       const voicePrompt =
         options.voicePrompt ||
         options.prompt ||
@@ -720,13 +905,15 @@ export class VoiceEngineService {
         ? rawEmotion
         : undefined;
 
-      const { modelId, engine } = await this.ensureModelLoaded({
+      const firstRoundRefAudio = firstRound.referenceAudioSrc || options.referenceAudioSrc;
+      const { engine } = await this.ensureModelLoaded({
         engine: activeEngine,
         language: options.language || "en",
         lavaSrEnabled,
         instruct: voicePrompt || undefined,
         emotion: detectedEmotion,
         pace: firstRound.pace?.toLowerCase(),
+        referenceAudioSrc: firstRoundRefAudio,
         taskId,
         onProgress,
         onLog,
@@ -735,7 +922,7 @@ export class VoiceEngineService {
       if (isCancelled?.()) return { success: false, error: "Cancelled" };
 
       const allSamples: number[] = [];
-      let sampleRate = engine === "parler" ? 44100 : lavaSrEnabled ? 48000 : 24000;
+      let sampleRate = lavaSrEnabled ? 48000 : 24000;
 
       for (let i = 0; i < activeRounds.length; i++) {
         if (isCancelled?.()) {
@@ -749,22 +936,42 @@ export class VoiceEngineService {
         }
 
         const round = activeRounds[i];
+        const roundRefAudio = round.referenceAudioSrc || options.referenceAudioSrc;
+        const roundRawEmotion = round.emotion?.toLowerCase() || "";
+        const roundEmotion = validEmotions.includes(roundRawEmotion) ? roundRawEmotion : detectedEmotion;
+
+        const { modelId: roundModelId } = await this.ensureModelLoaded({
+          engine: activeEngine,
+          language: options.language || "en",
+          lavaSrEnabled,
+          instruct: round.prompt || round.description || voicePrompt || undefined,
+          emotion: roundEmotion,
+          pace: round.pace?.toLowerCase(),
+          referenceAudioSrc: roundRefAudio,
+          taskId,
+          onProgress,
+          onLog,
+        });
+
         onProgress?.({
           taskId,
           progress: 40 + Math.round((i / activeRounds.length) * 50),
-          message: `Synthesizing turn ${i + 1}/${activeRounds.length}...`,
+          message: `Synthesizing turn ${i + 1}/${activeRounds.length}${round.speakerName ? ` (${round.speakerName})` : ''}...`,
           phase: "synthesis",
         });
 
-        // Inter-turn natural spacing
-        if (i > 0) {
-          const interTurnPause = Math.floor(sampleRate * 0.25);
-          for (let p = 0; p < interTurnPause; p++) allSamples.push(0);
+        // Inter-turn natural spacing with studio acoustic floor
+        if (i > 0 && allSamples.length > 0) {
+          const interTurnSamples = generateAcousticRoomPause(0.20, sampleRate);
+          crossfadeAppend(allSamples, interTurnSamples, sampleRate, 14);
         }
 
-        // Parse explicit [pause X.Xs] cues into real acoustic silence
+        // Parse explicit [pause X.Xs] cues and pointed tone blocks ([whisper], [yell], [raise])
         const segments = parseTextAndPauses(round.text);
-        for (const seg of segments) {
+        let speechSegCount = 0;
+
+        for (let sIdx = 0; sIdx < segments.length; sIdx++) {
+          const seg = segments[sIdx];
           if (isCancelled?.()) {
             const reqId = this.activeTtsRequestIds.get(taskId);
             if (reqId) {
@@ -776,101 +983,139 @@ export class VoiceEngineService {
           }
 
           if (seg.type === "pause" && seg.pauseSec) {
-            const pauseSamples = Math.floor(sampleRate * seg.pauseSec);
-            for (let p = 0; p < pauseSamples; p++) allSamples.push(0);
+            const pauseSamples = generateAcousticRoomPause(seg.pauseSec, sampleRate);
+            crossfadeAppend(allSamples, pauseSamples, sampleRate, 14);
             continue;
           }
 
           if (seg.type === "speech" && seg.text) {
-            const ttsPayload: any = {
-              modelId,
-              text: seg.text,
-              inputType: "text",
-              stream: false,
-            };
+            // Process cues & formatting (mapping to CosyVoice 3 native instruct tags or Chatterbox clean text)
+            const { cleanedText, detectedCues, tone: segTone } = processConversationalCues(seg.text, engine, seg.tone);
+            if (!cleanedText) continue;
 
-            if (engine === "parler") {
-              const userPrompt = (
-                round.prompt ||
-                round.description ||
-                voicePrompt ||
-                ""
-              ).trim();
+            // Split into natural sentence chunks (up to 36 words / ~15s)
+            // Keeping complete sentences intact so prosody, melody, and flow are never broken
+            const sentenceChunks = splitSpeechIntoSentences(cleanedText, 36);
 
-              const roundEmotion = (round.emotion?.toLowerCase() || detectedEmotion || "conversation").trim();
-              const validParlerEmotions = [
-                "command", "anger", "narration", "conversation", "disgust",
-                "fear", "happy", "neutral", "proper noun", "news", "sad", "surprise"
-              ];
-              const parlerEmotion = validParlerEmotions.includes(roundEmotion) ? roundEmotion : "conversation";
+            for (let cIdx = 0; cIdx < sentenceChunks.length; cIdx++) {
+              const chunkObj = sentenceChunks[cIdx];
+              const chunkText = chunkObj.text;
+              if (!chunkText) continue;
 
-              const roundPace = (round.pace?.toLowerCase() || "").trim();
-              const validPaces = ["slow", "moderate", "fast"];
-              const parlerPace = validPaces.includes(roundPace) ? roundPace : "moderate";
-
-              if (userPrompt) {
-                // Parler-TTS is cross-attention conditioned and performs best with concise, lightweight scene descriptions
-                // (e.g. "A woman in a podcast environment" or "A deep-voiced man in a podcast studio")
-                // without artificial prompt bloat or keyword stacking.
-                ttsPayload.description = userPrompt;
-              } else {
-                // Natural, lightweight fallback when no custom prompt is given
-                const emotionHint =
-                  parlerEmotion && parlerEmotion !== "neutral" && parlerEmotion !== "conversation"
-                    ? ` in a ${parlerEmotion} tone`
-                    : "";
-                const paceHint = parlerPace && parlerPace !== "moderate" ? ` at a ${parlerPace} pace` : "";
-                ttsPayload.description = `A speaker in a podcast environment${emotionHint}${paceHint}.`;
+              if (isCancelled?.()) {
+                const reqId = this.activeTtsRequestIds.get(taskId);
+                if (reqId) {
+                  try {
+                    await (qvacSdk as any).cancel?.({ requestId: reqId });
+                  } catch {}
+                }
+                return { success: false, error: "Cancelled" };
               }
-            }
 
-            const result: any = (qvacSdk as any).textToSpeech(ttsPayload);
-
-            if (result?.requestId)
-              this.activeTtsRequestIds.set(taskId, result.requestId);
-            const pcm: number[] = (await result.buffer) ?? [];
-            const done = await result.done;
-            const srValue = await result.sampleRate;
-            const sr = typeof srValue === "number" && srValue > 0
-              ? srValue
-              : engine === "parler"
-                ? 44100
-                : sampleRate;
-            sampleRate = sr;
-            this.activeTtsRequestIds.delete(taskId);
-
-            // Debug: log raw PCM stats to diagnose noise issues
-            if (pcm.length > 0) {
-              let maxAbs = 0;
-              let minVal = Infinity;
-              let maxVal = -Infinity;
-              for (const sample of pcm) {
-                const value = Number.isFinite(sample) ? sample : 0;
-                maxAbs = Math.max(maxAbs, Math.abs(value));
-                minVal = Math.min(minVal, value);
-                maxVal = Math.max(maxVal, value);
+              // Natural, seamless inter-sentence or inter-segment breath gap:
+              // - 0.035s if a rare split happened mid-sentence at a comma
+              // - 0.09s between sentences in continuous speech (natural breath)
+              // - 0.08s between tagged segments
+              if (allSamples.length > 0) {
+                const isMidSentence = cIdx > 0 && !sentenceChunks[cIdx - 1].isSentenceEnd;
+                const pauseDuration = isMidSentence ? 0.035 : (cIdx > 0 ? 0.09 : 0.08);
+                const interPause = generateAcousticRoomPause(pauseDuration, sampleRate);
+                crossfadeAppend(allSamples, interPause, sampleRate, 10);
               }
-              const allZero = pcm.every((s) => s === 0);
-              const allSame = pcm.every((s) => s === pcm[0]);
-              console.log(
-                `[TTS Debug] PCM length=${pcm.length}, maxAbs=${maxAbs.toFixed(4)}, min=${minVal.toFixed(4)}, max=${maxVal.toFixed(4)}, allZero=${allZero}, allSame=${allSame}, sampleRate=${sr}`,
-              );
-            }
+              speechSegCount++;
 
-            // Save QVAC's raw output as a playable WAV file for inspection
-            if (pcm.length > 0) {
-              const safeLabel =
-                seg.text?.replace(/[^a-z0-9]/gi, "_").slice(0, 40) ||
-                `round-${i}`;
-              savePcmAsWavFile(pcm, sr, `segment-${i}-${safeLabel}`);
-            }
+              const ttsPayload: any = {
+                modelId: roundModelId,
+                text: chunkText,
+                inputType: "text",
+                stream: false,
+              };
 
-            if (!done || !pcm || pcm.length === 0) {
-              throw new Error(
-                `${engine === "parler" ? "Parler-TTS" : "CosyVoice 3"} returned no audio for turn ${i + 1}`,
-              );
+              if (engine === "cosyvoice3") {
+                const roundEmotion = (round.emotion?.toLowerCase() || detectedEmotion || "").trim();
+                const validCosyEmotions = ["anger", "happy", "neutral", "sad"];
+
+                if (segTone === "whisper" || detectedCues.includes("whisper")) {
+                  // Pointed whisper: CosyVoice 3 native soft volume and slow pace
+                  ttsPayload.volume = "soft";
+                  ttsPayload.pace = "slow";
+                } else if (segTone === "yell" || detectedCues.includes("yell")) {
+                  // Pointed yell: CosyVoice 3 native loud volume and anger emotion for forceful projection
+                  ttsPayload.volume = "loud";
+                  ttsPayload.emotion = "anger";
+                } else if (segTone === "raise" || detectedCues.includes("raise")) {
+                  // Pointed pitch raise: CosyVoice 3 native loud volume with elevated delivery
+                  ttsPayload.volume = "loud";
+                } else {
+                  // Normal segment: map base round emotion
+                  let cosyEmotion = validCosyEmotions.includes(roundEmotion) ? roundEmotion : undefined;
+                  if ((detectedCues.includes("sigh") || detectedCues.includes("breath")) && !cosyEmotion) {
+                    cosyEmotion = "sad";
+                  }
+
+                  if (cosyEmotion && cosyEmotion !== "neutral") {
+                    ttsPayload.emotion = cosyEmotion;
+                  } else {
+                    const roundPace = (round.pace?.toLowerCase() || "").trim();
+                    const validPaces = ["slow", "moderate", "fast"];
+                    if (validPaces.includes(roundPace) && roundPace !== "moderate") {
+                      ttsPayload.pace = roundPace;
+                    }
+                  }
+                }
+              }
+
+              const result: any = (qvacSdk as any).textToSpeech(ttsPayload);
+
+              if (result?.requestId)
+                this.activeTtsRequestIds.set(taskId, result.requestId);
+              const pcm: number[] = (await result.buffer) ?? [];
+              const done = await result.done;
+              const srValue = await result.sampleRate;
+              const sr = typeof srValue === "number" && srValue > 0
+                ? srValue
+                : lavaSrEnabled ? 48000 : 24000;
+              sampleRate = sr;
+              this.activeTtsRequestIds.delete(taskId);
+
+              // Debug: log raw PCM stats to diagnose noise issues
+              if (pcm.length > 0) {
+                let maxAbs = 0;
+                let minVal = Infinity;
+                let maxVal = -Infinity;
+                for (const sample of pcm) {
+                  const value = Number.isFinite(sample) ? sample : 0;
+                  maxAbs = Math.max(maxAbs, Math.abs(value));
+                  minVal = Math.min(minVal, value);
+                  maxVal = Math.max(maxVal, value);
+                }
+                const allZero = pcm.every((s) => s === 0);
+                const allSame = pcm.every((s) => s === pcm[0]);
+                console.log(
+                  `[TTS Debug] Turn ${i + 1} Chunk ${cIdx + 1}/${sentenceChunks.length}: PCM length=${pcm.length}, maxAbs=${maxAbs.toFixed(4)}, min=${minVal.toFixed(4)}, max=${maxVal.toFixed(4)}, allZero=${allZero}, allSame=${allSame}, sampleRate=${sr}`,
+                );
+              }
+
+              // Save QVAC's raw output as a playable WAV file for inspection
+              if (pcm.length > 0) {
+                const safeLabel =
+                  chunkText.replace(/[^a-z0-9]/gi, "_").slice(0, 30) ||
+                  `round-${i}-chunk-${cIdx}`;
+                savePcmAsWavFile(pcm, sr, `segment-${i}-${safeLabel}`);
+              }
+
+              if (!done || !pcm || pcm.length === 0) {
+                throw new Error(
+                  `${engine === "chatterbox" ? "Chatterbox T3" : "CosyVoice 3"} returned no audio for turn ${i + 1}`,
+                );
+              }
+
+              // Trim model's dead air silence from head and tail (keeping natural pre/post roll)
+              const trimmedPcm = trimPcmSilence(pcm, sr);
+
+              // Seamless equal-power crossfade append into master buffer (12ms)
+              crossfadeAppend(allSamples, trimmedPcm, sr, 12);
             }
-            for (const s of pcm) allSamples.push(s);
           }
         }
       }
@@ -906,19 +1151,13 @@ export class VoiceEngineService {
         speakerName:
           activeRounds.length > 1
             ? `${activeRounds.length} Speakers`
-            : engine === "parler"
-              ? "Parler Persona"
-              : options.speakerName || "Sterling Rhodes",
+            : options.speakerName || "Sterling Rhodes",
         speakerColor:
           activeRounds.length > 1
             ? "#10b981"
-            : engine === "parler"
-              ? "#a855f7"
-              : options.speakerColor || "#38bdf8",
+            : options.speakerColor || "#38bdf8",
         speakerAvatarUrl:
-          engine === "parler"
-            ? "/voices/sterling.jpg"
-            : options.speakerAvatarUrl || "/voices/sterling.jpg",
+          options.speakerAvatarUrl || "/voices/sterling.jpg",
         duration,
         audioUrl,
         waveform,
@@ -929,7 +1168,7 @@ export class VoiceEngineService {
       onProgress?.({
         taskId,
         progress: 100,
-        message: "CosyVoice 3 synthesis complete",
+        message: `${engine === "chatterbox" ? "Chatterbox T3" : "CosyVoice 3"} synthesis complete`,
         phase: "complete",
       });
 

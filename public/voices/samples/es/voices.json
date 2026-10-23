@@ -18,8 +18,7 @@
         "Male",
         "Conversational",
         "Classy"
-      ],
-      "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17"
+      ]
     },
     "name": "Roger (Spanish)",
     "description": "Easy going and perfect for casual conversations.",
@@ -35,8 +34,7 @@
       "Male",
       "Conversational",
       "Classy"
-    ],
-    "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17"
+    ]
   },
   {
     "id": "voice-es-male-2",
@@ -57,8 +55,7 @@
         "Male",
         "Conversational",
         "Hyped"
-      ],
-      "elevenLabsVoiceId": "IKne3meq5aSn9XLyUdCD"
+      ]
     },
     "name": "Charlie (Spanish)",
     "description": "A young Australian male with a confident and energetic voice.",
@@ -74,8 +71,7 @@
       "Male",
       "Conversational",
       "Hyped"
-    ],
-    "elevenLabsVoiceId": "IKne3meq5aSn9XLyUdCD"
+    ]
   },
   {
     "id": "voice-es-male-3",
@@ -96,8 +92,7 @@
         "Male",
         "Narrative story",
         "Mature"
-      ],
-      "elevenLabsVoiceId": "JBFqnCBsd6RMkjVDRZzb"
+      ]
     },
     "name": "George (Spanish)",
     "description": "Warm resonance that instantly captivates listeners.",
@@ -113,8 +108,7 @@
       "Male",
       "Narrative story",
       "Mature"
-    ],
-    "elevenLabsVoiceId": "JBFqnCBsd6RMkjVDRZzb"
+    ]
   },
   {
     "id": "voice-es-male-4",
@@ -135,8 +129,7 @@
         "Male",
         "Conversational",
         "Chill"
-      ],
-      "elevenLabsVoiceId": "bIHbv24MWmeRgasZH58o"
+      ]
     },
     "name": "Will (Spanish)",
     "description": "Conversational and laid back.",
@@ -152,8 +145,7 @@
       "Male",
       "Conversational",
       "Chill"
-    ],
-    "elevenLabsVoiceId": "bIHbv24MWmeRgasZH58o"
+    ]
   },
   {
     "id": "voice-es-male-5",
@@ -174,8 +166,7 @@
         "Male",
         "Conversational",
         "Classy"
-      ],
-      "elevenLabsVoiceId": "cjVigY5qzO86Huf0OWal"
+      ]
     },
     "name": "Eric (Spanish)",
     "description": "A smooth tenor pitch from a man in his 40s - perfect for agentic use cases.",
@@ -191,8 +182,7 @@
       "Male",
       "Conversational",
       "Classy"
-    ],
-    "elevenLabsVoiceId": "cjVigY5qzO86Huf0OWal"
+    ]
   },
   {
     "id": "voice-es-female-1",
@@ -213,8 +203,7 @@
         "Female",
         "Entertainment tv",
         "Professional"
-      ],
-      "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL"
+      ]
     },
     "name": "Sarah (Spanish)",
     "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
@@ -230,8 +219,7 @@
       "Female",
       "Entertainment tv",
       "Professional"
-    ],
-    "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL"
+    ]
   },
   {
     "id": "voice-es-female-2",
@@ -252,8 +240,7 @@
         "Female",
         "Informative educational",
         "Upbeat"
-      ],
-      "elevenLabsVoiceId": "XrExE9yKIg1WjnnlVkGX"
+      ]
     },
     "name": "Matilda (Spanish)",
     "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
@@ -269,8 +256,7 @@
       "Female",
       "Informative educational",
       "Upbeat"
-    ],
-    "elevenLabsVoiceId": "XrExE9yKIg1WjnnlVkGX"
+    ]
   },
   {
     "id": "voice-es-female-3",
@@ -291,8 +277,7 @@
         "Female",
         "Informative educational",
         "Professional"
-      ],
-      "elevenLabsVoiceId": "hpp4J3VqNfWAUOO0d1Us"
+      ]
     },
     "name": "Bella (Spanish)",
     "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
@@ -308,8 +293,7 @@
       "Female",
       "Informative educational",
       "Professional"
-    ],
-    "elevenLabsVoiceId": "hpp4J3VqNfWAUOO0d1Us"
+    ]
   },
   {
     "id": "voice-es-female-4",
@@ -330,8 +314,7 @@
         "Female",
         "Social media",
         "Sassy"
-      ],
-      "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5"
+      ]
     },
     "name": "Laura (Spanish)",
     "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
@@ -347,8 +330,7 @@
       "Female",
       "Social media",
       "Sassy"
-    ],
-    "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5"
+    ]
   },
   {
     "id": "voice-es-female-5",
@@ -369,8 +351,7 @@
         "Female",
         "Informative educational",
         "Professional"
-      ],
-      "elevenLabsVoiceId": "Xb7hH8MSUJpSbSDYk0k2"
+      ]
     },
     "name": "Alice (Spanish)",
     "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
@@ -386,7 +367,6 @@
       "Female",
       "Informative educational",
       "Professional"
-    ],
-    "elevenLabsVoiceId": "Xb7hH8MSUJpSbSDYk0k2"
+    ]
   }
 ]

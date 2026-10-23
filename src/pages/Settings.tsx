@@ -1,7 +1,6 @@
 import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Key, Shield, User } from 'lucide-react'
+import { Cpu, Shield, User } from 'lucide-react'
 
 export function Settings() {
   return (
@@ -9,22 +8,22 @@ export function Settings() {
       <div className="flex flex-col gap-1">
         <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
         <p className="text-sm text-muted-foreground">
-          Manage your account credentials, workspace preferences, and API integrations.
+          Manage your account credentials, workspace preferences, and voice engines.
         </p>
       </div>
 
       <div className="grid gap-6">
         <Card className="p-6 flex flex-col gap-4">
           <div className="flex items-center gap-2">
-            <Key className="size-5 text-primary" />
-            <h2 className="text-base font-semibold">ElevenLabs API Key</h2>
+            <Cpu className="size-5 text-primary" />
+            <h2 className="text-base font-semibold">Local Neural Voice Engines</h2>
           </div>
           <p className="text-xs text-muted-foreground">
-            Provide your ElevenLabs API key or authenticate via the CLI (`pnpm dlx @elevenlabs/cli@latest auth login`).
+            Speech synthesis runs 100% locally on your machine via CosyVoice 3 and Chatterbox T3 Turbo with zero external cloud dependencies.
           </p>
-          <div className="flex gap-2 max-w-md">
-            <Input type="password" placeholder="xi-..." />
-            <Button size="sm">Save</Button>
+          <div className="flex items-center gap-2 text-xs text-emerald-400 font-medium">
+            <span className="size-2 rounded-full bg-emerald-400" />
+            Local Neural Offline Inference Active
           </div>
         </Card>
 

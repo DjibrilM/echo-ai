@@ -18,8 +18,7 @@
         "Male",
         "Conversational",
         "Classy"
-      ],
-      "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17"
+      ]
     },
     "name": "Roger (Italian)",
     "description": "Easy going and perfect for casual conversations.",
@@ -35,8 +34,7 @@
       "Male",
       "Conversational",
       "Classy"
-    ],
-    "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17"
+    ]
   },
   {
     "id": "voice-it-male-2",
@@ -57,8 +55,7 @@
         "Male",
         "Conversational",
         "Hyped"
-      ],
-      "elevenLabsVoiceId": "IKne3meq5aSn9XLyUdCD"
+      ]
     },
     "name": "Charlie (Italian)",
     "description": "A young Australian male with a confident and energetic voice.",
@@ -74,8 +71,7 @@
       "Male",
       "Conversational",
       "Hyped"
-    ],
-    "elevenLabsVoiceId": "IKne3meq5aSn9XLyUdCD"
+    ]
   },
   {
     "id": "voice-it-male-3",
@@ -96,8 +92,7 @@
         "Male",
         "Narrative story",
         "Mature"
-      ],
-      "elevenLabsVoiceId": "JBFqnCBsd6RMkjVDRZzb"
+      ]
     },
     "name": "George (Italian)",
     "description": "Warm resonance that instantly captivates listeners.",
@@ -113,8 +108,7 @@
       "Male",
       "Narrative story",
       "Mature"
-    ],
-    "elevenLabsVoiceId": "JBFqnCBsd6RMkjVDRZzb"
+    ]
   },
   {
     "id": "voice-it-male-4",
@@ -134,8 +128,7 @@
         "Italian",
         "Male",
         "Characters animation"
-      ],
-      "elevenLabsVoiceId": "N2lVS1w4EtoT3dr4eOWO"
+      ]
     },
     "name": "Callum (Italian)",
     "description": "Deceptively gravelly, yet unsettling edge.",
@@ -150,8 +143,7 @@
       "Italian",
       "Male",
       "Characters animation"
-    ],
-    "elevenLabsVoiceId": "N2lVS1w4EtoT3dr4eOWO"
+    ]
   },
   {
     "id": "voice-it-male-5",
@@ -172,8 +164,7 @@
         "Male",
         "Characters animation",
         "Rough"
-      ],
-      "elevenLabsVoiceId": "SOYHLrjzK2X1ezoPC6cr"
+      ]
     },
     "name": "Harry (Italian)",
     "description": "An animated warrior ready to charge forward.",
@@ -189,8 +180,7 @@
       "Male",
       "Characters animation",
       "Rough"
-    ],
-    "elevenLabsVoiceId": "SOYHLrjzK2X1ezoPC6cr"
+    ]
   },
   {
     "id": "voice-it-female-1",
@@ -211,8 +201,7 @@
         "Female",
         "Informative educational",
         "Professional"
-      ],
-      "elevenLabsVoiceId": "Xb7hH8MSUJpSbSDYk0k2"
+      ]
     },
     "name": "Alice (Italian)",
     "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
@@ -228,8 +217,7 @@
       "Female",
       "Informative educational",
       "Professional"
-    ],
-    "elevenLabsVoiceId": "Xb7hH8MSUJpSbSDYk0k2"
+    ]
   },
   {
     "id": "voice-it-female-2",
@@ -250,8 +238,7 @@
         "Female",
         "Informative educational",
         "Upbeat"
-      ],
-      "elevenLabsVoiceId": "XrExE9yKIg1WjnnlVkGX"
+      ]
     },
     "name": "Matilda (Italian)",
     "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
@@ -267,8 +254,7 @@
       "Female",
       "Informative educational",
       "Upbeat"
-    ],
-    "elevenLabsVoiceId": "XrExE9yKIg1WjnnlVkGX"
+    ]
   },
   {
     "id": "voice-it-female-3",
@@ -289,8 +275,7 @@
         "Female",
         "Informative educational",
         "Confident"
-      ],
-      "elevenLabsVoiceId": "pFZP5JQG7iQjIQuC4Bku"
+      ]
     },
     "name": "Lily (Italian)",
     "description": "Velvety British female voice delivers news and narrations with warmth and clarity.",
@@ -306,8 +291,7 @@
       "Female",
       "Informative educational",
       "Confident"
-    ],
-    "elevenLabsVoiceId": "pFZP5JQG7iQjIQuC4Bku"
+    ]
   },
   {
     "id": "voice-it-female-4",
@@ -328,8 +312,7 @@
         "Female",
         "Informative educational",
         "Professional"
-      ],
-      "elevenLabsVoiceId": "hpp4J3VqNfWAUOO0d1Us"
+      ]
     },
     "name": "Bella (Italian)",
     "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
@@ -345,8 +328,7 @@
       "Female",
       "Informative educational",
       "Professional"
-    ],
-    "elevenLabsVoiceId": "hpp4J3VqNfWAUOO0d1Us"
+    ]
   },
   {
     "id": "voice-it-female-5",
@@ -367,8 +349,7 @@
         "Female",
         "Entertainment tv",
         "Professional"
-      ],
-      "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL"
+      ]
     },
     "name": "Sarah (Italian)",
     "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
@@ -384,7 +365,6 @@
       "Female",
       "Entertainment tv",
       "Professional"
-    ],
-    "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL"
+    ]
   }
 ]

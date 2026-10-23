@@ -37,3 +37,15 @@ export const QVAC_PAUSES = [
   { tag: '[pause 1.0s]', label: '1.0s' },
   { tag: '[pause 2.0s]', label: '2.0s' },
 ]
+
+export const QVAC_REACTION_CUES = [
+  { tag: '[hmm]', label: 'Hmm' },
+]
+
+export const QVAC_TONE_CUES = [
+  { tag: '[yell]', closeTag: '[/yell]', label: 'Yell', description: 'Shouting and elevated vocal projection' },
+  { tag: '[raise]', closeTag: '[/raise]', label: 'Raise', description: 'Pitch accent and melodic emphasis' },
+  { tag: '[whisper]', closeTag: '[/whisper]', label: 'Whisper', description: 'Soft, hushed intimate cadence' },
+]
+
+

@@ -14,7 +14,6 @@ export function EchoLogo({ className, ...props }: React.ComponentProps<"div">) {
     </div>
   )
 }
-export const ElevenLabsLogo = EchoLogo
 export const AppLogo = EchoLogo
 
 export function HomeIcon({ className, ...props }: React.ComponentProps<"svg">) {

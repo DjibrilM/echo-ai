@@ -15,4 +15,5 @@ export interface VoiceLanguageExplorerDialogProps {
   onSelectLanguage: (languageName: string) => void
   onOpenCloneModal?: () => void
   onVoicesLoaded?: (loadedVoices: Voice[]) => void
+  onDeleteVoice?: (voiceId: string) => void
 }

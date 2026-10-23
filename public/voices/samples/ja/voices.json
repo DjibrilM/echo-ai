@@ -18,8 +18,7 @@
         "Male",
         "Narrative story",
         "Mature"
-      ],
-      "elevenLabsVoiceId": "JBFqnCBsd6RMkjVDRZzb"
+      ]
     },
     "name": "George (Japanese)",
     "description": "Warm resonance that instantly captivates listeners.",
@@ -35,8 +34,7 @@
       "Male",
       "Narrative story",
       "Mature"
-    ],
-    "elevenLabsVoiceId": "JBFqnCBsd6RMkjVDRZzb"
+    ]
   },
   {
     "id": "voice-ja-male-2",
@@ -57,8 +55,7 @@
         "Male",
         "Conversational",
         "Classy"
-      ],
-      "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17"
+      ]
     },
     "name": "Roger (Japanese)",
     "description": "Easy going and perfect for casual conversations.",
@@ -74,8 +71,7 @@
       "Male",
       "Conversational",
       "Classy"
-    ],
-    "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17"
+    ]
   },
   {
     "id": "voice-ja-male-3",
@@ -96,8 +92,7 @@
         "Male",
         "Conversational",
         "Hyped"
-      ],
-      "elevenLabsVoiceId": "IKne3meq5aSn9XLyUdCD"
+      ]
     },
     "name": "Charlie (Japanese)",
     "description": "A young Australian male with a confident and energetic voice.",
@@ -113,8 +108,7 @@
       "Male",
       "Conversational",
       "Hyped"
-    ],
-    "elevenLabsVoiceId": "IKne3meq5aSn9XLyUdCD"
+    ]
   },
   {
     "id": "voice-ja-male-4",
@@ -134,8 +128,7 @@
         "Japanese",
         "Male",
         "Characters animation"
-      ],
-      "elevenLabsVoiceId": "N2lVS1w4EtoT3dr4eOWO"
+      ]
     },
     "name": "Callum (Japanese)",
     "description": "Deceptively gravelly, yet unsettling edge.",
@@ -150,8 +143,7 @@
       "Japanese",
       "Male",
       "Characters animation"
-    ],
-    "elevenLabsVoiceId": "N2lVS1w4EtoT3dr4eOWO"
+    ]
   },
   {
     "id": "voice-ja-male-5",
@@ -172,8 +164,7 @@
         "Male",
         "Characters animation",
         "Rough"
-      ],
-      "elevenLabsVoiceId": "SOYHLrjzK2X1ezoPC6cr"
+      ]
     },
     "name": "Harry (Japanese)",
     "description": "An animated warrior ready to charge forward.",
@@ -189,8 +180,7 @@
       "Male",
       "Characters animation",
       "Rough"
-    ],
-    "elevenLabsVoiceId": "SOYHLrjzK2X1ezoPC6cr"
+    ]
   },
   {
     "id": "voice-ja-female-1",
@@ -211,8 +201,7 @@
         "Female",
         "Informative educational",
         "Professional"
-      ],
-      "elevenLabsVoiceId": "Xb7hH8MSUJpSbSDYk0k2"
+      ]
     },
     "name": "Alice (Japanese)",
     "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
@@ -228,8 +217,7 @@
       "Female",
       "Informative educational",
       "Professional"
-    ],
-    "elevenLabsVoiceId": "Xb7hH8MSUJpSbSDYk0k2"
+    ]
   },
   {
     "id": "voice-ja-female-2",
@@ -250,8 +238,7 @@
         "Female",
         "Conversational",
         "Cute"
-      ],
-      "elevenLabsVoiceId": "cgSgspJ2msm6clMCkdW9"
+      ]
     },
     "name": "Jessica (Japanese)",
     "description": "Young and popular, this playful American female voice is perfect for trendy content.",
@@ -267,8 +254,7 @@
       "Female",
       "Conversational",
       "Cute"
-    ],
-    "elevenLabsVoiceId": "cgSgspJ2msm6clMCkdW9"
+    ]
   },
   {
     "id": "voice-ja-female-3",
@@ -289,8 +275,7 @@
         "Female",
         "Informative educational",
         "Professional"
-      ],
-      "elevenLabsVoiceId": "hpp4J3VqNfWAUOO0d1Us"
+      ]
     },
     "name": "Bella (Japanese)",
     "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
@@ -306,8 +291,7 @@
       "Female",
       "Informative educational",
       "Professional"
-    ],
-    "elevenLabsVoiceId": "hpp4J3VqNfWAUOO0d1Us"
+    ]
   },
   {
     "id": "voice-ja-female-4",
@@ -328,8 +312,7 @@
         "Female",
         "Entertainment tv",
         "Professional"
-      ],
-      "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL"
+      ]
     },
     "name": "Sarah (Japanese)",
     "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
@@ -345,8 +328,7 @@
       "Female",
       "Entertainment tv",
       "Professional"
-    ],
-    "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL"
+    ]
   },
   {
     "id": "voice-ja-female-5",
@@ -367,8 +349,7 @@
         "Female",
         "Social media",
         "Sassy"
-      ],
-      "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5"
+      ]
     },
     "name": "Laura (Japanese)",
     "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
@@ -384,7 +365,6 @@
       "Female",
       "Social media",
       "Sassy"
-    ],
-    "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5"
+    ]
   }
 ]

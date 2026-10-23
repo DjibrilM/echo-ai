@@ -21,7 +21,7 @@ export default defineConfig({
         vite: {
           build: {
             rollupOptions: {
-              external: ['@qvac/sdk'],
+              external: ['@qvac/sdk', '@prisma/client', '.prisma/client'],
             },
           },
         },

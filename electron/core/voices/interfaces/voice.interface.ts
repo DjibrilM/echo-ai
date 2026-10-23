@@ -26,7 +26,6 @@ export interface VoiceItem {
     initials?: string
     languageCode?: string
     languageName?: string
-    elevenLabsVoiceId?: string
   }
   name?: string
   description?: string
@@ -38,7 +37,6 @@ export interface VoiceItem {
   category?: 'preset' | 'cloned'
   languageCode?: string
   languageName?: string
-  elevenLabsVoiceId?: string
 }
 
 export interface ScanVoicePackagesResult {

@@ -1,5 +1,5 @@
-import { motion, AnimatePresence } from 'framer-motion'
-import { ChevronRight, Check, Play, Sparkles, Cpu } from 'lucide-react'
+import { motion } from 'framer-motion'
+import { ChevronRight, Check, Play } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,8 +12,8 @@ import { cn } from '@/lib/utils'
 import { Voice, LanguageOption, LANGUAGES, useDynamicLanguages } from '../types'
 
 export interface SettingsDrawerProps {
-  engine?: 'cosyvoice3' | 'parler'
-  onEngineChange?: (engine: 'cosyvoice3' | 'parler') => void
+  engine?: 'cosyvoice3' | 'chatterbox'
+  onEngineChange?: (engine: 'cosyvoice3' | 'chatterbox') => void
   onSwitchToCosyVoice?: () => void
   activeVoice: Voice
   voices: Voice[]
@@ -78,99 +78,60 @@ export function SettingsDrawer({
     'Robot-like synthesized delivery with steady monotonic cadence',
   ]
 
-  const parlerSuggestions = [
-    'A Black American woman in a podcast environment.',
-    'A Black American man with a deep voice in a podcast studio.',
-    'A woman speaking naturally in a podcast setting.',
-    'A man speaking casually in a podcast environment.',
-    'A friendly woman chatting in a quiet room.',
-    'A male host talking with clear audio.',
-  ]
-
-  const activeSuggestions = engine === 'cosyvoice3' ? cosyVoiceSuggestions : parlerSuggestions
+  const activeSuggestions = cosyVoiceSuggestions
 
   return (
     <div className="w-full shrink-0 h-full overflow-y-auto px-4 py-3 space-y-5 pb-28 sidebar-scrollbar">
-      {/* ENGINE SELECTOR (COSYVOICE 3 vs PARLER-TTS) */}
-      <div className="space-y-2.5 rounded-xl border border-[#27272a] bg-[#161619] p-3 shadow-xs">
-        <div className="flex items-center justify-between">
-          <label className="text-xs font-semibold text-zinc-300">
-            Voice Engine
-          </label>
-          <motion.span
-            key={engine}
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-[10px] text-zinc-400 font-mono"
-          >
-            {engine === 'cosyvoice3' ? '0.5B Apple Silicon' : '880M Emotional'}
-          </motion.span>
-        </div>
-
-        <div className="relative grid grid-cols-2 gap-1.5 p-1 bg-[#111114] border border-[#222226] rounded-lg">
+      {/* VOICE ENGINE SELECTOR */}
+      <div className="space-y-1.5">
+        <label className="text-xs font-semibold text-zinc-300">
+          Voice Engine
+        </label>
+        <div className="relative flex p-0.5 bg-[#141417] border border-[#27272a] rounded-lg">
           <button
             type="button"
             onClick={() => onEngineChange?.('cosyvoice3')}
             className={cn(
-              'relative z-10 flex flex-col items-center justify-center py-2 px-2.5 rounded-md text-xs transition-colors cursor-pointer text-center select-none',
-              engine === 'cosyvoice3' ? 'text-white font-medium' : 'text-zinc-400 hover:text-zinc-200'
+              'relative flex-1 py-1.5 px-3 rounded-md text-xs font-medium transition-colors cursor-pointer text-center select-none',
+              engine === 'cosyvoice3'
+                ? 'text-white'
+                : 'text-zinc-400 hover:text-zinc-200'
             )}
           >
             {engine === 'cosyvoice3' && (
               <motion.div
-                layoutId="engineDrawerActivePill"
-                transition={{ type: 'spring', stiffness: 450, damping: 35 }}
-                className="absolute inset-0 bg-white/10 rounded-md border border-white/15 shadow-xs"
+                layoutId="engineTabActive"
+                transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                className="absolute inset-0 bg-[#242429] rounded-md shadow-xs border border-white/5"
               />
             )}
-            <span className="relative z-10 font-semibold text-[11px] flex items-center gap-1.5">
-              <Cpu className="size-3 text-emerald-400" />
-              CosyVoice 3
-            </span>
-            <span className="relative z-10 text-[9px] text-zinc-400">M-Series / Clone</span>
+            <span className="relative z-10">CosyVoice 3</span>
           </button>
 
           <button
             type="button"
-            onClick={() => onEngineChange?.('parler')}
+            onClick={() => onEngineChange?.('chatterbox')}
             className={cn(
-              'relative z-10 flex flex-col items-center justify-center py-2 px-2.5 rounded-md text-xs transition-colors cursor-pointer text-center select-none',
-              engine === 'parler' ? 'text-white font-medium' : 'text-zinc-400 hover:text-zinc-200'
+              'relative flex-1 py-1.5 px-3 rounded-md text-xs font-medium transition-colors cursor-pointer text-center select-none',
+              engine === 'chatterbox'
+                ? 'text-white'
+                : 'text-zinc-400 hover:text-zinc-200'
             )}
           >
-            {engine === 'parler' && (
+            {engine === 'chatterbox' && (
               <motion.div
-                layoutId="engineDrawerActivePill"
-                transition={{ type: 'spring', stiffness: 450, damping: 35 }}
-                className="absolute inset-0 bg-white/10 rounded-md border border-white/15 shadow-xs"
+                layoutId="engineTabActive"
+                transition={{ type: 'spring', stiffness: 500, damping: 35 }}
+                className="absolute inset-0 bg-[#242429] rounded-md shadow-xs border border-white/5"
               />
             )}
-            <span className="relative z-10 font-semibold text-[11px] flex items-center gap-1.5">
-              <Sparkles className="size-3 text-purple-400" />
-              Parler-TTS
-            </span>
-            <span className="relative z-10 text-[9px] text-zinc-400">12 Emotions / Fast</span>
+            <span className="relative z-10">Chatterbox T3</span>
           </button>
         </div>
-
-        <AnimatePresence mode="wait">
-          <motion.p
-            key={engine}
-            initial={{ opacity: 0, y: 3 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -3 }}
-            transition={{ duration: 0.18 }}
-            className="text-[10.5px] text-zinc-400 leading-normal"
-          >
-            {engine === 'cosyvoice3'
-              ? '⚡ CosyVoice 3 (0.5B): Built for Apple Silicon unified memory / Metal GPU. Supports audio voice cloning & instruct prompts.'
-              : '🎭 Parler-TTS Mini (880M): High-speed description-driven engine with 12 distinct emotions (happy, anger, sad, etc.).'}
-          </motion.p>
-        </AnimatePresence>
       </div>
 
-      {/* VOICE SELECTION (CosyVoice 3 only - smoothly collapses on Parler) */}
-      <ExpandableContainer isExpanded={engine === 'cosyvoice3'}>
+      {/* VOICE SELECTION (Both CosyVoice 3 and Chatterbox support voice cloning) */}
+      <ExpandableContainer isExpanded={true}>
         <div className="space-y-2.5 pb-2">
           <div className="flex items-center justify-between">
             <label className="text-xs font-semibold text-zinc-300">
@@ -267,67 +228,45 @@ export function SettingsDrawer({
         </div>
       </ExpandableContainer>
 
-      {/* VOICE PROMPT & PERFORMANCE DIRECTION */}
-      <div className="space-y-2.5 rounded-xl border border-[#27272a] bg-[#161619] p-3 shadow-xs">
-        <div className="flex items-center justify-between">
-          <label className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
-            <span>{engine === 'cosyvoice3' ? 'Voice Prompt' : 'Voice Description'}</span>
-            <span className="text-[10px] text-zinc-500 font-normal">
-              {engine === 'cosyvoice3' ? '(Instruction)' : '(Persona)'}
-            </span>
-          </label>
-          <span className="text-[10px] px-2 py-0.5 rounded-md bg-white/[0.06] border border-white/10 text-zinc-300 font-medium">
-            {focusedRoundNumber
-              ? `Speaker ${focusedRoundNumber}`
-              : 'Speaker Persona'}
-          </span>
-        </div>
-
-        <AnimatePresence mode="wait">
-          <motion.p
-            key={engine}
-            initial={{ opacity: 0, y: 2 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -2 }}
-            transition={{ duration: 0.15 }}
-            className="text-[11px] text-zinc-400 leading-relaxed"
-          >
-            {engine === 'cosyvoice3'
-              ? 'Instruct performance, emotion, whispering, tone, or pacing in natural language.'
-              : `Sculpt the persona (gender, pitch, tone, pacing) for Speaker ${focusedRoundNumber || 1}.`}
-          </motion.p>
-        </AnimatePresence>
-
-        <div className="relative">
-          <textarea
-            value={voicePrompt}
-            onChange={(e) => onVoicePromptChange?.(e.target.value)}
-            rows={3}
-            placeholder={
-              engine === 'cosyvoice3'
-                ? 'e.g. Whispering softly with quiet emotional tears, or A calm authoritative narrator...'
-                : 'e.g. A clear, warm female voice speaks in a calm, soothing tone with gentle pauses...'
-            }
-            className="w-full rounded-lg border border-[#27272a] bg-[#111114] px-3 py-2 text-xs text-zinc-200 placeholder:text-zinc-600 focus:border-zinc-500 focus:outline-hidden focus:ring-1 focus:ring-zinc-500/30 resize-none transition-all"
-          />
-        </div>
-
-        {/* Quick Suggestion Chips with Smooth Entrance */}
-        <div className="space-y-1.5 pt-0.5">
+      {/* VOICE PROMPT & PERFORMANCE DIRECTION (CosyVoice 3 Instruct Only) */}
+      <ExpandableContainer isExpanded={engine === 'cosyvoice3'}>
+        <div className="space-y-2.5 rounded-xl border border-[#27272a] bg-[#161619] p-3 shadow-xs">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-medium text-zinc-500">
-              Presets ({engine === 'cosyvoice3' ? 'CosyVoice' : 'Parler'}):
+            <label className="text-xs font-semibold text-zinc-300 flex items-center gap-1.5">
+              <span>Voice Prompt</span>
+              <span className="text-[10px] text-zinc-500 font-normal">
+                (Instruction)
+              </span>
+            </label>
+            <span className="text-[10px] px-2 py-0.5 rounded-md bg-white/[0.06] border border-white/10 text-zinc-300 font-medium">
+              {focusedRoundNumber
+                ? `Speaker ${focusedRoundNumber}`
+                : 'Speaker Prompt'}
             </span>
           </div>
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={engine}
-              initial={{ opacity: 0, y: 4 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -4 }}
-              transition={{ duration: 0.2 }}
-              className="flex flex-wrap gap-1.5"
-            >
+
+          <p className="text-[11px] text-zinc-400 leading-relaxed">
+            Instruct performance, emotion, whispering, tone, or pacing in natural language.
+          </p>
+
+          <div className="relative">
+            <textarea
+              value={voicePrompt}
+              onChange={(e) => onVoicePromptChange?.(e.target.value)}
+              rows={3}
+              placeholder="e.g. Whispering softly with quiet emotional tears, or A calm authoritative narrator..."
+              className="w-full rounded-lg border border-[#27272a] bg-[#111114] px-3 py-2 text-xs text-zinc-200 placeholder:text-zinc-600 focus:border-zinc-500 focus:outline-hidden focus:ring-1 focus:ring-zinc-500/30 resize-none transition-all"
+            />
+          </div>
+
+          {/* Quick Suggestion Chips with Smooth Entrance */}
+          <div className="space-y-1.5 pt-0.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-medium text-zinc-500">
+                CosyVoice Instruct Presets:
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-1.5">
               {activeSuggestions.map((suggestion) => (
                 <button
                   key={suggestion}
@@ -343,10 +282,10 @@ export function SettingsDrawer({
                   {suggestion.split(' ').slice(0, 3).join(' ')}...
                 </button>
               ))}
-            </motion.div>
-          </AnimatePresence>
+            </div>
+          </div>
         </div>
-      </div>
+      </ExpandableContainer>
 
       {/* VOICE PARAMETERS */}
       <div className="space-y-5 pt-2 border-t border-[#1f1f23]">

@@ -2,7 +2,6 @@
   "en": [
     {
       "id": "voice-en-male-1",
-      "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17",
       "name": "Roger",
       "description": "Easy going and perfect for casual conversations.",
       "category": "preset",
@@ -23,7 +22,6 @@
     },
     {
       "id": "voice-en-male-2",
-      "elevenLabsVoiceId": "IKne3meq5aSn9XLyUdCD",
       "name": "Charlie",
       "description": "A young Australian male with a confident and energetic voice.",
       "category": "preset",
@@ -44,7 +42,6 @@
     },
     {
       "id": "voice-en-male-3",
-      "elevenLabsVoiceId": "JBFqnCBsd6RMkjVDRZzb",
       "name": "George",
       "description": "Warm resonance that instantly captivates listeners.",
       "category": "preset",
@@ -65,7 +62,6 @@
     },
     {
       "id": "voice-en-male-4",
-      "elevenLabsVoiceId": "N2lVS1w4EtoT3dr4eOWO",
       "name": "Callum",
       "description": "Deceptively gravelly, yet unsettling edge.",
       "category": "preset",
@@ -85,7 +81,6 @@
     },
     {
       "id": "voice-en-male-5",
-      "elevenLabsVoiceId": "SOYHLrjzK2X1ezoPC6cr",
       "name": "Harry",
       "description": "An animated warrior ready to charge forward.",
       "category": "preset",
@@ -106,7 +101,6 @@
     },
     {
       "id": "voice-en-female-1",
-      "elevenLabsVoiceId": "hpp4J3VqNfWAUOO0d1Us",
       "name": "Bella",
       "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
       "category": "preset",
@@ -127,7 +121,6 @@
     },
     {
       "id": "voice-en-female-2",
-      "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL",
       "name": "Sarah",
       "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
       "category": "preset",
@@ -148,7 +141,6 @@
     },
     {
       "id": "voice-en-female-3",
-      "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5",
       "name": "Laura",
       "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
       "category": "preset",
@@ -169,7 +161,6 @@
     },
     {
       "id": "voice-en-female-4",
-      "elevenLabsVoiceId": "Xb7hH8MSUJpSbSDYk0k2",
       "name": "Alice",
       "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
       "category": "preset",
@@ -190,7 +181,6 @@
     },
     {
       "id": "voice-en-female-5",
-      "elevenLabsVoiceId": "XrExE9yKIg1WjnnlVkGX",
       "name": "Matilda",
       "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
       "category": "preset",
@@ -213,7 +203,6 @@
   "en-gb": [
     {
       "id": "voice-en-gb-male-1",
-      "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17",
       "name": "Roger",
       "description": "Easy going and perfect for casual conversations.",
       "category": "preset",
@@ -234,7 +223,6 @@
     },
     {
       "id": "voice-en-gb-male-2",
-      "elevenLabsVoiceId": "IKne3meq5aSn9XLyUdCD",
       "name": "Charlie",
       "description": "A young Australian male with a confident and energetic voice.",
       "category": "preset",
@@ -255,7 +243,6 @@
     },
     {
       "id": "voice-en-gb-male-3",
-      "elevenLabsVoiceId": "JBFqnCBsd6RMkjVDRZzb",
       "name": "George",
       "description": "Warm resonance that instantly captivates listeners.",
       "category": "preset",
@@ -276,7 +263,6 @@
     },
     {
       "id": "voice-en-gb-male-4",
-      "elevenLabsVoiceId": "N2lVS1w4EtoT3dr4eOWO",
       "name": "Callum",
       "description": "Deceptively gravelly, yet unsettling edge.",
       "category": "preset",
@@ -296,7 +282,6 @@
     },
     {
       "id": "voice-en-gb-male-5",
-      "elevenLabsVoiceId": "SOYHLrjzK2X1ezoPC6cr",
       "name": "Harry",
       "description": "An animated warrior ready to charge forward.",
       "category": "preset",
@@ -317,7 +302,6 @@
     },
     {
       "id": "voice-en-gb-female-1",
-      "elevenLabsVoiceId": "hpp4J3VqNfWAUOO0d1Us",
       "name": "Bella",
       "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
       "category": "preset",
@@ -338,7 +322,6 @@
     },
     {
       "id": "voice-en-gb-female-2",
-      "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL",
       "name": "Sarah",
       "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
       "category": "preset",
@@ -359,7 +342,6 @@
     },
     {
       "id": "voice-en-gb-female-3",
-      "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5",
       "name": "Laura",
       "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
       "category": "preset",
@@ -380,7 +362,6 @@
     },
     {
       "id": "voice-en-gb-female-4",
-      "elevenLabsVoiceId": "Xb7hH8MSUJpSbSDYk0k2",
       "name": "Alice",
       "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
       "category": "preset",
@@ -401,7 +382,6 @@
     },
     {
       "id": "voice-en-gb-female-5",
-      "elevenLabsVoiceId": "XrExE9yKIg1WjnnlVkGX",
       "name": "Matilda",
       "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
       "category": "preset",
@@ -424,7 +404,6 @@
   "es": [
     {
       "id": "voice-es-male-1",
-      "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17",
       "name": "Roger (Spanish)",
       "description": "Easy going and perfect for casual conversations.",
       "category": "preset",
@@ -444,7 +423,6 @@
     },
     {
       "id": "voice-es-male-2",
-      "elevenLabsVoiceId": "IKne3meq5aSn9XLyUdCD",
       "name": "Charlie (Spanish)",
       "description": "A young Australian male with a confident and energetic voice.",
       "category": "preset",
@@ -464,7 +442,6 @@
     },
     {
       "id": "voice-es-male-3",
-      "elevenLabsVoiceId": "JBFqnCBsd6RMkjVDRZzb",
       "name": "George (Spanish)",
       "description": "Warm resonance that instantly captivates listeners.",
       "category": "preset",
@@ -484,7 +461,6 @@
     },
     {
       "id": "voice-es-male-4",
-      "elevenLabsVoiceId": "bIHbv24MWmeRgasZH58o",
       "name": "Will (Spanish)",
       "description": "Conversational and laid back.",
       "category": "preset",
@@ -504,7 +480,6 @@
     },
     {
       "id": "voice-es-male-5",
-      "elevenLabsVoiceId": "cjVigY5qzO86Huf0OWal",
       "name": "Eric (Spanish)",
       "description": "A smooth tenor pitch from a man in his 40s - perfect for agentic use cases.",
       "category": "preset",
@@ -524,7 +499,6 @@
     },
     {
       "id": "voice-es-female-1",
-      "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL",
       "name": "Sarah (Spanish)",
       "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
       "category": "preset",
@@ -544,7 +518,6 @@
     },
     {
       "id": "voice-es-female-2",
-      "elevenLabsVoiceId": "XrExE9yKIg1WjnnlVkGX",
       "name": "Matilda (Spanish)",
       "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
       "category": "preset",
@@ -564,7 +537,6 @@
     },
     {
       "id": "voice-es-female-3",
-      "elevenLabsVoiceId": "hpp4J3VqNfWAUOO0d1Us",
       "name": "Bella (Spanish)",
       "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
       "category": "preset",
@@ -584,7 +556,6 @@
     },
     {
       "id": "voice-es-female-4",
-      "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5",
       "name": "Laura (Spanish)",
       "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
       "category": "preset",
@@ -604,7 +575,6 @@
     },
     {
       "id": "voice-es-female-5",
-      "elevenLabsVoiceId": "Xb7hH8MSUJpSbSDYk0k2",
       "name": "Alice (Spanish)",
       "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
       "category": "preset",
@@ -626,7 +596,6 @@
   "fr": [
     {
       "id": "voice-fr-male-1",
-      "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17",
       "name": "Roger (French)",
       "description": "Easy going and perfect for casual conversations.",
       "category": "preset",
@@ -646,7 +615,6 @@
     },
     {
       "id": "voice-fr-male-2",
-      "elevenLabsVoiceId": "JBFqnCBsd6RMkjVDRZzb",
       "name": "George (French)",
       "description": "Warm resonance that instantly captivates listeners.",
       "category": "preset",
@@ -666,7 +634,6 @@
     },
     {
       "id": "voice-fr-male-3",
-      "elevenLabsVoiceId": "N2lVS1w4EtoT3dr4eOWO",
       "name": "Callum (French)",
       "description": "Deceptively gravelly, yet unsettling edge.",
       "category": "preset",
@@ -685,7 +652,6 @@
     },
     {
       "id": "voice-fr-male-4",
-      "elevenLabsVoiceId": "bIHbv24MWmeRgasZH58o",
       "name": "Will (French)",
       "description": "Conversational and laid back.",
       "category": "preset",
@@ -705,7 +671,6 @@
     },
     {
       "id": "voice-fr-male-5",
-      "elevenLabsVoiceId": "cjVigY5qzO86Huf0OWal",
       "name": "Eric (French)",
       "description": "A smooth tenor pitch from a man in his 40s - perfect for agentic use cases.",
       "category": "preset",
@@ -725,7 +690,6 @@
     },
     {
       "id": "voice-fr-female-1",
-      "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL",
       "name": "Sarah (French)",
       "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
       "category": "preset",
@@ -745,7 +709,6 @@
     },
     {
       "id": "voice-fr-female-2",
-      "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5",
       "name": "Laura (French)",
       "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
       "category": "preset",
@@ -765,7 +728,6 @@
     },
     {
       "id": "voice-fr-female-3",
-      "elevenLabsVoiceId": "Xb7hH8MSUJpSbSDYk0k2",
       "name": "Alice (French)",
       "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
       "category": "preset",
@@ -785,7 +747,6 @@
     },
     {
       "id": "voice-fr-female-4",
-      "elevenLabsVoiceId": "XrExE9yKIg1WjnnlVkGX",
       "name": "Matilda (French)",
       "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
       "category": "preset",
@@ -805,7 +766,6 @@
     },
     {
       "id": "voice-fr-female-5",
-      "elevenLabsVoiceId": "cgSgspJ2msm6clMCkdW9",
       "name": "Jessica (French)",
       "description": "Young and popular, this playful American female voice is perfect for trendy content.",
       "category": "preset",
@@ -827,7 +787,6 @@
   "de": [
     {
       "id": "voice-de-male-1",
-      "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17",
       "name": "Roger (German)",
       "description": "Easy going and perfect for casual conversations.",
       "category": "preset",
@@ -847,7 +806,6 @@
     },
     {
       "id": "voice-de-male-2",
-      "elevenLabsVoiceId": "TX3LPaxmHKxFdv7VOQHJ",
       "name": "Liam (German)",
       "description": "A young adult with energy and warmth - suitable for reels and shorts.",
       "category": "preset",
@@ -867,7 +825,6 @@
     },
     {
       "id": "voice-de-male-3",
-      "elevenLabsVoiceId": "bIHbv24MWmeRgasZH58o",
       "name": "Will (German)",
       "description": "Conversational and laid back.",
       "category": "preset",
@@ -887,7 +844,6 @@
     },
     {
       "id": "voice-de-male-4",
-      "elevenLabsVoiceId": "cjVigY5qzO86Huf0OWal",
       "name": "Eric (German)",
       "description": "A smooth tenor pitch from a man in his 40s - perfect for agentic use cases.",
       "category": "preset",
@@ -907,7 +863,6 @@
     },
     {
       "id": "voice-de-male-5",
-      "elevenLabsVoiceId": "nPczCjzI2devNBz1zQrb",
       "name": "Brian (German)",
       "description": "Middle-aged man with a resonant and comforting tone. Great for narrations and advertisements.",
       "category": "preset",
@@ -927,7 +882,6 @@
     },
     {
       "id": "voice-de-female-1",
-      "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5",
       "name": "Laura (German)",
       "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
       "category": "preset",
@@ -947,7 +901,6 @@
     },
     {
       "id": "voice-de-female-2",
-      "elevenLabsVoiceId": "XrExE9yKIg1WjnnlVkGX",
       "name": "Matilda (German)",
       "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
       "category": "preset",
@@ -967,7 +920,6 @@
     },
     {
       "id": "voice-de-female-3",
-      "elevenLabsVoiceId": "cgSgspJ2msm6clMCkdW9",
       "name": "Jessica (German)",
       "description": "Young and popular, this playful American female voice is perfect for trendy content.",
       "category": "preset",
@@ -987,7 +939,6 @@
     },
     {
       "id": "voice-de-female-4",
-      "elevenLabsVoiceId": "pFZP5JQG7iQjIQuC4Bku",
       "name": "Lily (German)",
       "description": "Velvety British female voice delivers news and narrations with warmth and clarity.",
       "category": "preset",
@@ -1007,7 +958,6 @@
     },
     {
       "id": "voice-de-female-5",
-      "elevenLabsVoiceId": "hpp4J3VqNfWAUOO0d1Us",
       "name": "Bella (German)",
       "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
       "category": "preset",
@@ -1029,7 +979,6 @@
   "it": [
     {
       "id": "voice-it-male-1",
-      "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17",
       "name": "Roger (Italian)",
       "description": "Easy going and perfect for casual conversations.",
       "category": "preset",
@@ -1049,7 +998,6 @@
     },
     {
       "id": "voice-it-male-2",
-      "elevenLabsVoiceId": "IKne3meq5aSn9XLyUdCD",
       "name": "Charlie (Italian)",
       "description": "A young Australian male with a confident and energetic voice.",
       "category": "preset",
@@ -1069,7 +1017,6 @@
     },
     {
       "id": "voice-it-male-3",
-      "elevenLabsVoiceId": "JBFqnCBsd6RMkjVDRZzb",
       "name": "George (Italian)",
       "description": "Warm resonance that instantly captivates listeners.",
       "category": "preset",
@@ -1089,7 +1036,6 @@
     },
     {
       "id": "voice-it-male-4",
-      "elevenLabsVoiceId": "N2lVS1w4EtoT3dr4eOWO",
       "name": "Callum (Italian)",
       "description": "Deceptively gravelly, yet unsettling edge.",
       "category": "preset",
@@ -1108,7 +1054,6 @@
     },
     {
       "id": "voice-it-male-5",
-      "elevenLabsVoiceId": "SOYHLrjzK2X1ezoPC6cr",
       "name": "Harry (Italian)",
       "description": "An animated warrior ready to charge forward.",
       "category": "preset",
@@ -1128,7 +1073,6 @@
     },
     {
       "id": "voice-it-female-1",
-      "elevenLabsVoiceId": "Xb7hH8MSUJpSbSDYk0k2",
       "name": "Alice (Italian)",
       "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
       "category": "preset",
@@ -1148,7 +1092,6 @@
     },
     {
       "id": "voice-it-female-2",
-      "elevenLabsVoiceId": "XrExE9yKIg1WjnnlVkGX",
       "name": "Matilda (Italian)",
       "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
       "category": "preset",
@@ -1168,7 +1111,6 @@
     },
     {
       "id": "voice-it-female-3",
-      "elevenLabsVoiceId": "pFZP5JQG7iQjIQuC4Bku",
       "name": "Lily (Italian)",
       "description": "Velvety British female voice delivers news and narrations with warmth and clarity.",
       "category": "preset",
@@ -1188,7 +1130,6 @@
     },
     {
       "id": "voice-it-female-4",
-      "elevenLabsVoiceId": "hpp4J3VqNfWAUOO0d1Us",
       "name": "Bella (Italian)",
       "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
       "category": "preset",
@@ -1208,7 +1149,6 @@
     },
     {
       "id": "voice-it-female-5",
-      "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL",
       "name": "Sarah (Italian)",
       "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
       "category": "preset",
@@ -1230,7 +1170,6 @@
   "pt": [
     {
       "id": "voice-pt-male-1",
-      "elevenLabsVoiceId": "IKne3meq5aSn9XLyUdCD",
       "name": "Charlie (Portuguese)",
       "description": "A young Australian male with a confident and energetic voice.",
       "category": "preset",
@@ -1250,7 +1189,6 @@
     },
     {
       "id": "voice-pt-male-2",
-      "elevenLabsVoiceId": "TX3LPaxmHKxFdv7VOQHJ",
       "name": "Liam (Portuguese)",
       "description": "A young adult with energy and warmth - suitable for reels and shorts.",
       "category": "preset",
@@ -1270,7 +1208,6 @@
     },
     {
       "id": "voice-pt-male-3",
-      "elevenLabsVoiceId": "bIHbv24MWmeRgasZH58o",
       "name": "Will (Portuguese)",
       "description": "Conversational and laid back.",
       "category": "preset",
@@ -1290,7 +1227,6 @@
     },
     {
       "id": "voice-pt-male-4",
-      "elevenLabsVoiceId": "cjVigY5qzO86Huf0OWal",
       "name": "Eric (Portuguese)",
       "description": "A smooth tenor pitch from a man in his 40s - perfect for agentic use cases.",
       "category": "preset",
@@ -1310,7 +1246,6 @@
     },
     {
       "id": "voice-pt-male-5",
-      "elevenLabsVoiceId": "iP95p4xoKVk53GoZ742B",
       "name": "Chris (Portuguese)",
       "description": "Natural and real, this down-to-earth voice is great across many use-cases.",
       "category": "preset",
@@ -1330,7 +1265,6 @@
     },
     {
       "id": "voice-pt-female-1",
-      "elevenLabsVoiceId": "hpp4J3VqNfWAUOO0d1Us",
       "name": "Bella (Portuguese)",
       "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
       "category": "preset",
@@ -1350,7 +1284,6 @@
     },
     {
       "id": "voice-pt-female-2",
-      "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL",
       "name": "Sarah (Portuguese)",
       "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
       "category": "preset",
@@ -1370,7 +1303,6 @@
     },
     {
       "id": "voice-pt-female-3",
-      "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5",
       "name": "Laura (Portuguese)",
       "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
       "category": "preset",
@@ -1390,7 +1322,6 @@
     },
     {
       "id": "voice-pt-female-4",
-      "elevenLabsVoiceId": "Xb7hH8MSUJpSbSDYk0k2",
       "name": "Alice (Portuguese)",
       "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
       "category": "preset",
@@ -1410,7 +1341,6 @@
     },
     {
       "id": "voice-pt-female-5",
-      "elevenLabsVoiceId": "XrExE9yKIg1WjnnlVkGX",
       "name": "Matilda (Portuguese)",
       "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
       "category": "preset",
@@ -1432,7 +1362,6 @@
   "ja": [
     {
       "id": "voice-ja-male-1",
-      "elevenLabsVoiceId": "JBFqnCBsd6RMkjVDRZzb",
       "name": "George (Japanese)",
       "description": "Warm resonance that instantly captivates listeners.",
       "category": "preset",
@@ -1452,7 +1381,6 @@
     },
     {
       "id": "voice-ja-male-2",
-      "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17",
       "name": "Roger (Japanese)",
       "description": "Easy going and perfect for casual conversations.",
       "category": "preset",
@@ -1472,7 +1400,6 @@
     },
     {
       "id": "voice-ja-male-3",
-      "elevenLabsVoiceId": "IKne3meq5aSn9XLyUdCD",
       "name": "Charlie (Japanese)",
       "description": "A young Australian male with a confident and energetic voice.",
       "category": "preset",
@@ -1492,7 +1419,6 @@
     },
     {
       "id": "voice-ja-male-4",
-      "elevenLabsVoiceId": "N2lVS1w4EtoT3dr4eOWO",
       "name": "Callum (Japanese)",
       "description": "Deceptively gravelly, yet unsettling edge.",
       "category": "preset",
@@ -1511,7 +1437,6 @@
     },
     {
       "id": "voice-ja-male-5",
-      "elevenLabsVoiceId": "SOYHLrjzK2X1ezoPC6cr",
       "name": "Harry (Japanese)",
       "description": "An animated warrior ready to charge forward.",
       "category": "preset",
@@ -1531,7 +1456,6 @@
     },
     {
       "id": "voice-ja-female-1",
-      "elevenLabsVoiceId": "Xb7hH8MSUJpSbSDYk0k2",
       "name": "Alice (Japanese)",
       "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
       "category": "preset",
@@ -1551,7 +1475,6 @@
     },
     {
       "id": "voice-ja-female-2",
-      "elevenLabsVoiceId": "cgSgspJ2msm6clMCkdW9",
       "name": "Jessica (Japanese)",
       "description": "Young and popular, this playful American female voice is perfect for trendy content.",
       "category": "preset",
@@ -1571,7 +1494,6 @@
     },
     {
       "id": "voice-ja-female-3",
-      "elevenLabsVoiceId": "hpp4J3VqNfWAUOO0d1Us",
       "name": "Bella (Japanese)",
       "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
       "category": "preset",
@@ -1591,7 +1513,6 @@
     },
     {
       "id": "voice-ja-female-4",
-      "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL",
       "name": "Sarah (Japanese)",
       "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
       "category": "preset",
@@ -1611,7 +1532,6 @@
     },
     {
       "id": "voice-ja-female-5",
-      "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5",
       "name": "Laura (Japanese)",
       "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
       "category": "preset",
@@ -1633,7 +1553,6 @@
   "zh": [
     {
       "id": "voice-zh-male-1",
-      "elevenLabsVoiceId": "IKne3meq5aSn9XLyUdCD",
       "name": "Charlie (Chinese)",
       "description": "A young Australian male with a confident and energetic voice.",
       "category": "preset",
@@ -1653,7 +1572,6 @@
     },
     {
       "id": "voice-zh-male-2",
-      "elevenLabsVoiceId": "bIHbv24MWmeRgasZH58o",
       "name": "Will (Chinese)",
       "description": "Conversational and laid back.",
       "category": "preset",
@@ -1673,7 +1591,6 @@
     },
     {
       "id": "voice-zh-male-3",
-      "elevenLabsVoiceId": "nPczCjzI2devNBz1zQrb",
       "name": "Brian (Chinese)",
       "description": "Middle-aged man with a resonant and comforting tone. Great for narrations and advertisements.",
       "category": "preset",
@@ -1693,7 +1610,6 @@
     },
     {
       "id": "voice-zh-male-4",
-      "elevenLabsVoiceId": "pqHfZKP75CvOlQylNhV4",
       "name": "Bill (Chinese)",
       "description": "Friendly and comforting voice ready to narrate your stories.",
       "category": "preset",
@@ -1713,7 +1629,6 @@
     },
     {
       "id": "voice-zh-male-5",
-      "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17",
       "name": "Roger (Chinese)",
       "description": "Easy going and perfect for casual conversations.",
       "category": "preset",
@@ -1733,7 +1648,6 @@
     },
     {
       "id": "voice-zh-female-1",
-      "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL",
       "name": "Sarah (Chinese)",
       "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
       "category": "preset",
@@ -1753,7 +1667,6 @@
     },
     {
       "id": "voice-zh-female-2",
-      "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5",
       "name": "Laura (Chinese)",
       "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
       "category": "preset",
@@ -1773,7 +1686,6 @@
     },
     {
       "id": "voice-zh-female-3",
-      "elevenLabsVoiceId": "cgSgspJ2msm6clMCkdW9",
       "name": "Jessica (Chinese)",
       "description": "Young and popular, this playful American female voice is perfect for trendy content.",
       "category": "preset",
@@ -1793,7 +1705,6 @@
     },
     {
       "id": "voice-zh-female-4",
-      "elevenLabsVoiceId": "pFZP5JQG7iQjIQuC4Bku",
       "name": "Lily (Chinese)",
       "description": "Velvety British female voice delivers news and narrations with warmth and clarity.",
       "category": "preset",
@@ -1813,7 +1724,6 @@
     },
     {
       "id": "voice-zh-female-5",
-      "elevenLabsVoiceId": "hpp4J3VqNfWAUOO0d1Us",
       "name": "Bella (Chinese)",
       "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
       "category": "preset",
@@ -1835,7 +1745,6 @@
   "ko": [
     {
       "id": "voice-ko-male-1",
-      "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17",
       "name": "Roger (Korean)",
       "description": "Easy going and perfect for casual conversations.",
       "category": "preset",
@@ -1855,7 +1764,6 @@
     },
     {
       "id": "voice-ko-male-2",
-      "elevenLabsVoiceId": "IKne3meq5aSn9XLyUdCD",
       "name": "Charlie (Korean)",
       "description": "A young Australian male with a confident and energetic voice.",
       "category": "preset",
@@ -1875,7 +1783,6 @@
     },
     {
       "id": "voice-ko-male-3",
-      "elevenLabsVoiceId": "JBFqnCBsd6RMkjVDRZzb",
       "name": "George (Korean)",
       "description": "Warm resonance that instantly captivates listeners.",
       "category": "preset",
@@ -1895,7 +1802,6 @@
     },
     {
       "id": "voice-ko-male-4",
-      "elevenLabsVoiceId": "N2lVS1w4EtoT3dr4eOWO",
       "name": "Callum (Korean)",
       "description": "Deceptively gravelly, yet unsettling edge.",
       "category": "preset",
@@ -1914,7 +1820,6 @@
     },
     {
       "id": "voice-ko-male-5",
-      "elevenLabsVoiceId": "SOYHLrjzK2X1ezoPC6cr",
       "name": "Harry (Korean)",
       "description": "An animated warrior ready to charge forward.",
       "category": "preset",
@@ -1934,7 +1839,6 @@
     },
     {
       "id": "voice-ko-female-1",
-      "elevenLabsVoiceId": "hpp4J3VqNfWAUOO0d1Us",
       "name": "Bella (Korean)",
       "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
       "category": "preset",
@@ -1954,7 +1858,6 @@
     },
     {
       "id": "voice-ko-female-2",
-      "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL",
       "name": "Sarah (Korean)",
       "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
       "category": "preset",
@@ -1974,7 +1877,6 @@
     },
     {
       "id": "voice-ko-female-3",
-      "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5",
       "name": "Laura (Korean)",
       "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
       "category": "preset",
@@ -1994,7 +1896,6 @@
     },
     {
       "id": "voice-ko-female-4",
-      "elevenLabsVoiceId": "Xb7hH8MSUJpSbSDYk0k2",
       "name": "Alice (Korean)",
       "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
       "category": "preset",
@@ -2014,7 +1915,6 @@
     },
     {
       "id": "voice-ko-female-5",
-      "elevenLabsVoiceId": "XrExE9yKIg1WjnnlVkGX",
       "name": "Matilda (Korean)",
       "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
       "category": "preset",
@@ -2036,7 +1936,6 @@
   "hi": [
     {
       "id": "voice-hi-male-1",
-      "elevenLabsVoiceId": "JBFqnCBsd6RMkjVDRZzb",
       "name": "George (Hindi)",
       "description": "Warm resonance that instantly captivates listeners.",
       "category": "preset",
@@ -2056,7 +1955,6 @@
     },
     {
       "id": "voice-hi-male-2",
-      "elevenLabsVoiceId": "N2lVS1w4EtoT3dr4eOWO",
       "name": "Callum (Hindi)",
       "description": "Deceptively gravelly, yet unsettling edge.",
       "category": "preset",
@@ -2075,7 +1973,6 @@
     },
     {
       "id": "voice-hi-male-3",
-      "elevenLabsVoiceId": "TX3LPaxmHKxFdv7VOQHJ",
       "name": "Liam (Hindi)",
       "description": "A young adult with energy and warmth - suitable for reels and shorts.",
       "category": "preset",
@@ -2095,7 +1992,6 @@
     },
     {
       "id": "voice-hi-male-4",
-      "elevenLabsVoiceId": "iP95p4xoKVk53GoZ742B",
       "name": "Chris (Hindi)",
       "description": "Natural and real, this down-to-earth voice is great across many use-cases.",
       "category": "preset",
@@ -2115,7 +2011,6 @@
     },
     {
       "id": "voice-hi-male-5",
-      "elevenLabsVoiceId": "nPczCjzI2devNBz1zQrb",
       "name": "Brian (Hindi)",
       "description": "Middle-aged man with a resonant and comforting tone. Great for narrations and advertisements.",
       "category": "preset",
@@ -2135,7 +2030,6 @@
     },
     {
       "id": "voice-hi-female-1",
-      "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL",
       "name": "Sarah (Hindi)",
       "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
       "category": "preset",
@@ -2155,7 +2049,6 @@
     },
     {
       "id": "voice-hi-female-2",
-      "elevenLabsVoiceId": "Xb7hH8MSUJpSbSDYk0k2",
       "name": "Alice (Hindi)",
       "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
       "category": "preset",
@@ -2175,7 +2068,6 @@
     },
     {
       "id": "voice-hi-female-3",
-      "elevenLabsVoiceId": "cgSgspJ2msm6clMCkdW9",
       "name": "Jessica (Hindi)",
       "description": "Young and popular, this playful American female voice is perfect for trendy content.",
       "category": "preset",
@@ -2195,7 +2087,6 @@
     },
     {
       "id": "voice-hi-female-4",
-      "elevenLabsVoiceId": "hpp4J3VqNfWAUOO0d1Us",
       "name": "Bella (Hindi)",
       "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
       "category": "preset",
@@ -2215,7 +2106,6 @@
     },
     {
       "id": "voice-hi-female-5",
-      "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5",
       "name": "Laura (Hindi)",
       "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
       "category": "preset",
@@ -2237,7 +2127,6 @@
   "ar": [
     {
       "id": "voice-ar-male-1",
-      "elevenLabsVoiceId": "JBFqnCBsd6RMkjVDRZzb",
       "name": "George (Arabic)",
       "description": "Warm resonance that instantly captivates listeners.",
       "category": "preset",
@@ -2257,7 +2146,6 @@
     },
     {
       "id": "voice-ar-male-2",
-      "elevenLabsVoiceId": "iP95p4xoKVk53GoZ742B",
       "name": "Chris (Arabic)",
       "description": "Natural and real, this down-to-earth voice is great across many use-cases.",
       "category": "preset",
@@ -2277,7 +2165,6 @@
     },
     {
       "id": "voice-ar-male-3",
-      "elevenLabsVoiceId": "nPczCjzI2devNBz1zQrb",
       "name": "Brian (Arabic)",
       "description": "Middle-aged man with a resonant and comforting tone. Great for narrations and advertisements.",
       "category": "preset",
@@ -2297,7 +2184,6 @@
     },
     {
       "id": "voice-ar-male-4",
-      "elevenLabsVoiceId": "pqHfZKP75CvOlQylNhV4",
       "name": "Bill (Arabic)",
       "description": "Friendly and comforting voice ready to narrate your stories.",
       "category": "preset",
@@ -2317,7 +2203,6 @@
     },
     {
       "id": "voice-ar-male-5",
-      "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17",
       "name": "Roger (Arabic)",
       "description": "Easy going and perfect for casual conversations.",
       "category": "preset",
@@ -2337,7 +2222,6 @@
     },
     {
       "id": "voice-ar-female-1",
-      "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL",
       "name": "Sarah (Arabic)",
       "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
       "category": "preset",
@@ -2357,7 +2241,6 @@
     },
     {
       "id": "voice-ar-female-2",
-      "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5",
       "name": "Laura (Arabic)",
       "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
       "category": "preset",
@@ -2377,7 +2260,6 @@
     },
     {
       "id": "voice-ar-female-3",
-      "elevenLabsVoiceId": "Xb7hH8MSUJpSbSDYk0k2",
       "name": "Alice (Arabic)",
       "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
       "category": "preset",
@@ -2397,7 +2279,6 @@
     },
     {
       "id": "voice-ar-female-4",
-      "elevenLabsVoiceId": "XrExE9yKIg1WjnnlVkGX",
       "name": "Matilda (Arabic)",
       "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
       "category": "preset",
@@ -2417,7 +2298,6 @@
     },
     {
       "id": "voice-ar-female-5",
-      "elevenLabsVoiceId": "cgSgspJ2msm6clMCkdW9",
       "name": "Jessica (Arabic)",
       "description": "Young and popular, this playful American female voice is perfect for trendy content.",
       "category": "preset",
@@ -2439,7 +2319,6 @@
   "ru": [
     {
       "id": "voice-ru-male-1",
-      "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17",
       "name": "Roger (Russian)",
       "description": "Easy going and perfect for casual conversations.",
       "category": "preset",
@@ -2459,7 +2338,6 @@
     },
     {
       "id": "voice-ru-male-2",
-      "elevenLabsVoiceId": "IKne3meq5aSn9XLyUdCD",
       "name": "Charlie (Russian)",
       "description": "A young Australian male with a confident and energetic voice.",
       "category": "preset",
@@ -2479,7 +2357,6 @@
     },
     {
       "id": "voice-ru-male-3",
-      "elevenLabsVoiceId": "JBFqnCBsd6RMkjVDRZzb",
       "name": "George (Russian)",
       "description": "Warm resonance that instantly captivates listeners.",
       "category": "preset",
@@ -2499,7 +2376,6 @@
     },
     {
       "id": "voice-ru-male-4",
-      "elevenLabsVoiceId": "N2lVS1w4EtoT3dr4eOWO",
       "name": "Callum (Russian)",
       "description": "Deceptively gravelly, yet unsettling edge.",
       "category": "preset",
@@ -2518,7 +2394,6 @@
     },
     {
       "id": "voice-ru-male-5",
-      "elevenLabsVoiceId": "SOYHLrjzK2X1ezoPC6cr",
       "name": "Harry (Russian)",
       "description": "An animated warrior ready to charge forward.",
       "category": "preset",
@@ -2538,7 +2413,6 @@
     },
     {
       "id": "voice-ru-female-1",
-      "elevenLabsVoiceId": "hpp4J3VqNfWAUOO0d1Us",
       "name": "Bella (Russian)",
       "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
       "category": "preset",
@@ -2558,7 +2432,6 @@
     },
     {
       "id": "voice-ru-female-2",
-      "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL",
       "name": "Sarah (Russian)",
       "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
       "category": "preset",
@@ -2578,7 +2451,6 @@
     },
     {
       "id": "voice-ru-female-3",
-      "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5",
       "name": "Laura (Russian)",
       "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
       "category": "preset",
@@ -2598,7 +2470,6 @@
     },
     {
       "id": "voice-ru-female-4",
-      "elevenLabsVoiceId": "Xb7hH8MSUJpSbSDYk0k2",
       "name": "Alice (Russian)",
       "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
       "category": "preset",
@@ -2618,7 +2489,6 @@
     },
     {
       "id": "voice-ru-female-5",
-      "elevenLabsVoiceId": "XrExE9yKIg1WjnnlVkGX",
       "name": "Matilda (Russian)",
       "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
       "category": "preset",
@@ -2640,7 +2510,6 @@
   "sw": [
     {
       "id": "voice-sw-male-1",
-      "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17",
       "name": "Roger (Swahili)",
       "description": "Easy going and perfect for casual conversations.",
       "category": "preset",
@@ -2660,7 +2529,6 @@
     },
     {
       "id": "voice-sw-male-2",
-      "elevenLabsVoiceId": "IKne3meq5aSn9XLyUdCD",
       "name": "Charlie (Swahili)",
       "description": "A young Australian male with a confident and energetic voice.",
       "category": "preset",
@@ -2680,7 +2548,6 @@
     },
     {
       "id": "voice-sw-male-3",
-      "elevenLabsVoiceId": "JBFqnCBsd6RMkjVDRZzb",
       "name": "George (Swahili)",
       "description": "Warm resonance that instantly captivates listeners.",
       "category": "preset",
@@ -2700,7 +2567,6 @@
     },
     {
       "id": "voice-sw-male-4",
-      "elevenLabsVoiceId": "N2lVS1w4EtoT3dr4eOWO",
       "name": "Callum (Swahili)",
       "description": "Deceptively gravelly, yet unsettling edge.",
       "category": "preset",
@@ -2719,7 +2585,6 @@
     },
     {
       "id": "voice-sw-male-5",
-      "elevenLabsVoiceId": "SOYHLrjzK2X1ezoPC6cr",
       "name": "Harry (Swahili)",
       "description": "An animated warrior ready to charge forward.",
       "category": "preset",
@@ -2739,7 +2604,6 @@
     },
     {
       "id": "voice-sw-female-1",
-      "elevenLabsVoiceId": "hpp4J3VqNfWAUOO0d1Us",
       "name": "Bella (Swahili)",
       "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
       "category": "preset",
@@ -2759,7 +2623,6 @@
     },
     {
       "id": "voice-sw-female-2",
-      "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL",
       "name": "Sarah (Swahili)",
       "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
       "category": "preset",
@@ -2779,7 +2642,6 @@
     },
     {
       "id": "voice-sw-female-3",
-      "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5",
       "name": "Laura (Swahili)",
       "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
       "category": "preset",
@@ -2799,7 +2661,6 @@
     },
     {
       "id": "voice-sw-female-4",
-      "elevenLabsVoiceId": "Xb7hH8MSUJpSbSDYk0k2",
       "name": "Alice (Swahili)",
       "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
       "category": "preset",
@@ -2819,7 +2680,6 @@
     },
     {
       "id": "voice-sw-female-5",
-      "elevenLabsVoiceId": "XrExE9yKIg1WjnnlVkGX",
       "name": "Matilda (Swahili)",
       "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
       "category": "preset",
@@ -2841,7 +2701,6 @@
   "en-af": [
     {
       "id": "voice-en-af-male-1",
-      "elevenLabsVoiceId": "qp5KnBkVXn1iOyKYgIDA",
       "name": "Sizwe (English (Africa))",
       "description": "Authentic South African male voice with natural delivery, ideal for product explanations and narration.",
       "category": "preset",
@@ -2862,7 +2721,6 @@
     },
     {
       "id": "voice-en-af-male-2",
-      "elevenLabsVoiceId": "Cry1BNi5ZXg9kqcNvHJM",
       "name": "Sebotsa (English (Africa))",
       "description": "A warm, clear South African male voice with a natural, friendly storytelling cadence.",
       "category": "preset",
@@ -2883,7 +2741,6 @@
     },
     {
       "id": "voice-en-af-male-3",
-      "elevenLabsVoiceId": "9ay3wG17q7tndTmEjGd4",
       "name": "Ola (English (Africa))",
       "description": "A warm, calm, and balanced Nigerian English voice with smooth articulation.",
       "category": "preset",
@@ -2904,7 +2761,6 @@
     },
     {
       "id": "voice-en-af-male-4",
-      "elevenLabsVoiceId": "4Dm0QBjyqFlh06Jvetyb",
       "name": "Kasalu (English (Africa))",
       "description": "Low voice, authoritative, relaxed, documentary and lore style.",
       "category": "preset",
@@ -2925,7 +2781,6 @@
     },
     {
       "id": "voice-en-af-male-5",
-      "elevenLabsVoiceId": "Ho7fjSHAC1BzucANXMRy",
       "name": "Matthew (English (Africa))",
       "description": "Deep South African, Zulu-influenced accent, commanding and regal male tone.",
       "category": "preset",
@@ -2946,7 +2801,6 @@
     },
     {
       "id": "voice-en-af-female-1",
-      "elevenLabsVoiceId": "nV2afREa5mKDMAIpqMu0",
       "name": "Annabel (English (Africa))",
       "description": "Articulate and warm South African female voice, clear and engaging.",
       "category": "preset",
@@ -2967,7 +2821,6 @@
     },
     {
       "id": "voice-en-af-female-2",
-      "elevenLabsVoiceId": "9vRdjbpP9Vsff0nVocf5",
       "name": "Bolanle (English (Africa))",
       "description": "A warm, expressive, and versatile African-rooted female voice designed for natural storytelling.",
       "category": "preset",
@@ -2988,7 +2841,6 @@
     },
     {
       "id": "voice-en-af-female-3",
-      "elevenLabsVoiceId": "vDyhpISvKaEsK9QtEFlO",
       "name": "Dolamade (English (Africa))",
       "description": "Clear, steady, and calm Nigerian English female voice for explainers and corporate narration.",
       "category": "preset",
@@ -3009,7 +2861,6 @@
     },
     {
       "id": "voice-en-af-female-4",
-      "elevenLabsVoiceId": "fFAtoTPtP0TtMyhbR3L9",
       "name": "Amara (English (Africa))",
       "description": "Warm African-British professional female voice with smooth and reassuring cadence.",
       "category": "preset",
@@ -3030,7 +2881,6 @@
     },
     {
       "id": "voice-en-af-female-5",
-      "elevenLabsVoiceId": "7Ojkrcr68EynjSd90VK0",
       "name": "Linet (English (Africa))",
       "description": "Friendly, bright, and authentic East African voice with pleasant conversational tone.",
       "category": "preset",
@@ -3053,7 +2903,6 @@
   "en-au": [
     {
       "id": "voice-en-au-male-1",
-      "elevenLabsVoiceId": "bnkqMLCB8HHkYK9Gd6Xj",
       "name": "Peter (English (Australia))",
       "description": "A mid-30s Australian educator and narrator with clear and lively delivery.",
       "category": "preset",
@@ -3074,7 +2923,6 @@
     },
     {
       "id": "voice-en-au-male-2",
-      "elevenLabsVoiceId": "dCWh1VGb569O9UlUFJv5",
       "name": "Marc (English (Australia))",
       "description": "Rich, mid-deep Australian baritone delivering radio-quality resonance.",
       "category": "preset",
@@ -3095,7 +2943,6 @@
     },
     {
       "id": "voice-en-au-male-3",
-      "elevenLabsVoiceId": "f2SjhkAzsuuMnRYw7j4m",
       "name": "David (English (Australia))",
       "description": "Easy-going, trustworthy, fun Australian conversational friend.",
       "category": "preset",
@@ -3116,7 +2963,6 @@
     },
     {
       "id": "voice-en-au-male-4",
-      "elevenLabsVoiceId": "ZyHSedoXKgCAbipw4vZZ",
       "name": "Archie (English (Australia))",
       "description": "24-year-old Australian male, casual and confident for social and modern content.",
       "category": "preset",
@@ -3137,7 +2983,6 @@
     },
     {
       "id": "voice-en-au-male-5",
-      "elevenLabsVoiceId": "AsGY6GCuJNcXklospqtq",
       "name": "Brandon (English (Australia))",
       "description": "Warm and professional Australian male, suited for explainers, advertising, and corporate content.",
       "category": "preset",
@@ -3158,7 +3003,6 @@
     },
     {
       "id": "voice-en-au-female-1",
-      "elevenLabsVoiceId": "vA1I2hWbJ7X1SEeQL45Y",
       "name": "Carla (English (Australia))",
       "description": "Warm, natural Australian female voice with a friendly, conversational tone.",
       "category": "preset",
@@ -3179,7 +3023,6 @@
     },
     {
       "id": "voice-en-au-female-2",
-      "elevenLabsVoiceId": "2oKmj8Mq72d27JWiLtSX",
       "name": "Naomy (English (Australia))",
       "description": "Calm, educational tone with authentic Australian accent.",
       "category": "preset",
@@ -3200,7 +3043,6 @@
     },
     {
       "id": "voice-en-au-female-3",
-      "elevenLabsVoiceId": "7AT99iuMA9sXzwoSxG9H",
       "name": "Gabby (English (Australia))",
       "description": "Soft, young Australian female voice, pleasant and approachable.",
       "category": "preset",
@@ -3221,7 +3063,6 @@
     },
     {
       "id": "voice-en-au-female-4",
-      "elevenLabsVoiceId": "ZLVTWgFXtnxrL1YnHAWI",
       "name": "Kez (English (Australia))",
       "description": "Real Aussie, warm and clear, perfect for commercials, radio, and friendly narration.",
       "category": "preset",
@@ -3242,7 +3083,6 @@
     },
     {
       "id": "voice-en-au-female-5",
-      "elevenLabsVoiceId": "lW3OCM9aPOT6dsMGgWtK",
       "name": "Willow (English (Australia))",
       "description": "Australian female storyteller with an engaging, narrative resonance.",
       "category": "preset",

@@ -1,13 +1,14 @@
 import { atom } from 'jotai'
 import { atomWithStorage } from 'jotai/utils'
-import { TextToSpeechState, INITIAL_HISTORY, SpeechRound, Generation, HistoryEntry, Voice, ParlerSpeaker } from '../types'
+import { TextToSpeechState, SpeechRound, Generation, HistoryEntry, Voice, ParlerSpeaker } from '../types'
 
 export interface PersistedTtsState {
-  engine: 'cosyvoice3' | 'parler'
+  engine: 'cosyvoice3' | 'chatterbox'
   parlerSpeakers?: ParlerSpeaker[]
   selectedParlerSpeakerId?: string
   language: string
   selectedVoiceId: string
+  customVoices: Voice[]
   rounds: SpeechRound[]
   focusedRoundIndex: number
   generations: Generation[]
@@ -72,20 +73,25 @@ export function cleanRounds(rounds?: SpeechRound[] | null): SpeechRound[] {
 }
 
 /**
- * Cleans history entries, dropping any legacy placeholder text
+ * Cleans history entries, dropping any legacy placeholder text and obsolete mock models
  */
 export function cleanHistory(history?: HistoryEntry[] | null): HistoryEntry[] {
   if (!Array.isArray(history) || history.length === 0) {
-    return INITIAL_HISTORY
+    return []
   }
-  const filtered = history.filter((item) => !isLegacyPlaceholderText(item.text))
-  return filtered.length > 0 ? filtered : INITIAL_HISTORY
+  return history.filter(
+    (item) =>
+      !isLegacyPlaceholderText(item.text) &&
+      item.model !== 'Chatterbox T3 Turbo' &&
+      item.model !== 'Chatterbox Expressive'
+  )
 }
 
 const defaultPersistedState: PersistedTtsState = {
   engine: 'cosyvoice3',
   language: 'English (US)',
   selectedVoiceId: 'voice-en-male-1',
+  customVoices: [],
   rounds: [
     {
       id: 'round-1',
@@ -109,10 +115,10 @@ const defaultPersistedState: PersistedTtsState = {
   volume: 0.85,
   isMuted: false,
   rightPanelTab: 'settings',
-  history: cleanHistory(INITIAL_HISTORY),
+  history: [],
 }
 
-export const TTS_STORAGE_KEY = 'echo_tts_persisted_state_v6'
+export const TTS_STORAGE_KEY = 'echo_tts_persisted_state_v8'
 
 // Purge any legacy localStorage keys and dirty values on module load
 if (typeof window !== 'undefined' && window.localStorage) {
@@ -123,6 +129,8 @@ if (typeof window !== 'undefined' && window.localStorage) {
       'echo_tts_persisted_state_v3',
       'echo_tts_persisted_state_v4',
       'echo_tts_persisted_state_v5',
+      'echo_tts_persisted_state_v6',
+      'echo_tts_persisted_state_v7',
       'echo_tts_state',
       'tts_persisted_state',
     ]
@@ -151,7 +159,7 @@ if (typeof window !== 'undefined' && window.localStorage) {
   }
 }
 
-// Custom storage driver with automatic round text sanitization
+// Custom storage driver with automatic round text sanitization and safe history storage
 const ttsStorage = {
   getItem: (key: string, initialValue: PersistedTtsState): PersistedTtsState => {
     try {
@@ -175,10 +183,18 @@ const ttsStorage = {
   setItem: (key: string, newValue: PersistedTtsState): void => {
     try {
       if (typeof window === 'undefined' || !window.localStorage) return
+      // Strip massive audio data URIs before writing to localStorage to prevent quota overflow
+      const safeHistory = (newValue.history || []).map((item) => {
+        if (item.audioUrl && item.audioUrl.length > 50000) {
+          const { audioUrl: _, ...rest } = item
+          return rest
+        }
+        return item
+      })
       const sanitized: PersistedTtsState = {
         ...newValue,
         rounds: cleanRounds(newValue.rounds),
-        history: cleanHistory(newValue.history),
+        history: cleanHistory(safeHistory),
       }
       window.localStorage.setItem(key, JSON.stringify(sanitized))
     } catch (e) {
@@ -273,8 +289,10 @@ export const ttsCompositeStateAtom = atom<TextToSpeechState, [Partial<TextToSpee
   },
   (_get, set, updates) => {
     const persistedKeys: (keyof PersistedTtsState)[] = [
+      'engine',
       'language',
       'selectedVoiceId',
+      'customVoices',
       'rounds',
       'focusedRoundIndex',
       'generations',

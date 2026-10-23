@@ -8,7 +8,6 @@ import {
   ChevronDown,
   Check,
   Play,
-  Sparkles,
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -27,6 +26,8 @@ import {
   PARLER_EMOTIONS,
   QVAC_PACES,
   QVAC_PAUSES,
+  QVAC_REACTION_CUES,
+  QVAC_TONE_CUES,
 } from '../types'
 import { isLegacyPlaceholderText } from '../store/ttsStore'
 
@@ -46,12 +47,12 @@ export interface DialogueRoundCardProps {
   onOpenCloneModal: () => void
   onOpenExplorerModal?: () => void
   onInsertPauseTag: (tag: string) => void
-  engine?: 'cosyvoice3' | 'parler'
+  engine?: 'cosyvoice3' | 'chatterbox'
 }
 
 export function DialogueRoundCard({
   round,
-  index = 0,
+  index: _index = 0,
   totalRounds,
   speaker,
   voices: _voices,
@@ -64,7 +65,7 @@ export function DialogueRoundCard({
   onRemoveRound,
   onOpenCloneModal: _onOpenCloneModal,
   onOpenExplorerModal,
-  onInsertPauseTag,
+  onInsertPauseTag: _onInsertPauseTag,
   engine = 'cosyvoice3',
 }: DialogueRoundCardProps) {
   const activeEmotions = engine === 'cosyvoice3' ? COSYVOICE_EMOTIONS : PARLER_EMOTIONS
@@ -118,6 +119,65 @@ export function DialogueRoundCard({
       onUpdateRound({ text: '' })
     }
   }, [round.text, onUpdateRound])
+
+  const insertTagAtCursor = useCallback(
+    (openTag: string, closeTag?: string) => {
+      onFocus()
+      const el = textareaRef.current
+      const raw = isLegacyPlaceholderText(round.text) ? '' : round.text
+
+      if (!el) {
+        const next = raw.trimEnd()
+          ? `${raw.trimEnd()} ${openTag}${closeTag ? closeTag : ''} `
+          : `${openTag}${closeTag ? closeTag : ''} `
+        onUpdateRound({ text: next })
+        return
+      }
+
+      const start = el.selectionStart ?? raw.length
+      const end = el.selectionEnd ?? raw.length
+      const hasSelection = start !== end
+      const selectedText = raw.substring(start, end)
+
+      let newText = ''
+      let cursorTarget = start
+
+      const isReactionCue = ['[hmm]'].includes(openTag)
+
+      if (closeTag && hasSelection) {
+        // Wraps highlighted text cleanly: e.g. [whisper]selected text[/whisper]
+        const wrapped = `${openTag}${selectedText}${closeTag}`
+        newText = raw.substring(0, start) + wrapped + raw.substring(end)
+        cursorTarget = start + wrapped.length
+      } else if (closeTag && !isReactionCue) {
+        // Tone wrapper with no selection: inserts [whisper][/whisper] and places cursor inside: [whisper]|[/whisper]
+        const insertion = `${openTag}${closeTag}`
+        newText = raw.substring(0, start) + insertion + raw.substring(end)
+        cursorTarget = start + openTag.length
+      } else {
+        // Single cue like [hmm] or [pause 0.5s]
+        const before = raw.substring(0, start)
+        const after = raw.substring(end)
+        const prefix = before.length > 0 && !/\s$/.test(before) ? ' ' : ''
+        const suffix = after.length > 0 && !/^\s/.test(after) ? ' ' : ' '
+        const insertion = `${prefix}${openTag}${suffix}`
+        newText = before + insertion + after
+        cursorTarget = start + insertion.length
+      }
+
+      onUpdateRound({ text: newText })
+
+      // Restore focus and precise cursor position cleanly
+      requestAnimationFrame(() => {
+        if (el) {
+          el.focus()
+          el.setSelectionRange(cursorTarget, cursorTarget)
+          autoResizeTextarea()
+        }
+      })
+    },
+    [round.text, onFocus, onUpdateRound, autoResizeTextarea]
+  )
 
   return (
     <Reorder.Item
@@ -183,8 +243,8 @@ export function DialogueRoundCard({
             <GripVertical className="size-4" />
           </div>
 
-          {/* Voice Selection Pill (CosyVoice 3 - ExpandableContainer) */}
-          <ExpandableContainer isExpanded={engine === 'cosyvoice3'}>
+          {/* Voice Selection Pill */}
+          <ExpandableContainer isExpanded={true}>
             <div className="flex items-center gap-1.5 pr-1">
               <button
                 type="button"
@@ -250,17 +310,6 @@ export function DialogueRoundCard({
             </div>
           </ExpandableContainer>
 
-          {/* Persona Turn Badge (Parler-TTS - ExpandableContainer) */}
-          <ExpandableContainer isExpanded={engine === 'parler'}>
-            <div className="flex items-center gap-1.5 pr-1">
-              <span className="inline-flex items-center gap-1.5 rounded-lg bg-[#18181b] border border-[#27272a] px-3 py-1.5 text-xs font-medium text-zinc-200 shadow-xs">
-                <Sparkles className="size-3.5 text-purple-400 shrink-0" />
-                <span className="font-semibold text-white tracking-tight">Turn {index + 1}</span>
-                <span className="text-[10px] text-zinc-400 font-normal hidden sm:inline">• Prompt Persona</span>
-              </span>
-            </div>
-          </ExpandableContainer>
-
           {/* QVAC Emotion Selector */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -282,7 +331,7 @@ export function DialogueRoundCard({
               <div className="flex items-center justify-between px-2 py-1.5 text-[11px] font-medium text-zinc-400 border-b border-[#27272a] mb-1">
                 <span>Voice Emotion</span>
                 <span className="text-[9px] text-zinc-500 font-mono">
-                  {engine === 'cosyvoice3' ? 'CosyVoice 3 (4)' : 'Parler-TTS (12)'}
+                  {engine === 'cosyvoice3' ? 'CosyVoice 3 (4)' : 'Chatterbox T3'}
                 </span>
               </div>
               {activeEmotions.map((e) => (
@@ -395,29 +444,76 @@ export function DialogueRoundCard({
         />
       </div>
 
-      {/* Card Footer Toolbar: Insert Pauses & Characters */}
+      {/* Card Footer Toolbar: Insert Pauses & Vocal Reactions */}
       <div className="flex items-center justify-between border-t border-[#1e1e24] bg-[#121214]/60 px-4 py-2.5 text-xs">
-        <div className="flex flex-wrap items-center gap-1.5">
-          <span className="text-[11px] text-zinc-500 font-medium mr-0.5">
-            Insert Pause:
-          </span>
-          {QVAC_PAUSES.map((item) => (
-            <button
-              key={item.tag}
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation()
-                onFocus()
-                onInsertPauseTag(item.tag)
-              }}
-              className="rounded-md bg-white/[0.04] hover:bg-white/[0.08] hover:text-white border border-white/[0.08] px-2 py-0.5 text-[11px] font-mono text-zinc-400 transition-colors cursor-pointer"
-            >
-              +{item.label}
-            </button>
-          ))}
+        <div className="flex flex-wrap items-center gap-2">
+          {/* Reaction Cues */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] text-zinc-500 font-medium mr-0.5">
+              Cues:
+            </span>
+            {QVAC_REACTION_CUES.map((item) => (
+              <button
+                key={item.tag}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  insertTagAtCursor(item.tag)
+                }}
+                className="rounded-md bg-white/[0.04] hover:bg-white/[0.08] hover:text-white border border-white/[0.08] px-2 py-0.5 text-[11px] font-medium text-zinc-400 transition-colors cursor-pointer"
+              >
+                +{item.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="h-3 w-px bg-zinc-800 hidden sm:block" />
+
+          {/* Pause Cues */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] text-zinc-500 font-medium mr-0.5">
+              Pause:
+            </span>
+            {QVAC_PAUSES.map((item) => (
+              <button
+                key={item.tag}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  insertTagAtCursor(item.tag)
+                }}
+                className="rounded-md bg-white/[0.04] hover:bg-white/[0.08] hover:text-white border border-white/[0.08] px-2 py-0.5 text-[11px] font-mono text-zinc-400 transition-colors cursor-pointer"
+              >
+                +{item.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="h-3 w-px bg-zinc-800 hidden sm:block" />
+
+          {/* Tone & Pitch Manipulation */}
+          <div className="flex items-center gap-1.5">
+            <span className="text-[11px] text-zinc-500 font-medium mr-0.5">
+              Tone:
+            </span>
+            {QVAC_TONE_CUES.map((item) => (
+              <button
+                key={item.tag}
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation()
+                  insertTagAtCursor(item.tag, item.closeTag)
+                }}
+                className="rounded-md bg-white/[0.04] hover:bg-white/[0.08] hover:text-amber-300 border border-white/[0.08] px-2 py-0.5 text-[11px] font-medium text-amber-400/80 transition-colors cursor-pointer"
+                title={item.description}
+              >
+                +{item.label}
+              </button>
+            ))}
+          </div>
 
           {currentText.includes('[pause') && (
-            <span className="ml-2 inline-flex items-center gap-1 rounded bg-white/[0.04] border border-white/[0.08] px-1.5 py-0.5 text-[10px] font-mono text-zinc-400">
+            <span className="ml-1 inline-flex items-center gap-1 rounded bg-white/[0.04] border border-white/[0.08] px-1.5 py-0.5 text-[10px] font-mono text-zinc-400">
               {currentText.match(/\[pause\s*[^\]]+\]/g)?.length || 0} pause cue(s)
             </span>
           )}

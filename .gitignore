@@ -27,3 +27,13 @@ dist-ssr
 release/
 dist-electron/
 assets/
+
+# SQLite databases
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Custom cloned voice recordings
+public/voices/custom/*
+!public/voices/custom/.gitkeep

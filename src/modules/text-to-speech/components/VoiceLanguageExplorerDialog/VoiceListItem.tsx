@@ -1,5 +1,4 @@
-import React from 'react'
-import { Play, Pause, Check } from 'lucide-react'
+import { Play, Pause, Check, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Voice, LANGUAGES } from '../../types'
@@ -14,6 +13,7 @@ interface VoiceListItemProps {
   onSelectLanguage: (languageName: string) => void
   onToggleCategory: (category: string) => void
   onClose: () => void
+  onDeleteVoice?: (voiceId: string) => void
 }
 
 export function VoiceListItem({
@@ -26,6 +26,7 @@ export function VoiceListItem({
   onSelectLanguage,
   onToggleCategory,
   onClose,
+  onDeleteVoice,
 }: VoiceListItemProps) {
   // Resolve flag for voice
   const langMatch =
@@ -136,8 +137,24 @@ export function VoiceListItem({
         })}
       </div>
 
-      {/* Right: Active status / Select button (no dummy bookmark) */}
+      {/* Right: Active status / Select button / Delete custom voice */}
       <div className="flex items-center gap-2 shrink-0 ml-4">
+        {voice.category === 'cloned' && onDeleteVoice && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={(e) => {
+              e.stopPropagation()
+              onDeleteVoice(voice.id)
+            }}
+            title="Delete custom voice"
+            className="size-7 rounded-lg text-zinc-500 hover:text-rose-400 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+          >
+            <Trash2 className="size-3.5" />
+          </Button>
+        )}
+
         {isSelected ? (
           <div className="flex items-center gap-1 text-[11px] text-emerald-400 font-semibold bg-emerald-500/10 border border-emerald-500/20 px-2 py-1 rounded-lg">
             <Check className="size-3" />

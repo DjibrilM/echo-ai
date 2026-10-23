@@ -26,7 +26,6 @@ export interface Voice {
   tags: string[]
   referenceAudioName?: string
   sampleUrl?: string
-  elevenLabsVoiceId?: string
   languageCode?: string
   languageName?: string
 }
@@ -68,6 +67,9 @@ export interface SpeechRound {
   pace?: QvacPace
   prompt?: string
   description?: string
+  referenceAudioSrc?: string
+  speakerName?: string
+  speakerColor?: string
 }
 
 export interface Generation {
@@ -89,13 +91,24 @@ export interface Generation {
 export interface HistoryEntry {
   id: string
   text: string
+  previewSnippet?: string
   voiceName: string
   voiceColor: string
   voiceAvatarUrl?: string
-  dateGroup: 'Today' | 'Yesterday' | 'August 27, 2025' | 'August 26, 2025'
+  dateGroup: string
   timeAgo: string
+  timestamp?: number
   model: string
+  engine?: 'cosyvoice3' | 'chatterbox'
   duration: string
+  durationSec?: number
   emotion?: QvacEmotion
+  audioUrl?: string
+  waveform?: number[]
   roundsData?: SpeechRound[]
+  voicePrompt?: string
+  language?: string
+  speakerCount?: number
+  generationId?: string
 }
+

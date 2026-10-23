@@ -1,7 +1,6 @@
 import { ipcMain } from 'electron'
 import { BaseController } from '../../base.controller'
 import { IPC_CHANNELS } from '../../ipc-channels'
-import * as qvacSdk from '@qvac/sdk'
 import type { TtsService } from '../services/tts.service'
 import type { TtsGenerateOptions } from '../interfaces'
 
@@ -15,8 +14,9 @@ export class TtsController extends BaseController {
     ipcMain.handle(
       IPC_CHANNELS.TTS_GENERATE,
       async (event: Electron.IpcMainInvokeEvent, options: TtsGenerateOptions) => {
-        // Guard: refuse synthesis if required models are not downloaded
-        const status = this.ttsService.getModelStatus()
+        // Guard: refuse synthesis if required models for the requested engine are not downloaded
+        const targetEngine = options.engine || 'cosyvoice3'
+        const status = this.ttsService.getModelStatus(targetEngine)
         const requiredNotReady = status.models.filter((m) => m.required && !m.downloaded)
         if (requiredNotReady.length > 0) {
           return {
@@ -94,88 +94,45 @@ export class TtsController extends BaseController {
       }
     )
 
-    // 3. Echo Voice Engine models management IPC handlers
-    ipcMain.handle(IPC_CHANNELS.MODELS_GET_STATUS, async () => {
+    // 3. Query all saved conversations from SQLite
+    ipcMain.handle(IPC_CHANNELS.TTS_HISTORY_LIST, async () => {
       try {
-        const status = this.ttsService.getModelStatus()
-        return { success: true, data: status }
-      } catch (err) {
-        return { success: false, error: String(err) }
+        const list = await this.ttsService.listConversations()
+        return { success: true, data: list }
+      } catch (err: any) {
+        return { success: false, error: err?.message || String(err) }
       }
     })
 
-    ipcMain.handle(
-      IPC_CHANNELS.MODELS_DOWNLOAD,
-      async (event: Electron.IpcMainInvokeEvent, payload: { modelId?: string; allRequired?: boolean }) => {
-        const onProgress = (p: any) => {
-          try {
-            if (!event.sender.isDestroyed()) {
-              event.sender.send(IPC_CHANNELS.MODELS_DOWNLOAD_PROGRESS, p)
-            }
-          } catch (e) {
-            console.warn('[TtsController] Failed to send download progress:', e)
-          }
-        }
-
-        if (payload?.allRequired) {
-          const status = this.ttsService.getModelStatus()
-          const required = status.models.filter((m) => m.required && !m.downloaded)
-          for (const m of required) {
-            await this.ttsService.downloadModel(m.id, onProgress)
-          }
-          return { success: true, data: this.ttsService.getModelStatus() }
-        }
-
-        if (payload?.modelId) {
-          const result = await this.ttsService.downloadModel(payload.modelId, onProgress)
-          return { ...result, data: this.ttsService.getModelStatus() }
-        }
-
-        return { success: false, error: 'No modelId or allRequired flag specified' }
+    // 4. Save conversation and dialogue rounds to SQLite
+    ipcMain.handle(IPC_CHANNELS.TTS_HISTORY_SAVE, async (_event, data: any) => {
+      try {
+        const res = await this.ttsService.saveConversation(data)
+        return res
+      } catch (err: any) {
+        return { success: false, error: err?.message || String(err) }
       }
-    )
+    })
 
-    ipcMain.handle(
-      IPC_CHANNELS.MODELS_CANCEL_DOWNLOAD,
-      async (_: Electron.IpcMainInvokeEvent, { modelId }: { modelId: string }) => {
-        const cancelled = this.ttsService.cancelModelDownload(modelId)
-        return { success: cancelled, modelId }
+    // 5. Delete a conversation from SQLite
+    ipcMain.handle(IPC_CHANNELS.TTS_HISTORY_DELETE, async (_event, payload: { id: string } | string) => {
+      try {
+        const id = typeof payload === 'string' ? payload : payload.id
+        const res = await this.ttsService.deleteConversation(id)
+        return res
+      } catch (err: any) {
+        return { success: false, error: err?.message || String(err) }
       }
-    )
+    })
 
-    // 4. Get QVAC model info (cache/download status) via @qvac/sdk getModelInfo
-    ipcMain.handle(
-      IPC_CHANNELS.MODELS_GET_INFO,
-      async (_: Electron.IpcMainInvokeEvent, { name }: { name: string }) => {
-        try {
-          const modelInfo = await qvacSdk.getModelInfo({ name })
-          return { success: true, data: modelInfo }
-        } catch (err) {
-          return { success: false, error: String(err) }
-        }
+    // 6. Clear all conversations from SQLite
+    ipcMain.handle(IPC_CHANNELS.TTS_HISTORY_CLEAR, async () => {
+      try {
+        const res = await this.ttsService.clearConversations()
+        return res
+      } catch (err: any) {
+        return { success: false, error: err?.message || String(err) }
       }
-    )
-
-    // 5. Delete all installed models from disk and reset engine state
-    ipcMain.handle(
-      IPC_CHANNELS.MODELS_DELETE_ALL,
-      async () => {
-        try {
-          // Clear QVAC's internal cache (kv cache, model cache, etc.)
-          try {
-            await qvacSdk.deleteCache({ all: true })
-          } catch {
-            // deleteCache may not exist in all SDK versions; fall through to manual cleanup
-          }
-
-          // Delete model files from disk and reset engine state
-          await this.ttsService.deleteAllModels()
-          return { success: true }
-        } catch (err) {
-          return { success: false, error: String(err) }
-        }
-      }
-    )
+    })
   }
 }
-

@@ -18,8 +18,7 @@
         "Male",
         "Conversational",
         "Classy"
-      ],
-      "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17"
+      ]
     },
     "name": "Roger (French)",
     "description": "Easy going and perfect for casual conversations.",
@@ -35,8 +34,7 @@
       "Male",
       "Conversational",
       "Classy"
-    ],
-    "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17"
+    ]
   },
   {
     "id": "voice-fr-male-2",
@@ -57,8 +55,7 @@
         "Male",
         "Narrative story",
         "Mature"
-      ],
-      "elevenLabsVoiceId": "JBFqnCBsd6RMkjVDRZzb"
+      ]
     },
     "name": "George (French)",
     "description": "Warm resonance that instantly captivates listeners.",
@@ -74,8 +71,7 @@
       "Male",
       "Narrative story",
       "Mature"
-    ],
-    "elevenLabsVoiceId": "JBFqnCBsd6RMkjVDRZzb"
+    ]
   },
   {
     "id": "voice-fr-male-3",
@@ -95,8 +91,7 @@
         "French",
         "Male",
         "Characters animation"
-      ],
-      "elevenLabsVoiceId": "N2lVS1w4EtoT3dr4eOWO"
+      ]
     },
     "name": "Callum (French)",
     "description": "Deceptively gravelly, yet unsettling edge.",
@@ -111,8 +106,7 @@
       "French",
       "Male",
       "Characters animation"
-    ],
-    "elevenLabsVoiceId": "N2lVS1w4EtoT3dr4eOWO"
+    ]
   },
   {
     "id": "voice-fr-male-4",
@@ -133,8 +127,7 @@
         "Male",
         "Conversational",
         "Chill"
-      ],
-      "elevenLabsVoiceId": "bIHbv24MWmeRgasZH58o"
+      ]
     },
     "name": "Will (French)",
     "description": "Conversational and laid back.",
@@ -150,8 +143,7 @@
       "Male",
       "Conversational",
       "Chill"
-    ],
-    "elevenLabsVoiceId": "bIHbv24MWmeRgasZH58o"
+    ]
   },
   {
     "id": "voice-fr-male-5",
@@ -172,8 +164,7 @@
         "Male",
         "Conversational",
         "Classy"
-      ],
-      "elevenLabsVoiceId": "cjVigY5qzO86Huf0OWal"
+      ]
     },
     "name": "Eric (French)",
     "description": "A smooth tenor pitch from a man in his 40s - perfect for agentic use cases.",
@@ -189,8 +180,7 @@
       "Male",
       "Conversational",
       "Classy"
-    ],
-    "elevenLabsVoiceId": "cjVigY5qzO86Huf0OWal"
+    ]
   },
   {
     "id": "voice-fr-female-1",
@@ -211,8 +201,7 @@
         "Female",
         "Entertainment tv",
         "Professional"
-      ],
-      "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL"
+      ]
     },
     "name": "Sarah (French)",
     "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
@@ -228,8 +217,7 @@
       "Female",
       "Entertainment tv",
       "Professional"
-    ],
-    "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL"
+    ]
   },
   {
     "id": "voice-fr-female-2",
@@ -250,8 +238,7 @@
         "Female",
         "Social media",
         "Sassy"
-      ],
-      "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5"
+      ]
     },
     "name": "Laura (French)",
     "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
@@ -267,8 +254,7 @@
       "Female",
       "Social media",
       "Sassy"
-    ],
-    "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5"
+    ]
   },
   {
     "id": "voice-fr-female-3",
@@ -289,8 +275,7 @@
         "Female",
         "Informative educational",
         "Professional"
-      ],
-      "elevenLabsVoiceId": "Xb7hH8MSUJpSbSDYk0k2"
+      ]
     },
     "name": "Alice (French)",
     "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
@@ -306,8 +291,7 @@
       "Female",
       "Informative educational",
       "Professional"
-    ],
-    "elevenLabsVoiceId": "Xb7hH8MSUJpSbSDYk0k2"
+    ]
   },
   {
     "id": "voice-fr-female-4",
@@ -328,8 +312,7 @@
         "Female",
         "Informative educational",
         "Upbeat"
-      ],
-      "elevenLabsVoiceId": "XrExE9yKIg1WjnnlVkGX"
+      ]
     },
     "name": "Matilda (French)",
     "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
@@ -345,8 +328,7 @@
       "Female",
       "Informative educational",
       "Upbeat"
-    ],
-    "elevenLabsVoiceId": "XrExE9yKIg1WjnnlVkGX"
+    ]
   },
   {
     "id": "voice-fr-female-5",
@@ -367,8 +349,7 @@
         "Female",
         "Conversational",
         "Cute"
-      ],
-      "elevenLabsVoiceId": "cgSgspJ2msm6clMCkdW9"
+      ]
     },
     "name": "Jessica (French)",
     "description": "Young and popular, this playful American female voice is perfect for trendy content.",
@@ -384,7 +365,6 @@
       "Female",
       "Conversational",
       "Cute"
-    ],
-    "elevenLabsVoiceId": "cgSgspJ2msm6clMCkdW9"
+    ]
   }
 ]

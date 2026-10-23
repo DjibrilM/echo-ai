@@ -1,19 +1,25 @@
-import { useMemo, useCallback, useEffect } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import { Plus } from 'lucide-react'
 import { motion, AnimatePresence, LayoutGroup, Reorder } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { WavesurferAudioPlayer } from '@/components/wavesurfer-audio-player'
 import { ShimmeringText } from '@/components/ui/shimmering-text'
-import { useVoiceEngineModels } from '../store/voiceEngineStore'
+import { useModels } from '@/modules/models'
 import { cn } from '@/lib/utils'
 
 import { Voice, SpeechRound, Generation, HistoryEntry, LANGUAGES, getVoicesForLanguage } from '../types'
-import { scanVoiceSamples, loadVoicesForLanguage } from '@/lib/services/voiceLoader'
+import { scanVoiceSamples, loadVoicesForLanguage, deleteCustomVoice } from '@/lib/services/voiceLoader'
 import {
   autoTagSpeechRounds,
   formatTime,
   generateSpeech,
 } from '../services/tts-service'
+import {
+  saveAudioToCache,
+  getAudioFromCache,
+  deleteAudioFromCache,
+} from '../services/audioCache'
+import { dbService } from '@/lib/services/dbService'
 import { useTextToSpeechState } from '../hooks/useTextToSpeechState'
 import { useSpeechPlayback } from '../hooks/useSpeechPlayback'
 import { useVoiceCloneRecording } from '../hooks/useVoiceCloneRecording'
@@ -32,7 +38,8 @@ import { InstallRequiredModelsView } from '../components/InstallRequiredModelsVi
 
 export function TextToSpeechScreen() {
   const [state, updateState] = useTextToSpeechState()
-  const { allRequiredReady, deleteAllModels, selectedEngine, setSelectedEngine } = useVoiceEngineModels()
+  const [loadedHistoryId, setLoadedHistoryId] = useState<string | null>(null)
+  const { allRequiredReady, deleteAllModels, selectedEngine, setSelectedEngine } = useModels()
   const playback = useSpeechPlayback({ state, updateState })
   const recording = useVoiceCloneRecording({ state, updateState })
   const voicePreview = useVoicePreview()
@@ -51,13 +58,66 @@ export function TextToSpeechScreen() {
   useEffect(() => {
     scanVoiceSamples()
     loadVoicesForLanguage(state.language).then((loaded) => {
-      if (loaded.length > 0) {
+      const custom = state.customVoices || []
+      const customIds = new Set(custom.map((v) => v.id))
+      const combined = [...custom, ...loaded.filter((v) => !customIds.has(v.id))]
+      if (combined.length > 0) {
         updateState({
-          voices: Array.from(new Map([...state.voices, ...loaded].map((v) => [v.id, v])).values()),
+          voices: combined,
         })
       }
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Ensure persisted custom voices are immediately in voices list
+  useEffect(() => {
+    if (state.customVoices && state.customVoices.length > 0 && state.voices.length === 0) {
+      updateState({ voices: state.customVoices })
+    }
+  }, [state.customVoices, state.voices.length, updateState])
+
+  // Load persisted history from SQLite database and hydrate audio on mount
+  useEffect(() => {
+    let active = true
+    const loadSavedHistory = async () => {
+      try {
+        const saved = await dbService.getSavedConversations()
+        const initialItems = saved && saved.length > 0 ? saved : (state.history || [])
+        if (initialItems.length === 0) return
+
+        const hydrated = await Promise.all(
+          initialItems.map(async (h) => {
+            if (h.audioUrl) return h
+            const cached = await getAudioFromCache(h.id)
+            return cached ? { ...h, audioUrl: cached } : h
+          })
+        )
+
+        if (active && hydrated.length > 0) {
+          updateState({ history: hydrated })
+        }
+      } catch (err) {
+        console.error('[TTS Screen] Error loading conversations from SQLite:', err)
+      }
+    }
+    loadSavedHistory()
+    return () => {
+      active = false
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Parse "MM:SS" or "M:SS" string to seconds
+  const parseDurationStringToSec = useCallback((durationStr?: string): number => {
+    if (!durationStr) return 8
+    const parts = durationStr.split(':')
+    if (parts.length === 2) {
+      const min = parseInt(parts[0], 10) || 0
+      const sec = parseFloat(parts[1]) || 0
+      return min * 60 + sec
+    }
+    return 8
   }, [])
 
   // Download a data: URI (base64-encoded audio) as a .wav file.
@@ -100,11 +160,14 @@ export function TextToSpeechScreen() {
 
   const handleVoicesLoaded = useCallback(
     (loadedVoices: Voice[]) => {
+      const custom = state.customVoices || []
+      const customIds = new Set(custom.map((v) => v.id))
+      const combined = [...custom, ...loadedVoices.filter((v) => !customIds.has(v.id))]
       updateState({
-        voices: loadedVoices,
+        voices: combined,
       })
     },
-    [updateState]
+    [state.customVoices, updateState]
   )
 
   // Total character counter
@@ -123,6 +186,7 @@ export function TextToSpeechScreen() {
           category: 'preset',
           color: '#a855f7',
           avatarUrl: '/voices/sterling.jpg',
+          sampleUrl: '/voices/samples/en/voice_en_male_1.mp3',
           initials: 'S',
           gender: 'Neutral',
           tags: [],
@@ -143,6 +207,49 @@ export function TextToSpeechScreen() {
   const activeLanguage = useMemo(
     () => LANGUAGES.find((l) => l.name === state.language) || LANGUAGES[0],
     [state.language]
+  )
+
+  const handleSaveVoice = useCallback(
+    (newVoice: Voice) => {
+      const targetIndex =
+        state.focusedRoundIndex >= 0 && state.focusedRoundIndex < state.rounds.length
+          ? state.focusedRoundIndex
+          : 0
+      const currentCustom = state.customVoices || []
+      const updatedCustom = [newVoice, ...currentCustom.filter((v) => v.id !== newVoice.id)]
+      const updatedVoices = [newVoice, ...state.voices.filter((v) => v.id !== newVoice.id)]
+      updateState({
+        customVoices: updatedCustom,
+        voices: updatedVoices,
+        selectedVoiceId: newVoice.id,
+        rounds: state.rounds.map((r, i) =>
+          i === targetIndex ? { ...r, voiceId: newVoice.id } : r
+        ),
+      })
+    },
+    [state.focusedRoundIndex, state.rounds, state.customVoices, state.voices, updateState]
+  )
+
+  const handleDeleteCustomVoice = useCallback(
+    async (voiceId: string) => {
+      try {
+        await deleteCustomVoice(voiceId)
+      } catch (err) {
+        console.error('Failed to delete custom voice files:', err)
+      }
+      const updatedCustom = (state.customVoices || []).filter((v) => v.id !== voiceId)
+      const updatedVoices = state.voices.filter((v) => v.id !== voiceId)
+      const fallbackVoiceId = updatedVoices[0]?.id || 'voice-en-male-1'
+      updateState({
+        customVoices: updatedCustom,
+        voices: updatedVoices,
+        selectedVoiceId: state.selectedVoiceId === voiceId ? fallbackVoiceId : state.selectedVoiceId,
+        rounds: state.rounds.map((r) =>
+          r.voiceId === voiceId ? { ...r, voiceId: fallbackVoiceId } : r
+        ),
+      })
+    },
+    [state.customVoices, state.voices, state.selectedVoiceId, state.rounds, updateState]
   )
 
   // Add a new speaker dialogue round
@@ -239,7 +346,7 @@ export function TextToSpeechScreen() {
     const currentEngine = state.engine || selectedEngine || 'cosyvoice3'
     updateState({
       isSynthesizing: true,
-      synthesisProgress: `Connecting to ${currentEngine === 'parler' ? 'Parler-TTS' : 'CosyVoice 3'} voice engine...`,
+      synthesisProgress: `Connecting to ${currentEngine === 'chatterbox' ? 'Chatterbox T3' : 'CosyVoice 3'} voice engine...`,
     })
 
     // Filter active speech rounds that have text to synthesize
@@ -252,10 +359,21 @@ export function TextToSpeechScreen() {
     const firstSpeaker = getVoice(activeRounds[0]?.voiceId || state.rounds[0].voiceId)
     const taskId = `task-${Date.now()}`
 
+    const mappedRounds = activeRounds.map((r) => {
+      const spk = getVoice(r.voiceId)
+      return {
+        ...r,
+        referenceAudioSrc: spk.sampleUrl || spk.referenceAudioName,
+        speakerName: spk.name,
+        speakerColor: spk.color,
+        description: r.description || spk.description,
+      }
+    })
+
     try {
       const ipcResult = await generateSpeech({
         taskId,
-        rounds: activeRounds,
+        rounds: mappedRounds,
         speakerName: activeRounds.length > 1 ? `${activeRounds.length} Speakers` : firstSpeaker.name,
         speakerColor: activeRounds.length > 1 ? '#10b981' : firstSpeaker.color,
         speakerAvatarUrl: firstSpeaker.avatarUrl || '/voices/sterling.jpg',
@@ -278,21 +396,67 @@ export function TextToSpeechScreen() {
           emotion: ipcResult.data.emotion || activeRounds[0]?.emotion || 'Neutral',
         }
 
+        const now = Date.now()
+        const speakerNames = Array.from(
+          new Set(
+            activeRounds.map((r) => {
+              const spk = getVoice(r.voiceId)
+              return spk.name || 'Speaker'
+            })
+          )
+        )
+        const voiceSummary =
+          speakerNames.length > 1
+            ? `${speakerNames.length} Speakers (${speakerNames.slice(0, 3).join(', ')}${speakerNames.length > 3 ? '...' : ''})`
+            : `${firstSpeaker.name} - ${firstSpeaker.description}`
+
+        const conversationPreview =
+          activeRounds.length > 1
+            ? activeRounds
+                .map((r) => {
+                  const spk = getVoice(r.voiceId)
+                  return `${spk.name}: "${r.text.trim()}"`
+                })
+                .join('  •  ')
+            : newGen.textSnippet
+
         const newHist: HistoryEntry = {
-          id: `hist-${Date.now()}`,
-          text: newGen.textSnippet,
-          voiceName:
-            activeRounds.length > 1
-              ? `${activeRounds.length} Speakers`
-              : `${firstSpeaker.name} - ${firstSpeaker.description}`,
+          id: `hist-${now}`,
+          text: conversationPreview,
+          previewSnippet:
+            conversationPreview.length > 160
+              ? `${conversationPreview.slice(0, 157)}...`
+              : conversationPreview,
+          voiceName: voiceSummary,
           voiceColor: activeRounds.length > 1 ? '#10b981' : firstSpeaker.color,
           voiceAvatarUrl: firstSpeaker.avatarUrl || '/voices/sterling.jpg',
           dateGroup: 'Today',
           timeAgo: 'Just now',
-          model: 'Chatterbox T3 Turbo',
+          timestamp: now,
+          model: currentEngine === 'chatterbox' ? 'Chatterbox T3' : 'CosyVoice 3',
+          engine: currentEngine,
           duration: formatTime(newGen.duration),
-          roundsData: [...state.rounds],
+          durationSec: newGen.duration,
+          emotion: newGen.emotion,
+          audioUrl: newGen.audioUrl,
+          waveform: newGen.waveform || [],
+          roundsData: JSON.parse(JSON.stringify(state.rounds)),
+          voicePrompt: state.voicePrompt,
+          language: state.language,
+          speakerCount: speakerNames.length,
+          generationId: newGen.id,
         }
+
+        if (newGen.audioUrl) {
+          saveAudioToCache(newHist.id, newGen.audioUrl).catch(console.error)
+        }
+
+        // Persist conversation and dialogue rounds to SQLite via Prisma
+        dbService.saveConversation(newHist).catch((err) => {
+          console.error('[TTS Screen] Failed to save conversation to SQLite:', err)
+        })
+
+        setLoadedHistoryId(newHist.id)
 
         updateState({
           generations: [newGen],
@@ -322,6 +486,129 @@ export function TextToSpeechScreen() {
       }, 3000)
     }
   }
+
+  const handleLoadHistory = useCallback(
+    async (item: HistoryEntry) => {
+      if (!item) return
+      voicePreview.stopPreview()
+      playback.stopActiveAudio()
+
+      const targetEngine =
+        item.engine ||
+        (item.model?.toLowerCase().includes('chatterbox') ? 'chatterbox' : 'cosyvoice3')
+      setSelectedEngine(targetEngine)
+
+      let restoredRounds: SpeechRound[] = []
+      if (item.roundsData && Array.isArray(item.roundsData) && item.roundsData.length > 0) {
+        restoredRounds = JSON.parse(JSON.stringify(item.roundsData))
+      } else if (item.text) {
+        restoredRounds = [
+          {
+            id: `round-${Date.now()}`,
+            voiceId: state.selectedVoiceId || 'voice-en-male-1',
+            text: item.text,
+            speed: 1.0,
+            emotion: item.emotion || 'Neutral',
+            pace: 'Moderate',
+          },
+        ]
+      }
+
+      let audioUrl = item.audioUrl
+      if (!audioUrl) {
+        audioUrl = (await getAudioFromCache(item.id)) || undefined
+      }
+
+      const durSec =
+        item.durationSec ||
+        (item.duration ? parseDurationStringToSec(item.duration) : 8)
+
+      const restoredGen: Generation | null = audioUrl
+        ? {
+            id: item.generationId || `gen-${item.id}`,
+            roundIndex: 0,
+            title:
+              item.speakerCount && item.speakerCount > 1
+                ? `${item.speakerCount} Speakers Dialogue`
+                : item.voiceName || 'Dialogue',
+            textSnippet: item.text,
+            speakerName: item.voiceName,
+            speakerColor: item.voiceColor || '#10b981',
+            speakerAvatarUrl: item.voiceAvatarUrl,
+            duration: durSec,
+            waveform: item.waveform && item.waveform.length > 0 ? item.waveform : [],
+            timestamp: item.timeAgo || 'Restored',
+            emotion: item.emotion || 'Neutral',
+            audioUrl,
+          }
+        : null
+
+      setLoadedHistoryId(item.id)
+
+      updateState({
+        rounds: restoredRounds,
+        focusedRoundIndex: 0,
+        engine: targetEngine,
+        ...(item.voicePrompt !== undefined ? { voicePrompt: item.voicePrompt } : {}),
+        ...(item.language ? { language: item.language } : {}),
+        generations: restoredGen ? [restoredGen] : [],
+        activeGeneration: restoredGen,
+        isPlaying: false,
+        currentTime: 0,
+        playbackProgress: 0,
+        playingHistoryId: null,
+      })
+    },
+    [parseDurationStringToSec, playback, setSelectedEngine, state.selectedVoiceId, updateState, voicePreview]
+  )
+
+  const handleTogglePlayHistory = useCallback(
+    async (item: HistoryEntry) => {
+      voicePreview.stopPreview()
+      if (state.playingHistoryId === item.id && state.isPlaying) {
+        playback.stopActiveAudio()
+        updateState({ playingHistoryId: null, isPlaying: false })
+      } else {
+        playback.stopActiveAudio()
+        let audioUrl = item.audioUrl
+        if (!audioUrl) {
+          audioUrl = (await getAudioFromCache(item.id)) || undefined
+        }
+        if (audioUrl) {
+          const durSec =
+            item.durationSec ||
+            (item.duration ? parseDurationStringToSec(item.duration) : 8)
+          const gen: Generation = {
+            id: item.generationId || `gen-${item.id}`,
+            roundIndex: 0,
+            title:
+              item.speakerCount && item.speakerCount > 1
+                ? `${item.speakerCount} Speakers Dialogue`
+                : item.voiceName || 'Dialogue',
+            textSnippet: item.text,
+            speakerName: item.voiceName,
+            speakerColor: item.voiceColor || '#10b981',
+            speakerAvatarUrl: item.voiceAvatarUrl,
+            duration: durSec,
+            waveform: item.waveform && item.waveform.length > 0 ? item.waveform : [],
+            timestamp: item.timeAgo || 'Just now',
+            emotion: item.emotion || 'Neutral',
+            audioUrl,
+          }
+          setLoadedHistoryId(item.id)
+          updateState({
+            generations: [gen],
+            activeGeneration: gen,
+            isPlaying: true,
+            playingHistoryId: item.id,
+            currentTime: 0,
+            playbackProgress: 0,
+          })
+        }
+      }
+    },
+    [parseDurationStringToSec, playback, state.isPlaying, state.playingHistoryId, updateState, voicePreview]
+  )
 
   return (
     <div className="flex h-full w-full select-none overflow-hidden bg-[#0f0f10] text-[#f4f4f5]">
@@ -483,7 +770,10 @@ export function TextToSpeechScreen() {
                       seekTarget={state.seekTarget}
                       onTogglePlay={handleTogglePlay}
                       onPlayStateChange={(playing) =>
-                        updateState({ isPlaying: playing })
+                        updateState({
+                          isPlaying: playing,
+                          ...(!playing && state.playingHistoryId ? { playingHistoryId: null } : {}),
+                        })
                       }
                       onTimeUpdate={(time, _dur, ratio) => {
                         updateState({
@@ -697,33 +987,19 @@ export function TextToSpeechScreen() {
               history={state.history}
               historySearch={state.historySearch}
               playingHistoryId={state.playingHistoryId}
+              activeHistoryId={loadedHistoryId}
               onSearchChange={(q) => updateState({ historySearch: q })}
               onClearSearch={() => updateState({ historySearch: '' })}
-              onSelectHistoryItem={(text) => {
-                updateState({
-                  rounds: state.rounds.map((r, i) =>
-                    i === state.focusedRoundIndex ? { ...r, text } : r
-                  ),
-                })
-              }}
-              onTogglePlayHistory={(item) => {
-                voicePreview.stopPreview()
-                if (state.playingHistoryId === item.id) {
-                  playback.stopActiveAudio()
-                  updateState({ playingHistoryId: null, isPlaying: false })
-                } else {
-                  playback.stopActiveAudio()
-                  const matchingGen = state.generations.find((g) => g.textSnippet === item.text)
-                  if (matchingGen && matchingGen.audioUrl) {
-                    playback.handlePlayGeneration(matchingGen)
-                  }
-                  updateState({ playingHistoryId: item.id })
-                }
-              }}
+              onSelectHistoryItem={handleLoadHistory}
+              onTogglePlayHistory={handleTogglePlayHistory}
               onDeleteHistoryItem={(id) => {
+                deleteAudioFromCache(id).catch(console.error)
                 updateState({
                   history: state.history.filter((h) => h.id !== id),
+                  ...(state.playingHistoryId === id ? { playingHistoryId: null, isPlaying: false } : {}),
+                  ...(loadedHistoryId === id ? { activeGeneration: null, generations: [] } : {}),
                 })
+                if (loadedHistoryId === id) setLoadedHistoryId(null)
               }}
             />
           </motion.div>
@@ -785,19 +1061,8 @@ export function TextToSpeechScreen() {
           }
         }}
         onStreamEnd={recording.stopMicrophone}
-        onSaveVoice={(newVoice) => {
-          const targetIndex =
-            state.focusedRoundIndex >= 0 && state.focusedRoundIndex < state.rounds.length
-              ? state.focusedRoundIndex
-              : 0
-          updateState({
-            voices: [newVoice, ...state.voices],
-            selectedVoiceId: newVoice.id,
-            rounds: state.rounds.map((r, i) =>
-              i === targetIndex ? { ...r, voiceId: newVoice.id } : r
-            ),
-          })
-        }}
+        recordedAudioUrl={state.recordedAudioUrl}
+        onSaveVoice={handleSaveVoice}
       />
 
       {/* VOICE & LANGUAGE EXPLORER DIALOG */}
@@ -821,6 +1086,7 @@ export function TextToSpeechScreen() {
         }}
         onOpenCloneModal={() => updateState({ isCloneModalOpen: true })}
         onVoicesLoaded={handleVoicesLoaded}
+        onDeleteVoice={handleDeleteCustomVoice}
       />
     </div>
   )

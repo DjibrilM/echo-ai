@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect, useRef } from 'react'
-import { Volume2, Search, Loader2 } from 'lucide-react'
+import { Volume2, Search, Loader2, Mic, Plus } from 'lucide-react'
 import {
   Dialog,
   DialogContent,
@@ -40,6 +40,7 @@ export function VoiceLanguageExplorerDialog({
   onSelectLanguage,
   onOpenCloneModal,
   onVoicesLoaded,
+  onDeleteVoice,
 }: VoiceLanguageExplorerDialogProps) {
   const [activeTab, setActiveTab] = useState<ExplorerTab>('explore')
   const [searchQuery, setSearchQuery] = useState('')
@@ -133,8 +134,21 @@ export function VoiceLanguageExplorerDialog({
   // Filtered voice list
   const filteredVoices = useMemo(() => {
     return combinedVoices.filter((v) => {
-      // 1. Tab filter
-      if (activeTab === 'my-voices' && v.category !== 'cloned') {
+      // 1. "My voices" tab: show cloned/custom voices only, filtered by search query if present
+      if (activeTab === 'my-voices') {
+        if (v.category !== 'cloned') return false
+        if (searchQuery.trim()) {
+          const q = searchQuery.toLowerCase()
+          const matchesName = v.name.toLowerCase().includes(q)
+          const matchesDesc = v.description.toLowerCase().includes(q)
+          const matchesTag = v.tags.some((t) => t.toLowerCase().includes(q))
+          return matchesName || matchesDesc || matchesTag
+        }
+        return true
+      }
+
+      // "Explore" tab: preset library voices (exclude custom cloned)
+      if (v.category === 'cloned') {
         return false
       }
 
@@ -324,25 +338,57 @@ export function VoiceLanguageExplorerDialog({
               {/* No Voices Match Fallback */}
               {!isLoadingVoices && filteredVoices.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-16 text-center space-y-3">
-                  <div className="size-12 rounded-full bg-white/5 flex items-center justify-center text-zinc-500">
-                    <Search className="size-6" />
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium text-white">
-                      No voices match your filters
-                    </div>
-                    <p className="text-xs text-zinc-500 mt-1 max-w-xs">
-                      Try clearing filters or search terms to see the full list of available voices.
-                    </p>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={resetFilters}
-                    className="text-xs rounded-lg mt-1"
-                  >
-                    Reset Filters
-                  </Button>
+                  {activeTab === 'my-voices' ? (
+                    <>
+                      <div className="size-12 rounded-full bg-white/5 flex items-center justify-center text-zinc-400">
+                        <Mic className="size-6" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-white">
+                          No custom voices yet
+                        </div>
+                        <p className="text-xs text-zinc-500 mt-1 max-w-xs">
+                          Clone or import your own voice by uploading an audio sample or recording with your microphone.
+                        </p>
+                      </div>
+                      {onOpenCloneModal && (
+                        <Button
+                          variant="default"
+                          size="sm"
+                          onClick={() => {
+                            onClose()
+                            onOpenCloneModal()
+                          }}
+                          className="text-xs rounded-lg mt-2 bg-white text-black hover:bg-zinc-200 font-medium cursor-pointer"
+                        >
+                          <Plus className="size-3.5 mr-1.5" />
+                          Import / Clone Voice
+                        </Button>
+                      )}
+                    </>
+                  ) : (
+                    <>
+                      <div className="size-12 rounded-full bg-white/5 flex items-center justify-center text-zinc-500">
+                        <Search className="size-6" />
+                      </div>
+                      <div>
+                        <div className="text-sm font-medium text-white">
+                          No voices match your filters
+                        </div>
+                        <p className="text-xs text-zinc-500 mt-1 max-w-xs">
+                          Try clearing filters or search terms to see the full list of available voices.
+                        </p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={resetFilters}
+                        className="text-xs rounded-lg mt-1 cursor-pointer"
+                      >
+                        Reset Filters
+                      </Button>
+                    </>
+                  )}
                 </div>
               )}
 
@@ -359,6 +405,7 @@ export function VoiceLanguageExplorerDialog({
                   onSelectLanguage={onSelectLanguage}
                   onToggleCategory={toggleCategory}
                   onClose={onClose}
+                  onDeleteVoice={onDeleteVoice}
                 />
               ))}
             </div>

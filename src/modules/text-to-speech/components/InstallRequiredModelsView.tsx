@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react'
-import { Download, CheckCircle2, Cpu, Sparkles } from 'lucide-react'
-import { useVoiceEngineModels } from '../store/voiceEngineStore'
+import { Download, CheckCircle2 } from 'lucide-react'
+import { useModels } from '@/modules/models'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -9,35 +8,20 @@ export const InstallRequiredModelsView: React.FC = () => {
   const {
     selectedEngine,
     setSelectedEngine,
-    models,
+    activeEngineModels,
+    totalSizeGb,
     allRequiredReady,
     downloadingModels,
     downloadModel,
     downloadAllRequired,
     cancelDownload,
-  } = useVoiceEngineModels()
+  } = useModels()
 
   const [isStartingAll, setIsStartingAll] = useState(false)
-
-  // Filter models relevant to the selected engine
-  const activeEngineModels = models.filter(
-    (model) => model.engine === selectedEngine || model.engine === 'shared'
-  )
-
-  const requiredModels = activeEngineModels.filter(
-    (model) => model.category === 'backbone' || model.required
-  )
-
-  const totalSizeGb = (
-    requiredModels.reduce((total, model) => total + model.sizeBytes, 0) /
-    (1024 * 1024 * 1024)
-  ).toFixed(1)
-
   const anyDownloading = Object.keys(downloadingModels).length > 0
 
   const handleInstallAll = async () => {
     setIsStartingAll(true)
-
     try {
       await downloadAllRequired()
     } finally {
@@ -70,30 +54,28 @@ export const InstallRequiredModelsView: React.FC = () => {
               )}
             >
               <div className="flex items-center gap-1.5 font-medium text-xs">
-                <Cpu className="size-3.5 text-emerald-400" />
                 <span>CosyVoice 3</span>
               </div>
               <span className="text-[11px] text-zinc-400 leading-tight">
-                M-Series Mac & Voice Cloning
+                M-Series Mac & Voice Cloning (4 models)
               </span>
             </button>
 
             <button
               type="button"
-              onClick={() => setSelectedEngine('parler')}
+              onClick={() => setSelectedEngine('chatterbox')}
               className={cn(
                 'flex flex-col items-start gap-1 p-3 rounded-xl border text-left transition-all cursor-pointer',
-                selectedEngine === 'parler'
+                selectedEngine === 'chatterbox'
                   ? 'border-white/30 bg-white/10 text-white shadow-sm'
                   : 'border-[#27272a] bg-[#161619] text-zinc-400 hover:text-zinc-200 hover:border-zinc-700'
               )}
             >
               <div className="flex items-center gap-1.5 font-medium text-xs">
-                <Sparkles className="size-3.5 text-purple-400" />
-                <span>Parler-TTS Mini</span>
+                <span>Chatterbox T3 Turbo</span>
               </div>
               <span className="text-[11px] text-zinc-400 leading-tight">
-                12 Emotions & Fast Prompts
+                GGUF Speech & Voice Cloning (2 models)
               </span>
             </button>
           </div>
@@ -105,7 +87,7 @@ export const InstallRequiredModelsView: React.FC = () => {
             const isDownloading = !!download
             const progress = Math.max(
               0,
-              Math.min(100, Math.round(download?.percentage ?? 0)),
+              Math.min(100, Math.round(download?.percentage ?? 0))
             )
             const isReady = model.downloaded
 
@@ -121,13 +103,13 @@ export const InstallRequiredModelsView: React.FC = () => {
                     </p>
 
                     <p className="mt-1 text-xs text-muted-foreground">
-                      {model.sizeFormatted}
+                      {model.sizeFormatted} &bull; {model.description}
                     </p>
                   </div>
 
                   {isReady ? (
-                    <span className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
-                      <CheckCircle2 className="size-4" />
+                    <span className="flex shrink-0 items-center gap-1.5 text-xs text-emerald-400 font-medium">
+                      <CheckCircle2 className="size-4 text-emerald-400" />
                       Ready
                     </span>
                   ) : isDownloading ? (
@@ -136,7 +118,7 @@ export const InstallRequiredModelsView: React.FC = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => cancelDownload(model.id)}
-                      className="shrink-0 text-muted-foreground"
+                      className="shrink-0 text-muted-foreground hover:text-white"
                     >
                       Cancel
                     </Button>
@@ -157,7 +139,7 @@ export const InstallRequiredModelsView: React.FC = () => {
                 {isDownloading && (
                   <div className="mt-3 space-y-1.5">
                     <div
-                      className="h-1 w-full overflow-hidden rounded-full bg-muted"
+                      className="h-1.5 w-full overflow-hidden rounded-full bg-muted"
                       role="progressbar"
                       aria-label={`Downloading ${model.name}`}
                       aria-valuemin={0}
@@ -165,14 +147,15 @@ export const InstallRequiredModelsView: React.FC = () => {
                       aria-valuenow={progress}
                     >
                       <div
-                        className="h-full rounded-full bg-foreground transition-[width] duration-200"
+                        className="h-full rounded-full bg-emerald-500 transition-[width] duration-200"
                         style={{ width: `${progress}%` }}
                       />
                     </div>
 
-                    <p className="text-right text-xs text-muted-foreground">
-                      {progress}%
-                    </p>
+                    <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                      <span className="truncate max-w-[320px]">{download?.speed || 'Downloading...'}</span>
+                      <span className="font-mono">{progress}%</span>
+                    </div>
                   </div>
                 )}
               </div>

@@ -19,8 +19,7 @@
         "Australian",
         "Narrator",
         "Educator"
-      ],
-      "elevenLabsVoiceId": "bnkqMLCB8HHkYK9Gd6Xj"
+      ]
     },
     "name": "Peter (English (Australia))",
     "description": "A mid-30s Australian educator and narrator with clear and lively delivery.",
@@ -37,8 +36,7 @@
       "Australian",
       "Narrator",
       "Educator"
-    ],
-    "elevenLabsVoiceId": "bnkqMLCB8HHkYK9Gd6Xj"
+    ]
   },
   {
     "id": "voice-en-au-male-2",
@@ -60,8 +58,7 @@
         "Australian",
         "Deep",
         "Baritone"
-      ],
-      "elevenLabsVoiceId": "dCWh1VGb569O9UlUFJv5"
+      ]
     },
     "name": "Marc (English (Australia))",
     "description": "Rich, mid-deep Australian baritone delivering radio-quality resonance.",
@@ -78,8 +75,7 @@
       "Australian",
       "Deep",
       "Baritone"
-    ],
-    "elevenLabsVoiceId": "dCWh1VGb569O9UlUFJv5"
+    ]
   },
   {
     "id": "voice-en-au-male-3",
@@ -101,8 +97,7 @@
         "Australian",
         "Conversational",
         "Friendly"
-      ],
-      "elevenLabsVoiceId": "f2SjhkAzsuuMnRYw7j4m"
+      ]
     },
     "name": "David (English (Australia))",
     "description": "Easy-going, trustworthy, fun Australian conversational friend.",
@@ -119,8 +114,7 @@
       "Australian",
       "Conversational",
       "Friendly"
-    ],
-    "elevenLabsVoiceId": "f2SjhkAzsuuMnRYw7j4m"
+    ]
   },
   {
     "id": "voice-en-au-male-4",
@@ -142,8 +136,7 @@
         "Australian",
         "Youthful",
         "Social Media"
-      ],
-      "elevenLabsVoiceId": "ZyHSedoXKgCAbipw4vZZ"
+      ]
     },
     "name": "Archie (English (Australia))",
     "description": "24-year-old Australian male, casual and confident for social and modern content.",
@@ -160,8 +153,7 @@
       "Australian",
       "Youthful",
       "Social Media"
-    ],
-    "elevenLabsVoiceId": "ZyHSedoXKgCAbipw4vZZ"
+    ]
   },
   {
     "id": "voice-en-au-male-5",
@@ -183,8 +175,7 @@
         "Australian",
         "Professional",
         "Corporate"
-      ],
-      "elevenLabsVoiceId": "AsGY6GCuJNcXklospqtq"
+      ]
     },
     "name": "Brandon (English (Australia))",
     "description": "Warm and professional Australian male, suited for explainers, advertising, and corporate content.",
@@ -201,8 +192,7 @@
       "Australian",
       "Professional",
       "Corporate"
-    ],
-    "elevenLabsVoiceId": "AsGY6GCuJNcXklospqtq"
+    ]
   },
   {
     "id": "voice-en-au-female-1",
@@ -224,8 +214,7 @@
         "Australian",
         "Conversational",
         "Warm"
-      ],
-      "elevenLabsVoiceId": "vA1I2hWbJ7X1SEeQL45Y"
+      ]
     },
     "name": "Carla (English (Australia))",
     "description": "Warm, natural Australian female voice with a friendly, conversational tone.",
@@ -242,8 +231,7 @@
       "Australian",
       "Conversational",
       "Warm"
-    ],
-    "elevenLabsVoiceId": "vA1I2hWbJ7X1SEeQL45Y"
+    ]
   },
   {
     "id": "voice-en-au-female-2",
@@ -265,8 +253,7 @@
         "Australian",
         "Calm",
         "Educational"
-      ],
-      "elevenLabsVoiceId": "2oKmj8Mq72d27JWiLtSX"
+      ]
     },
     "name": "Naomy (English (Australia))",
     "description": "Calm, educational tone with authentic Australian accent.",
@@ -283,8 +270,7 @@
       "Australian",
       "Calm",
       "Educational"
-    ],
-    "elevenLabsVoiceId": "2oKmj8Mq72d27JWiLtSX"
+    ]
   },
   {
     "id": "voice-en-au-female-3",
@@ -306,8 +292,7 @@
         "Australian",
         "Soft",
         "Young"
-      ],
-      "elevenLabsVoiceId": "7AT99iuMA9sXzwoSxG9H"
+      ]
     },
     "name": "Gabby (English (Australia))",
     "description": "Soft, young Australian female voice, pleasant and approachable.",
@@ -324,8 +309,7 @@
       "Australian",
       "Soft",
       "Young"
-    ],
-    "elevenLabsVoiceId": "7AT99iuMA9sXzwoSxG9H"
+    ]
   },
   {
     "id": "voice-en-au-female-4",
@@ -347,8 +331,7 @@
         "Australian",
         "Clear",
         "Commercial"
-      ],
-      "elevenLabsVoiceId": "ZLVTWgFXtnxrL1YnHAWI"
+      ]
     },
     "name": "Kez (English (Australia))",
     "description": "Real Aussie, warm and clear, perfect for commercials, radio, and friendly narration.",
@@ -365,8 +348,7 @@
       "Australian",
       "Clear",
       "Commercial"
-    ],
-    "elevenLabsVoiceId": "ZLVTWgFXtnxrL1YnHAWI"
+    ]
   },
   {
     "id": "voice-en-au-female-5",
@@ -388,8 +370,7 @@
         "Australian",
         "Storyteller",
         "Resonant"
-      ],
-      "elevenLabsVoiceId": "lW3OCM9aPOT6dsMGgWtK"
+      ]
     },
     "name": "Willow (English (Australia))",
     "description": "Australian female storyteller with an engaging, narrative resonance.",
@@ -406,7 +387,6 @@
       "Australian",
       "Storyteller",
       "Resonant"
-    ],
-    "elevenLabsVoiceId": "lW3OCM9aPOT6dsMGgWtK"
+    ]
   }
 ]

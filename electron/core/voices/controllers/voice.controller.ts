@@ -26,5 +26,38 @@ export class VoiceController extends BaseController {
         return this.voiceService.loadVoicesForPackage(folder, list)
       }
     )
+
+    // 3. Save custom cloned/imported voice audio sample to disk
+    ipcMain.handle(
+      IPC_CHANNELS.VOICES_SAVE_CUSTOM,
+      async (_: Electron.IpcMainInvokeEvent, payload: {
+        voiceId: string
+        name: string
+        audioBuffer: Buffer | ArrayBuffer | Uint8Array
+        fileName?: string
+        avatarBuffer?: Buffer | ArrayBuffer | Uint8Array
+        avatarFileName?: string
+      }) => {
+        return this.voiceService.saveCustomVoice(payload)
+      }
+    )
+
+    // 4. Delete custom voice files from disk and SQLite
+    ipcMain.handle(
+      IPC_CHANNELS.VOICES_DELETE_CUSTOM,
+      async (_: Electron.IpcMainInvokeEvent, { voiceId }: { voiceId: string }) => {
+        return this.voiceService.deleteCustomVoice(voiceId)
+      }
+    )
+
+    // 5. Query all custom cloned voices from SQLite
+    ipcMain.handle(IPC_CHANNELS.VOICES_LIST_CUSTOM, async () => {
+      try {
+        const list = await this.voiceService.listCustomVoices()
+        return { success: true, data: list }
+      } catch (err: any) {
+        return { success: false, error: err?.message || String(err) }
+      }
+    })
   }
 }

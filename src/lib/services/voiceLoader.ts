@@ -30,7 +30,6 @@ export interface VoiceRawItem {
     initials?: string
     languageCode?: string
     languageName?: string
-    elevenLabsVoiceId?: string
   }
   name?: string
   description?: string
@@ -42,7 +41,6 @@ export interface VoiceRawItem {
   category?: 'preset' | 'cloned'
   languageCode?: string
   languageName?: string
-  elevenLabsVoiceId?: string
 }
 
 // In-memory cache of scanned packages and loaded voices
@@ -80,7 +78,6 @@ export function normalizeVoiceItem(raw: VoiceRawItem, folder: string, pkg?: Voic
   const initials = raw.initials || info.initials || name.slice(0, 2).toUpperCase()
   const languageCode = raw.languageCode || info.languageCode || pkg?.code || folder
   const languageName = raw.languageName || info.languageName || pkg?.language || folder
-  const elevenLabsVoiceId = raw.elevenLabsVoiceId || info.elevenLabsVoiceId
 
   // Audio path resolution: if relative (e.g. "voice_en_male_1.mp3"), prepend folder sample path
   const rawAudio = raw.audio || raw.sampleUrl || ''
@@ -111,7 +108,6 @@ export function normalizeVoiceItem(raw: VoiceRawItem, folder: string, pkg?: Voic
     tags,
     languageCode,
     languageName,
-    elevenLabsVoiceId,
     // Keep raw audio/image/info accessible on the object for custom handlers
     ...({
       audio: sampleUrl,
@@ -126,7 +122,6 @@ export function normalizeVoiceItem(raw: VoiceRawItem, folder: string, pkg?: Voic
         initials,
         languageCode,
         languageName,
-        elevenLabsVoiceId,
       },
     } as Record<string, unknown>),
   }
@@ -467,3 +462,44 @@ function notifyPackageListeners() {
     })
   }
 }
+
+/**
+ * Saves a custom voice audio sample (imported or recorded) and returns
+ * the local preview sampleUrl and disk filePath.
+ */
+export async function saveCustomVoice(payload: {
+  voiceId: string
+  name: string
+  audioBuffer: ArrayBuffer | Uint8Array
+  fileName?: string
+  avatarBuffer?: ArrayBuffer | Uint8Array
+  avatarFileName?: string
+}): Promise<{ success: boolean; filePath?: string; sampleUrl?: string; avatarUrl?: string; error?: string }> {
+  if (typeof window !== 'undefined' && window.ipcRenderer) {
+    try {
+      const res = await window.ipcRenderer.invoke('voices:save-custom', payload)
+      return res
+    } catch (err) {
+      console.error('[voiceLoader] saveCustomVoice failed:', err)
+      return { success: false, error: String(err) }
+    }
+  }
+  return { success: false, error: 'IPC renderer unavailable' }
+}
+
+/**
+ * Deletes a custom voice from disk
+ */
+export async function deleteCustomVoice(voiceId: string): Promise<{ success: boolean; error?: string }> {
+  if (typeof window !== 'undefined' && window.ipcRenderer) {
+    try {
+      const res = await window.ipcRenderer.invoke('voices:delete-custom', { voiceId })
+      return res
+    } catch (err) {
+      console.error('[voiceLoader] deleteCustomVoice failed:', err)
+      return { success: false, error: String(err) }
+    }
+  }
+  return { success: false, error: 'IPC renderer unavailable' }
+}
+

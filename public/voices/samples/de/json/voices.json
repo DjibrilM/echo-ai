@@ -18,8 +18,7 @@
         "Male",
         "Conversational",
         "Classy"
-      ],
-      "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17"
+      ]
     },
     "name": "Roger (German)",
     "description": "Easy going and perfect for casual conversations.",
@@ -35,8 +34,7 @@
       "Male",
       "Conversational",
       "Classy"
-    ],
-    "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17"
+    ]
   },
   {
     "id": "voice-de-male-2",
@@ -57,8 +55,7 @@
         "Male",
         "Social media",
         "Confident"
-      ],
-      "elevenLabsVoiceId": "TX3LPaxmHKxFdv7VOQHJ"
+      ]
     },
     "name": "Liam (German)",
     "description": "A young adult with energy and warmth - suitable for reels and shorts.",
@@ -74,8 +71,7 @@
       "Male",
       "Social media",
       "Confident"
-    ],
-    "elevenLabsVoiceId": "TX3LPaxmHKxFdv7VOQHJ"
+    ]
   },
   {
     "id": "voice-de-male-3",
@@ -96,8 +92,7 @@
         "Male",
         "Conversational",
         "Chill"
-      ],
-      "elevenLabsVoiceId": "bIHbv24MWmeRgasZH58o"
+      ]
     },
     "name": "Will (German)",
     "description": "Conversational and laid back.",
@@ -113,8 +108,7 @@
       "Male",
       "Conversational",
       "Chill"
-    ],
-    "elevenLabsVoiceId": "bIHbv24MWmeRgasZH58o"
+    ]
   },
   {
     "id": "voice-de-male-4",
@@ -135,8 +129,7 @@
         "Male",
         "Conversational",
         "Classy"
-      ],
-      "elevenLabsVoiceId": "cjVigY5qzO86Huf0OWal"
+      ]
     },
     "name": "Eric (German)",
     "description": "A smooth tenor pitch from a man in his 40s - perfect for agentic use cases.",
@@ -152,8 +145,7 @@
       "Male",
       "Conversational",
       "Classy"
-    ],
-    "elevenLabsVoiceId": "cjVigY5qzO86Huf0OWal"
+    ]
   },
   {
     "id": "voice-de-male-5",
@@ -174,8 +166,7 @@
         "Male",
         "Social media",
         "Classy"
-      ],
-      "elevenLabsVoiceId": "nPczCjzI2devNBz1zQrb"
+      ]
     },
     "name": "Brian (German)",
     "description": "Middle-aged man with a resonant and comforting tone. Great for narrations and advertisements.",
@@ -191,8 +182,7 @@
       "Male",
       "Social media",
       "Classy"
-    ],
-    "elevenLabsVoiceId": "nPczCjzI2devNBz1zQrb"
+    ]
   },
   {
     "id": "voice-de-female-1",
@@ -213,8 +203,7 @@
         "Female",
         "Social media",
         "Sassy"
-      ],
-      "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5"
+      ]
     },
     "name": "Laura (German)",
     "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
@@ -230,8 +219,7 @@
       "Female",
       "Social media",
       "Sassy"
-    ],
-    "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5"
+    ]
   },
   {
     "id": "voice-de-female-2",
@@ -252,8 +240,7 @@
         "Female",
         "Informative educational",
         "Upbeat"
-      ],
-      "elevenLabsVoiceId": "XrExE9yKIg1WjnnlVkGX"
+      ]
     },
     "name": "Matilda (German)",
     "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
@@ -269,8 +256,7 @@
       "Female",
       "Informative educational",
       "Upbeat"
-    ],
-    "elevenLabsVoiceId": "XrExE9yKIg1WjnnlVkGX"
+    ]
   },
   {
     "id": "voice-de-female-3",
@@ -291,8 +277,7 @@
         "Female",
         "Conversational",
         "Cute"
-      ],
-      "elevenLabsVoiceId": "cgSgspJ2msm6clMCkdW9"
+      ]
     },
     "name": "Jessica (German)",
     "description": "Young and popular, this playful American female voice is perfect for trendy content.",
@@ -308,8 +293,7 @@
       "Female",
       "Conversational",
       "Cute"
-    ],
-    "elevenLabsVoiceId": "cgSgspJ2msm6clMCkdW9"
+    ]
   },
   {
     "id": "voice-de-female-4",
@@ -330,8 +314,7 @@
         "Female",
         "Informative educational",
         "Confident"
-      ],
-      "elevenLabsVoiceId": "pFZP5JQG7iQjIQuC4Bku"
+      ]
     },
     "name": "Lily (German)",
     "description": "Velvety British female voice delivers news and narrations with warmth and clarity.",
@@ -347,8 +330,7 @@
       "Female",
       "Informative educational",
       "Confident"
-    ],
-    "elevenLabsVoiceId": "pFZP5JQG7iQjIQuC4Bku"
+    ]
   },
   {
     "id": "voice-de-female-5",
@@ -369,8 +351,7 @@
         "Female",
         "Informative educational",
         "Professional"
-      ],
-      "elevenLabsVoiceId": "hpp4J3VqNfWAUOO0d1Us"
+      ]
     },
     "name": "Bella (German)",
     "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
@@ -386,7 +367,6 @@
       "Female",
       "Informative educational",
       "Professional"
-    ],
-    "elevenLabsVoiceId": "hpp4J3VqNfWAUOO0d1Us"
+    ]
   }
 ]

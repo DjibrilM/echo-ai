@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { Download, CheckCircle2, Loader2 } from 'lucide-react'
-import { useVoiceEngineModels } from '../store/voiceEngineStore'
+import { useModels } from '@/modules/models'
 import { useModelInfo } from '@/lib/hooks/useModelInfo'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
@@ -26,7 +26,7 @@ export const ModelDownloadStatus: React.FC<ModelDownloadStatusProps> = ({
     downloadModel,
     cancelDownload,
     downloadingModels,
-  } = useVoiceEngineModels()
+  } = useModels()
 
   const [manualError, setManualError] = useState<string | null>(null)
 

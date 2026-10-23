@@ -18,8 +18,7 @@
         "Male",
         "Conversational",
         "Hyped"
-      ],
-      "elevenLabsVoiceId": "IKne3meq5aSn9XLyUdCD"
+      ]
     },
     "name": "Charlie (Chinese)",
     "description": "A young Australian male with a confident and energetic voice.",
@@ -35,8 +34,7 @@
       "Male",
       "Conversational",
       "Hyped"
-    ],
-    "elevenLabsVoiceId": "IKne3meq5aSn9XLyUdCD"
+    ]
   },
   {
     "id": "voice-zh-male-2",
@@ -57,8 +55,7 @@
         "Male",
         "Conversational",
         "Chill"
-      ],
-      "elevenLabsVoiceId": "bIHbv24MWmeRgasZH58o"
+      ]
     },
     "name": "Will (Chinese)",
     "description": "Conversational and laid back.",
@@ -74,8 +71,7 @@
       "Male",
       "Conversational",
       "Chill"
-    ],
-    "elevenLabsVoiceId": "bIHbv24MWmeRgasZH58o"
+    ]
   },
   {
     "id": "voice-zh-male-3",
@@ -96,8 +92,7 @@
         "Male",
         "Social media",
         "Classy"
-      ],
-      "elevenLabsVoiceId": "nPczCjzI2devNBz1zQrb"
+      ]
     },
     "name": "Brian (Chinese)",
     "description": "Middle-aged man with a resonant and comforting tone. Great for narrations and advertisements.",
@@ -113,8 +108,7 @@
       "Male",
       "Social media",
       "Classy"
-    ],
-    "elevenLabsVoiceId": "nPczCjzI2devNBz1zQrb"
+    ]
   },
   {
     "id": "voice-zh-male-4",
@@ -135,8 +129,7 @@
         "Male",
         "Advertisement",
         "Crisp"
-      ],
-      "elevenLabsVoiceId": "pqHfZKP75CvOlQylNhV4"
+      ]
     },
     "name": "Bill (Chinese)",
     "description": "Friendly and comforting voice ready to narrate your stories.",
@@ -152,8 +145,7 @@
       "Male",
       "Advertisement",
       "Crisp"
-    ],
-    "elevenLabsVoiceId": "pqHfZKP75CvOlQylNhV4"
+    ]
   },
   {
     "id": "voice-zh-male-5",
@@ -174,8 +166,7 @@
         "Male",
         "Conversational",
         "Classy"
-      ],
-      "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17"
+      ]
     },
     "name": "Roger (Chinese)",
     "description": "Easy going and perfect for casual conversations.",
@@ -191,8 +182,7 @@
       "Male",
       "Conversational",
       "Classy"
-    ],
-    "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17"
+    ]
   },
   {
     "id": "voice-zh-female-1",
@@ -213,8 +203,7 @@
         "Female",
         "Entertainment tv",
         "Professional"
-      ],
-      "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL"
+      ]
     },
     "name": "Sarah (Chinese)",
     "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
@@ -230,8 +219,7 @@
       "Female",
       "Entertainment tv",
       "Professional"
-    ],
-    "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL"
+    ]
   },
   {
     "id": "voice-zh-female-2",
@@ -252,8 +240,7 @@
         "Female",
         "Social media",
         "Sassy"
-      ],
-      "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5"
+      ]
     },
     "name": "Laura (Chinese)",
     "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
@@ -269,8 +256,7 @@
       "Female",
       "Social media",
       "Sassy"
-    ],
-    "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5"
+    ]
   },
   {
     "id": "voice-zh-female-3",
@@ -291,8 +277,7 @@
         "Female",
         "Conversational",
         "Cute"
-      ],
-      "elevenLabsVoiceId": "cgSgspJ2msm6clMCkdW9"
+      ]
     },
     "name": "Jessica (Chinese)",
     "description": "Young and popular, this playful American female voice is perfect for trendy content.",
@@ -308,8 +293,7 @@
       "Female",
       "Conversational",
       "Cute"
-    ],
-    "elevenLabsVoiceId": "cgSgspJ2msm6clMCkdW9"
+    ]
   },
   {
     "id": "voice-zh-female-4",
@@ -330,8 +314,7 @@
         "Female",
         "Informative educational",
         "Confident"
-      ],
-      "elevenLabsVoiceId": "pFZP5JQG7iQjIQuC4Bku"
+      ]
     },
     "name": "Lily (Chinese)",
     "description": "Velvety British female voice delivers news and narrations with warmth and clarity.",
@@ -347,8 +330,7 @@
       "Female",
       "Informative educational",
       "Confident"
-    ],
-    "elevenLabsVoiceId": "pFZP5JQG7iQjIQuC4Bku"
+    ]
   },
   {
     "id": "voice-zh-female-5",
@@ -369,8 +351,7 @@
         "Female",
         "Informative educational",
         "Professional"
-      ],
-      "elevenLabsVoiceId": "hpp4J3VqNfWAUOO0d1Us"
+      ]
     },
     "name": "Bella (Chinese)",
     "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
@@ -386,7 +367,6 @@
       "Female",
       "Informative educational",
       "Professional"
-    ],
-    "elevenLabsVoiceId": "hpp4J3VqNfWAUOO0d1Us"
+    ]
   }
 ]

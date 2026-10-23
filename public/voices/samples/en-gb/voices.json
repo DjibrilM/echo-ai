@@ -19,8 +19,7 @@
         "Conversational",
         "Classy",
         "American"
-      ],
-      "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17"
+      ]
     },
     "name": "Roger",
     "description": "Easy going and perfect for casual conversations.",
@@ -37,8 +36,7 @@
       "Conversational",
       "Classy",
       "American"
-    ],
-    "elevenLabsVoiceId": "CwhRBWXzGAHq8TQ4Fs17"
+    ]
   },
   {
     "id": "voice-en-gb-male-2",
@@ -60,8 +58,7 @@
         "Conversational",
         "Hyped",
         "Australian"
-      ],
-      "elevenLabsVoiceId": "IKne3meq5aSn9XLyUdCD"
+      ]
     },
     "name": "Charlie",
     "description": "A young Australian male with a confident and energetic voice.",
@@ -78,8 +75,7 @@
       "Conversational",
       "Hyped",
       "Australian"
-    ],
-    "elevenLabsVoiceId": "IKne3meq5aSn9XLyUdCD"
+    ]
   },
   {
     "id": "voice-en-gb-male-3",
@@ -101,8 +97,7 @@
         "Narrative story",
         "Mature",
         "British"
-      ],
-      "elevenLabsVoiceId": "JBFqnCBsd6RMkjVDRZzb"
+      ]
     },
     "name": "George",
     "description": "Warm resonance that instantly captivates listeners.",
@@ -119,8 +114,7 @@
       "Narrative story",
       "Mature",
       "British"
-    ],
-    "elevenLabsVoiceId": "JBFqnCBsd6RMkjVDRZzb"
+    ]
   },
   {
     "id": "voice-en-gb-male-4",
@@ -141,8 +135,7 @@
         "Male",
         "Characters animation",
         "American"
-      ],
-      "elevenLabsVoiceId": "N2lVS1w4EtoT3dr4eOWO"
+      ]
     },
     "name": "Callum",
     "description": "Deceptively gravelly, yet unsettling edge.",
@@ -158,8 +151,7 @@
       "Male",
       "Characters animation",
       "American"
-    ],
-    "elevenLabsVoiceId": "N2lVS1w4EtoT3dr4eOWO"
+    ]
   },
   {
     "id": "voice-en-gb-male-5",
@@ -181,8 +173,7 @@
         "Characters animation",
         "Rough",
         "American"
-      ],
-      "elevenLabsVoiceId": "SOYHLrjzK2X1ezoPC6cr"
+      ]
     },
     "name": "Harry",
     "description": "An animated warrior ready to charge forward.",
@@ -199,8 +190,7 @@
       "Characters animation",
       "Rough",
       "American"
-    ],
-    "elevenLabsVoiceId": "SOYHLrjzK2X1ezoPC6cr"
+    ]
   },
   {
     "id": "voice-en-gb-female-1",
@@ -222,8 +212,7 @@
         "Informative educational",
         "Professional",
         "American"
-      ],
-      "elevenLabsVoiceId": "hpp4J3VqNfWAUOO0d1Us"
+      ]
     },
     "name": "Bella",
     "description": "This voice is warm, bright, and professional, characterized by a Standard American accent and a polished, narrative quality. It features a medium-high pitch with crisp diction and a deliberate, rhythmic pace that makes it highly intelligible and engaging for long-form listening.",
@@ -240,8 +229,7 @@
       "Informative educational",
       "Professional",
       "American"
-    ],
-    "elevenLabsVoiceId": "hpp4J3VqNfWAUOO0d1Us"
+    ]
   },
   {
     "id": "voice-en-gb-female-2",
@@ -263,8 +251,7 @@
         "Entertainment tv",
         "Professional",
         "American"
-      ],
-      "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL"
+      ]
     },
     "name": "Sarah",
     "description": "Young adult woman with a confident and warm, mature quality and a reassuring, professional tone.",
@@ -281,8 +268,7 @@
       "Entertainment tv",
       "Professional",
       "American"
-    ],
-    "elevenLabsVoiceId": "EXAVITQu4vr4xnSDxMaL"
+    ]
   },
   {
     "id": "voice-en-gb-female-3",
@@ -304,8 +290,7 @@
         "Social media",
         "Sassy",
         "American"
-      ],
-      "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5"
+      ]
     },
     "name": "Laura",
     "description": "This young adult female voice delivers sunny enthusiasm with a quirky attitude.",
@@ -322,8 +307,7 @@
       "Social media",
       "Sassy",
       "American"
-    ],
-    "elevenLabsVoiceId": "FGY2WhTYpPnrIDTdsKH5"
+    ]
   },
   {
     "id": "voice-en-gb-female-4",
@@ -345,8 +329,7 @@
         "Informative educational",
         "Professional",
         "British"
-      ],
-      "elevenLabsVoiceId": "Xb7hH8MSUJpSbSDYk0k2"
+      ]
     },
     "name": "Alice",
     "description": "Clear and engaging, friendly woman with a British accent suitable for e-learning.",
@@ -363,8 +346,7 @@
       "Informative educational",
       "Professional",
       "British"
-    ],
-    "elevenLabsVoiceId": "Xb7hH8MSUJpSbSDYk0k2"
+    ]
   },
   {
     "id": "voice-en-gb-female-5",
@@ -386,8 +368,7 @@
         "Informative educational",
         "Upbeat",
         "American"
-      ],
-      "elevenLabsVoiceId": "XrExE9yKIg1WjnnlVkGX"
+      ]
     },
     "name": "Matilda",
     "description": "A professional woman with a pleasing alto pitch. Suitable for many use cases.",
@@ -404,7 +385,6 @@
       "Informative educational",
       "Upbeat",
       "American"
-    ],
-    "elevenLabsVoiceId": "XrExE9yKIg1WjnnlVkGX"
+    ]
   }
 ]
