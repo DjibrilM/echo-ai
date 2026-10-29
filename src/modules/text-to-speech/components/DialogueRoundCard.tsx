@@ -48,11 +48,12 @@ export interface DialogueRoundCardProps {
   onOpenExplorerModal?: () => void
   onInsertPauseTag: (tag: string) => void
   engine?: 'cosyvoice3' | 'chatterbox'
+  disableEnterAnimation?: boolean
 }
 
 export function DialogueRoundCard({
   round,
-  index: _index = 0,
+  index = 0,
   totalRounds,
   speaker,
   voices: _voices,
@@ -67,7 +68,9 @@ export function DialogueRoundCard({
   onOpenExplorerModal,
   onInsertPauseTag: _onInsertPauseTag,
   engine = 'cosyvoice3',
+  disableEnterAnimation,
 }: DialogueRoundCardProps) {
+  const isDefaultRound = disableEnterAnimation ?? (round.id === 'round-1' || index === 0)
   const activeEmotions = engine === 'cosyvoice3' ? COSYVOICE_EMOTIONS : PARLER_EMOTIONS
   const dragControls = useDragControls()
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
@@ -186,8 +189,11 @@ export function DialogueRoundCard({
       value={round}
       dragListener={false}
       dragControls={dragControls}
-      initial={false}
+      layout="position"
+      initial={isDefaultRound ? false : { opacity: 0, y: 24, scale: 0.97 }}
       animate={{
+        opacity: 1,
+        y: 0,
         scale: 1,
         boxShadow: isShuffling
           ? '0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5)'
@@ -195,6 +201,15 @@ export function DialogueRoundCard({
             ? '0 10px 15px -3px rgba(0, 0, 0, 0.4)'
             : 'none',
         zIndex: isShuffling ? 50 : 1,
+      }}
+      exit={{
+        opacity: 0,
+        scale: 0.95,
+        y: -12,
+        transition: {
+          duration: 0.2,
+          ease: 'easeInOut',
+        },
       }}
       whileDrag={{
         scale: 1,
@@ -205,13 +220,14 @@ export function DialogueRoundCard({
       }}
       transition={{
         type: 'spring',
-        stiffness: 400,
-        damping: 35,
+        stiffness: 350,
+        damping: 30,
+        opacity: { duration: 0.25 },
       }}
       onClick={onFocus}
       data-speaker-card
       className={cn(
-        'group relative flex flex-col rounded-2xl border transition-colors duration-150 overflow-hidden bg-[#141416]',
+        'group relative flex flex-col w-full rounded-2xl border transition-colors duration-150 overflow-hidden bg-[#141416]',
         isFocused && !isShuffling
           ? 'border-zinc-700/80 bg-[#151518] shadow-xl ring-1 ring-white/10'
           : !isShuffling && 'border-[#232328] hover:border-zinc-700/60'

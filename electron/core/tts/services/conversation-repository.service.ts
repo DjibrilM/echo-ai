@@ -46,7 +46,7 @@ export class ConversationRepositoryService {
   /**
    * Query all conversations and dialogue rounds from SQLite
    */
-  public async listConversations(): Promise<any[]> {
+  public async listConversations(): Promise<Record<string, unknown>[]> {
     await this.db.init()
     try {
       const records = await this.db.client.conversation.findMany({
@@ -56,6 +56,7 @@ export class ConversationRepositoryService {
               roundOrder: 'asc',
             },
           },
+          activity: true,
         },
         orderBy: {
           createdAt: 'desc',
@@ -83,6 +84,16 @@ export class ConversationRepositoryService {
         language: c.language || undefined,
         speakerCount: c.speakerCount,
         generationId: c.generationId || undefined,
+        activity: c.activity
+          ? {
+              id: c.activity.id,
+              type: c.activity.type,
+              title: c.activity.title,
+              category: c.activity.category,
+              subCategory: c.activity.subCategory,
+              description: c.activity.description,
+            }
+          : undefined,
         roundsData: c.rounds.map((r) => ({
           id: r.id,
           voiceId: r.voiceId,
@@ -187,12 +198,78 @@ export class ConversationRepositoryService {
             await tx.speechRound.create({ data: round })
           }
         }
+
+        // Create or update 1-to-1 linked Activity record for this TTS generation
+        const rawSnippet = data.previewSnippet || data.text || ''
+        const cleanSnippet = rawSnippet.replace(/\s+/g, ' ').trim()
+        const baseTitle = cleanSnippet
+          ? cleanSnippet.length > 55
+            ? `${cleanSnippet.slice(0, 52)}...`
+            : cleanSnippet
+          : `${data.voiceName || 'Speech Synthesis'} Turn`
+
+        const existingActivity = await tx.activity.findUnique({
+          where: { conversationId: data.id },
+        })
+
+        const activityCategory = 'Text to Speech'
+        const activitySubCategory =
+          data.speakerCount && data.speakerCount > 1
+            ? `${data.speakerCount} Speakers Diarized`
+            : (data.voiceName || 'Single Speaker')
+
+        const activityMetadata = JSON.stringify({
+          model: data.model,
+          engine: data.engine || 'cosyvoice3',
+          duration: data.duration,
+          durationSec: data.durationSec,
+          emotion: data.emotion,
+          audioUrl: data.audioUrl,
+          waveform: data.waveform || [],
+          speakerCount: data.speakerCount || 1,
+        })
+
+        if (!existingActivity) {
+          // Generate a guaranteed unique title
+          let uniqueTitle = baseTitle
+          let counter = 1
+          while (await tx.activity.findUnique({ where: { title: uniqueTitle } })) {
+            counter++
+            uniqueTitle = `${baseTitle} #${counter}`
+          }
+
+          await tx.activity.create({
+            data: {
+              id: `act-${data.id}`,
+              type: 'tts',
+              title: uniqueTitle,
+              category: activityCategory,
+              subCategory: activitySubCategory,
+              description: cleanSnippet ? cleanSnippet.slice(0, 160) : null,
+              originId: data.id,
+              originType: 'conversation',
+              conversationId: data.id,
+              metadata: activityMetadata,
+            },
+          })
+        } else {
+          await tx.activity.update({
+            where: { conversationId: data.id },
+            data: {
+              category: activityCategory,
+              subCategory: activitySubCategory,
+              description: cleanSnippet ? cleanSnippet.slice(0, 160) : null,
+              metadata: activityMetadata,
+            },
+          })
+        }
       })
 
       return { success: true }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[ConversationRepositoryService] Failed to save conversation:', err)
-      return { success: false, error: err?.message || String(err) }
+      const message = err instanceof Error ? err.message : String(err)
+      return { success: false, error: message }
     }
   }
 
@@ -206,9 +283,10 @@ export class ConversationRepositoryService {
         where: { id },
       })
       return { success: true }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[ConversationRepositoryService] Failed to delete conversation:', err)
-      return { success: false, error: err?.message || String(err) }
+      const message = err instanceof Error ? err.message : String(err)
+      return { success: false, error: message }
     }
   }
 
@@ -220,9 +298,10 @@ export class ConversationRepositoryService {
     try {
       await this.db.client.conversation.deleteMany({})
       return { success: true }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('[ConversationRepositoryService] Failed to clear conversations:', err)
-      return { success: false, error: err?.message || String(err) }
+      const message = err instanceof Error ? err.message : String(err)
+      return { success: false, error: message }
     }
   }
 }

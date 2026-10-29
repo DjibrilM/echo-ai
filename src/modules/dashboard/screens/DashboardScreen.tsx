@@ -1,93 +1,78 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useDashboardState } from '../hooks/useDashboardState'
 import { Story, MusicTrack, ActivityItem } from '../types'
 import { AudioStoriesCarousel } from '../components/AudioStoriesCarousel'
 import { MusicGenerationCarousel } from '../components/MusicGenerationCarousel'
 import { RecentActivities } from '../components/RecentActivities'
-import { FloatingMiniPlayer } from '../components/FloatingMiniPlayer'
+import { STORIES, MUSIC_TRACKS } from '../services/dashboard-service'
+import { usePlayer } from '@/hooks/usePlayer'
 
 export function DashboardScreen() {
   const [state, updateState] = useDashboardState()
+  const player = usePlayer()
+
+  const activeMedia = useMemo(() => {
+    if (!player.currentTrack) return null
+    return {
+      id: player.currentTrack.id,
+      title: player.currentTrack.title,
+      subtitle: player.currentTrack.artist || '',
+      cover: player.currentTrack.cover || player.currentTrack.coverUrl || '',
+      duration: `${player.currentTrack.duration || 60}s`,
+      type: 'music' as const,
+    }
+  }, [player.currentTrack])
 
   const handlePlayStory = (story: Story) => {
-    if (state.activeMedia?.id === story.id) {
-      updateState({ isPlaying: !state.isPlaying })
+    if (player.currentTrack?.id === story.id) {
+      player.togglePlay()
     } else {
-      updateState({
-        activeMedia: {
-          id: story.id,
-          title: story.title,
-          subtitle: story.narrator,
-          cover: story.cover,
-          duration: story.duration,
-          type: 'story',
-        },
-        isPlaying: true,
-      })
+      const playlist = STORIES.map((s) => ({
+        id: s.id,
+        title: s.title,
+        artist: s.narrator,
+        cover: s.cover,
+        coverUrl: s.cover,
+        audioUrl: '',
+        duration: 90,
+      }))
+      const idx = playlist.findIndex((s) => s.id === story.id)
+      player.playList(playlist, Math.max(0, idx), 'Audio Stories')
     }
   }
 
   const handlePlayTrack = (track: MusicTrack) => {
-    if (state.activeMedia?.id === track.id) {
-      updateState({ isPlaying: !state.isPlaying })
+    if (player.currentTrack?.id === track.id) {
+      player.togglePlay()
     } else {
-      updateState({
-        activeMedia: {
-          id: track.id,
-          title: track.title,
-          subtitle: `${track.genre} • ${track.bpm} BPM • ${track.model}`,
-          cover: track.cover,
-          duration: track.duration,
-          type: 'music',
-        },
-        isPlaying: true,
-      })
+      const playlist = MUSIC_TRACKS.map((t) => ({
+        id: t.id,
+        title: t.title,
+        artist: `${t.genre} • ${t.bpm} BPM • ${t.model}`,
+        cover: t.cover,
+        coverUrl: t.cover,
+        audioUrl: '',
+        duration: 120,
+      }))
+      const idx = playlist.findIndex((t) => t.id === track.id)
+      player.playList(playlist, Math.max(0, idx), 'Latest Music')
     }
   }
 
   const handlePlayActivity = (activity: ActivityItem) => {
     if (activity.type === 'texts') return
-
-    if (state.activeMedia?.id === activity.id) {
-      updateState({ isPlaying: !state.isPlaying })
+    if (player.currentTrack?.id === activity.id) {
+      player.togglePlay()
     } else {
-      updateState({
-        activeMedia: {
-          id: activity.id,
-          title: activity.title,
-          subtitle: `${activity.category} › ${activity.subCategory}`,
-          cover: activity.cover,
-          duration: activity.duration,
-          type: activity.type === 'stories' ? 'story' : 'activity',
-        },
-        isPlaying: true,
-      })
-    }
-  }
-
-  const toggleMute = () => {
-    if (state.isMuted || state.volume === 0) {
-      updateState({
-        isMuted: false,
-        volume: state.prevVolume > 0 ? state.prevVolume : 0.85,
-      })
-    } else {
-      updateState({
-        prevVolume: state.volume > 0 ? state.volume : 0.85,
-        isMuted: true,
-      })
-    }
-  }
-
-  const handleVolumeChange = (newVol: number) => {
-    const clamped = Math.max(0, Math.min(1, newVol))
-    if (clamped === 0) {
-      updateState({ isMuted: true, volume: 0 })
-    } else {
-      updateState({
-        isMuted: false,
-        volume: clamped,
-        prevVolume: clamped,
+      player.play({
+        id: activity.id,
+        title: activity.title,
+        artist: `${activity.category} › ${activity.subCategory}`,
+        cover: activity.cover,
+        coverUrl: activity.cover,
+        waveform: activity.waveform,
+        audioUrl: activity.audioUrl || '',
+        duration: 60,
       })
     }
   }
@@ -102,8 +87,8 @@ export function DashboardScreen() {
     <div className="flex flex-col flex-1 min-h-full pb-32 pt-4 px-6 md:px-8 select-none">
       {/* SECTION 1: LATEST STORIES */}
       <AudioStoriesCarousel
-        activeMedia={state.activeMedia}
-        isPlaying={state.isPlaying}
+        activeMedia={activeMedia}
+        isPlaying={player.isPlaying}
         onPlayStory={handlePlayStory}
       />
 
@@ -112,8 +97,8 @@ export function DashboardScreen() {
 
       {/* SECTION 2: MY LATEST MUSIC */}
       <MusicGenerationCarousel
-        activeMedia={state.activeMedia}
-        isPlaying={state.isPlaying}
+        activeMedia={activeMedia}
+        isPlaying={player.isPlaying}
         onPlayTrack={handlePlayTrack}
       />
 
@@ -121,25 +106,11 @@ export function DashboardScreen() {
       <RecentActivities
         activeActivityTab={state.activeActivityTab}
         onSelectTab={(tabId) => updateState({ activeActivityTab: tabId })}
-        activeMediaId={state.activeMedia?.id ?? null}
-        isPlaying={state.isPlaying}
+        activeMediaId={player.currentTrack?.id ?? null}
+        isPlaying={player.isPlaying}
         downloadedId={state.downloadedId}
         onPlayActivity={handlePlayActivity}
         onDownload={handleDownload}
-      />
-
-      {/* FLOATING MINI PLAYER */}
-      <FloatingMiniPlayer
-        activeMedia={state.activeMedia}
-        isPlaying={state.isPlaying}
-        isMuted={state.isMuted}
-        volume={state.volume}
-        downloadedId={state.downloadedId}
-        onTogglePlay={() => updateState({ isPlaying: !state.isPlaying })}
-        onToggleMute={toggleMute}
-        onVolumeChange={handleVolumeChange}
-        onDownload={handleDownload}
-        onClose={() => updateState({ activeMedia: null })}
       />
     </div>
   )

@@ -14,6 +14,10 @@ import type { ModelDownloadProgressPayload } from '@/lib/interfaces/models.inter
 export const ttsProgressListeners = new Map<string, (data: TtsProgressEvent) => void>()
 export const ttsCompleteListeners = new Map<string, (data: TtsCompleteEvent) => void>()
 export const ttsErrorListeners = new Map<string, (data: TtsErrorEvent) => void>()
+export const musicProgressListeners = new Map<string, (data: any) => void>()
+export const musicCompleteListeners = new Map<string, (data: any) => void>()
+export const musicErrorListeners = new Map<string, (data: any) => void>()
+export const musicLyricTokenListeners = new Map<string, (data: { taskId: string; token: string }) => void>()
 export const modelsDownloadProgressListeners = new Map<string, (data: ModelDownloadProgressPayload) => void>()
 export const terminalLogListeners = new Map<string, (data: TerminalLogMessage) => void>()
 
@@ -31,6 +35,104 @@ export async function sendTtsGenerate(options: any) {
 export async function sendCancelTts(taskId: string) {
   if (typeof window !== 'undefined' && window.ipcRenderer) {
     return window.ipcRenderer.invoke('tts:cancel', { taskId })
+  }
+  return { success: false, error: 'IPC Renderer unavailable' }
+}
+
+export async function sendMusicGenerate(options: any) {
+  if (typeof window !== 'undefined' && window.ipcRenderer) {
+    return window.ipcRenderer.invoke('music:generate', options)
+  }
+  return { success: false, error: 'IPC Renderer unavailable' }
+}
+
+export async function sendCancelMusic(taskId: string) {
+  if (typeof window !== 'undefined' && window.ipcRenderer) {
+    return window.ipcRenderer.invoke('music:cancel', { taskId })
+  }
+  return { success: false, error: 'IPC Renderer unavailable' }
+}
+
+export async function sendMusicEdit(options: any) {
+  if (typeof window !== 'undefined' && window.ipcRenderer) {
+    return window.ipcRenderer.invoke('music:edit', options)
+  }
+  return { success: false, error: 'IPC Renderer unavailable' }
+}
+
+export async function sendMusicUnderstand(options: any) {
+  if (typeof window !== 'undefined' && window.ipcRenderer) {
+    return window.ipcRenderer.invoke('music:understand', options)
+  }
+  return { success: false, error: 'IPC Renderer unavailable' }
+}
+
+export async function sendGetMusicModelStatus() {
+  if (typeof window !== 'undefined' && window.ipcRenderer) {
+    return window.ipcRenderer.invoke('music:model-status')
+  }
+  return { success: false, error: 'IPC Renderer unavailable' }
+}
+
+export async function sendAssessMusicFit(options?: any) {
+  if (typeof window !== 'undefined' && window.ipcRenderer) {
+    return window.ipcRenderer.invoke('music:assess-fit', options)
+  }
+  return { success: false, error: 'IPC Renderer unavailable' }
+}
+
+export async function sendUnloadMusicModel() {
+  if (typeof window !== 'undefined' && window.ipcRenderer) {
+    return window.ipcRenderer.invoke('music:unload-model')
+  }
+  return { success: false, error: 'IPC Renderer unavailable' }
+}
+
+export async function sendGenerateLyrics(payload: { prompt: string; taskId?: string }) {
+  if (typeof window !== 'undefined' && window.ipcRenderer) {
+    return window.ipcRenderer.invoke('music:generate-lyrics', payload)
+  }
+  return { success: false, error: 'IPC Renderer unavailable' }
+}
+
+export async function sendGetMusicHistory() {
+  if (typeof window !== 'undefined' && window.ipcRenderer) {
+    return window.ipcRenderer.invoke('music:history:list')
+  }
+  return { success: false, error: 'IPC Renderer unavailable' }
+}
+
+export async function sendSaveMusicHistory(item: any) {
+  if (typeof window !== 'undefined' && window.ipcRenderer) {
+    return window.ipcRenderer.invoke('music:history:save', item)
+  }
+  return { success: false, error: 'IPC Renderer unavailable' }
+}
+
+export async function sendDeleteMusicHistory(id: string) {
+  if (typeof window !== 'undefined' && window.ipcRenderer) {
+    return window.ipcRenderer.invoke('music:history:delete', { id })
+  }
+  return { success: false, error: 'IPC Renderer unavailable' }
+}
+
+export async function sendClearMusicHistory() {
+  if (typeof window !== 'undefined' && window.ipcRenderer) {
+    return window.ipcRenderer.invoke('music:history:clear')
+  }
+  return { success: false, error: 'IPC Renderer unavailable' }
+}
+
+export async function sendGetMusicLogs(limitLines?: number) {
+  if (typeof window !== 'undefined' && window.ipcRenderer) {
+    return window.ipcRenderer.invoke('music:get-logs', limitLines)
+  }
+  return { success: false, error: 'IPC Renderer unavailable' }
+}
+
+export async function sendClearMusicLogs() {
+  if (typeof window !== 'undefined' && window.ipcRenderer) {
+    return window.ipcRenderer.invoke('music:clear-logs')
   }
   return { success: false, error: 'IPC Renderer unavailable' }
 }
@@ -98,6 +200,18 @@ export const IpcProvider: React.FC<IpcProviderProps> = ({ children }) => {
       ttsErrorListeners.forEach((listener) => listener(data))
     }
 
+    const onMusicProgress = (_event: any, data: any) => {
+      musicProgressListeners.forEach((listener) => listener(data))
+    }
+
+    const onMusicComplete = (_event: any, data: any) => {
+      musicCompleteListeners.forEach((listener) => listener(data))
+    }
+
+    const onMusicError = (_event: any, data: any) => {
+      musicErrorListeners.forEach((listener) => listener(data))
+    }
+
     const onModelsDownloadProgress = (_event: any, data: ModelDownloadProgressPayload) => {
       modelsDownloadProgressListeners.forEach((listener) => listener(data))
     }
@@ -106,9 +220,17 @@ export const IpcProvider: React.FC<IpcProviderProps> = ({ children }) => {
       terminalLogListeners.forEach((listener) => listener(data))
     }
 
+    const onMusicLyricToken = (_event: any, data: { taskId: string; token: string }) => {
+      musicLyricTokenListeners.forEach((listener) => listener(data))
+    }
+
     ipc.on('tts:progress', onTtsProgress)
     ipc.on('tts:complete', onTtsComplete)
     ipc.on('tts:error', onTtsError)
+    ipc.on('music:progress', onMusicProgress)
+    ipc.on('music:complete', onMusicComplete)
+    ipc.on('music:error', onMusicError)
+    ipc.on('music:lyrics-token', onMusicLyricToken)
     ipc.on('models:download-progress', onModelsDownloadProgress)
     ipc.on('terminal:log', onTerminalLog)
 
@@ -116,6 +238,10 @@ export const IpcProvider: React.FC<IpcProviderProps> = ({ children }) => {
       ipc.off('tts:progress', onTtsProgress)
       ipc.off('tts:complete', onTtsComplete)
       ipc.off('tts:error', onTtsError)
+      ipc.off('music:progress', onMusicProgress)
+      ipc.off('music:complete', onMusicComplete)
+      ipc.off('music:error', onMusicError)
+      ipc.off('music:lyrics-token', onMusicLyricToken)
       ipc.off('models:download-progress', onModelsDownloadProgress)
       ipc.off('terminal:log', onTerminalLog)
     }
@@ -125,3 +251,4 @@ export const IpcProvider: React.FC<IpcProviderProps> = ({ children }) => {
 }
 
 export default IpcProvider
+

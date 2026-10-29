@@ -22,6 +22,7 @@ model Conversation {
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   rounds          SpeechRound[]
+  activity        Activity?
 
   @@map("conversations")
 }

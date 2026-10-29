@@ -1,5 +1,5 @@
 import type {
-  VoiceEngineType,
+  AnyEngineType,
   VoiceModelStatusResult,
   ModelDownloadOptions,
   ModelDownloadProgressPayload,
@@ -8,10 +8,10 @@ import type {
 import { modelsDownloadProgressListeners } from '@/components/providers/IpcProvider'
 
 /**
- * Queries voice engine models status via IPC ('models:get-status')
+ * Queries voice or music engine models status via IPC ('models:get-status')
  */
 export async function getModelStatus(
-  engine?: VoiceEngineType
+  engine?: AnyEngineType
 ): Promise<IpcResponse<VoiceModelStatusResult>> {
   if (typeof window !== 'undefined' && window.ipcRenderer) {
     try {
@@ -79,15 +79,24 @@ export async function deleteAllModels(): Promise<IpcResponse<unknown>> {
   return { success: false, error: 'IPC renderer is unavailable in current runtime' }
 }
 
+export interface QvacModelInfoData {
+  isCached: boolean
+  isLoaded: boolean
+  modelId: string
+  expectedSize: number
+  addon: string
+  [key: string]: unknown
+}
+
 /**
  * Queries QVAC model info (cache/download status) via IPC ('models:get-info')
  */
-export async function getModelInfo(name: string): Promise<IpcResponse<any>> {
+export async function getModelInfo(name: string): Promise<IpcResponse<QvacModelInfoData>> {
   if (typeof window !== 'undefined' && window.ipcRenderer) {
     try {
       const res = (await window.ipcRenderer.invoke('models:get-info', {
         name,
-      })) as IpcResponse<any>
+      })) as IpcResponse<QvacModelInfoData>
       return res
     } catch (err) {
       console.error('[modelsService] getModelInfo IPC invoke failed:', err)
