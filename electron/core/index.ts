@@ -3,6 +3,8 @@ import { SystemService, SystemController } from './system'
 import { ModelsService, ModelsController } from './models'
 import { VoiceService, VoiceController, VoiceRepositoryService } from './voices'
 import { TtsService, TtsController, ConversationRepositoryService } from './tts'
+import { MusicService, MusicController } from './music'
+import { ActivityRepositoryService, ActivityController } from './activity'
 import { DatabaseService } from './db'
 
 export * from './base.controller'
@@ -11,6 +13,8 @@ export * from './system'
 export * from './models'
 export * from './voices'
 export * from './tts'
+export * from './music'
+export * from './activity'
 export * from './db'
 
 export interface CoreContext {
@@ -18,6 +22,8 @@ export interface CoreContext {
   modelsService: ModelsService
   voiceService: VoiceService
   ttsService: TtsService
+  musicService: MusicService
+  activityRepository: ActivityRepositoryService
   dbService: DatabaseService
   controllers: BaseController[]
 }
@@ -29,13 +35,17 @@ export function bootstrapCore(): CoreContext {
   // 1. Initialize pure database infrastructure service
   const dbService = new DatabaseService()
 
-  // 2. Instantiate domain repositories with injected dbService
-  const voiceRepository = new VoiceRepositoryService(dbService)
-  const conversationRepository = new ConversationRepositoryService(dbService)
-
-  // 3. Instantiate domain services with injected repositories
+  // 2. Instantiate domain services
   const systemService = new SystemService()
   const modelsService = new ModelsService()
+  const musicService = new MusicService()
+
+  // 3. Instantiate domain repositories with injected dbService and domain services
+  const voiceRepository = new VoiceRepositoryService(dbService)
+  const conversationRepository = new ConversationRepositoryService(dbService)
+  const activityRepository = new ActivityRepositoryService(dbService, musicService)
+
+  // 4. Instantiate remaining domain services with injected repositories
   const voiceService = new VoiceService(voiceRepository)
   const ttsService = new TtsService(modelsService, conversationRepository)
 
@@ -45,6 +55,8 @@ export function bootstrapCore(): CoreContext {
     new ModelsController(modelsService),
     new VoiceController(voiceService),
     new TtsController(ttsService),
+    new MusicController(musicService, activityRepository),
+    new ActivityController(activityRepository),
   ]
 
   // 5. Initialize and bind IPC handlers on all controllers
@@ -57,7 +69,10 @@ export function bootstrapCore(): CoreContext {
     modelsService,
     voiceService,
     ttsService,
+    musicService,
+    activityRepository,
     dbService,
     controllers,
   }
 }
+

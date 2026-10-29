@@ -4,12 +4,12 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
+import { MusicScreen } from '@/modules/music'
 import {
   TextToSpeechIcon,
   VoiceCreationIcon,
   VoiceChangerIcon,
   SpeechToTextIcon,
-  MusicIcon,
   AudiobooksIcon,
   VoicesIcon,
   StudioIcon,
@@ -22,7 +22,7 @@ import {
   DubbingIcon,
   DevelopersIcon,
 } from '@/components/icons'
-import { Play, Mic, Upload, Volume2, Music2, BookOpen, Camera, User } from 'lucide-react'
+import { Play, Mic, Upload, Volume2, BookOpen, Camera, User } from 'lucide-react'
 
 export const VoiceCloningPage = VoiceCreationPage
 export const VoiceChangingPage = VoiceChangerPage
@@ -335,36 +335,7 @@ export function SpeechToTextPage() {
 }
 
 export function MusicPage() {
-  return (
-    <div className="flex flex-1 flex-col gap-6 p-6 max-w-5xl">
-      <div className="flex items-center gap-3">
-        <div className="p-2.5 rounded-xl bg-primary/10 text-primary">
-          <MusicIcon className="size-6" />
-        </div>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Music</h1>
-          <p className="text-sm text-muted-foreground">
-            Generate full musical tracks, background ambient stems, and soundscapes from text prompts.
-          </p>
-        </div>
-      </div>
-
-      <Card className="p-6 flex flex-col gap-4">
-        <label className="text-sm font-semibold">Music Prompt</label>
-        <Input placeholder="e.g. Lo-fi hip hop beat with calm vinyl crackle and smooth electric piano chords" />
-        <div className="flex items-center justify-between pt-2">
-          <div className="flex gap-2">
-            <Badge variant="outline">30s</Badge>
-            <Badge variant="outline">60s</Badge>
-            <Badge variant="outline">Full Track</Badge>
-          </div>
-          <Button size="sm" className="gap-2">
-            <Music2 className="size-3.5" /> Generate Music
-          </Button>
-        </div>
-      </Card>
-    </div>
-  )
+  return <MusicScreen />
 }
 
 export function AudiobooksPage() {

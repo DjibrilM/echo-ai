@@ -3,9 +3,55 @@ import path from 'node:path'
 import { app } from 'electron'
 import { PrismaClient } from '@prisma/client'
 
+export interface ActivityModelDelegate {
+  findMany(args?: {
+    where?: Record<string, unknown>
+    select?: Record<string, unknown>
+    include?: Record<string, unknown>
+    orderBy?: Record<string, unknown>
+    take?: number
+    skip?: number
+  }): Promise<Array<Record<string, unknown>>>
+
+  findUnique(args: {
+    where: { id?: string; title?: string; conversationId?: string }
+    include?: Record<string, unknown>
+    select?: Record<string, unknown>
+  }): Promise<Record<string, unknown> | null>
+
+  findFirst(args?: {
+    where?: Record<string, unknown>
+    include?: Record<string, unknown>
+    select?: Record<string, unknown>
+  }): Promise<Record<string, unknown> | null>
+
+  create(args: {
+    data: Record<string, unknown>
+    include?: Record<string, unknown>
+    select?: Record<string, unknown>
+  }): Promise<Record<string, unknown>>
+
+  upsert(args: {
+    where: { id: string }
+    update: Record<string, unknown>
+    create: Record<string, unknown>
+    include?: Record<string, unknown>
+    select?: Record<string, unknown>
+  }): Promise<Record<string, unknown>>
+
+  delete(args: {
+    where: { id: string }
+  }): Promise<Record<string, unknown>>
+}
+
+export type EchoPrismaClient = PrismaClient & {
+  activity: ActivityModelDelegate
+}
+
 export class DatabaseService {
   private prisma: PrismaClient
   private initialized = false
+  private initPromise: Promise<void> | null = null
 
   constructor() {
     const isPackaged = app ? app.isPackaged : false
@@ -36,8 +82,8 @@ export class DatabaseService {
   /**
    * Access the shared PrismaClient instance for module-specific repositories
    */
-  public get client(): PrismaClient {
-    return this.prisma
+  public get client(): EchoPrismaClient {
+    return this.prisma as unknown as EchoPrismaClient
   }
 
   /**
@@ -45,8 +91,11 @@ export class DatabaseService {
    */
   public async init(): Promise<void> {
     if (this.initialized) return
+    if (this.initPromise) return this.initPromise
 
-    try {
+    this.initPromise = (async () => {
+      try {
+
       await this.prisma.$executeRawUnsafe(`
         CREATE TABLE IF NOT EXISTS "conversations" (
           "id" TEXT PRIMARY KEY,
@@ -121,12 +170,35 @@ export class DatabaseService {
         );
       `)
 
+      await this.prisma.$executeRawUnsafe(`
+        CREATE TABLE IF NOT EXISTS "activities" (
+          "id" TEXT PRIMARY KEY,
+          "type" TEXT NOT NULL,
+          "title" TEXT NOT NULL UNIQUE,
+          "description" TEXT,
+          "category" TEXT DEFAULT 'Text to Speech',
+          "subCategory" TEXT,
+          "originId" TEXT,
+          "originType" TEXT,
+          "metadata" TEXT,
+          "conversationId" TEXT UNIQUE,
+          "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+          FOREIGN KEY ("conversationId") REFERENCES "conversations"("id") ON DELETE CASCADE
+        );
+      `)
+
       this.initialized = true
       console.log('[DatabaseService] SQLite database schema initialized')
     } catch (err) {
       console.error('[DatabaseService] Error verifying SQLite tables:', err)
+    } finally {
+      this.initPromise = null
     }
-  }
+  })()
+
+  return this.initPromise
+}
 
   /**
    * Graceful disconnect on application exit
@@ -134,6 +206,8 @@ export class DatabaseService {
   public async close(): Promise<void> {
     try {
       await this.prisma.$disconnect()
-    } catch {}
+    } catch (err: unknown) {
+      console.warn('[DatabaseService] Failed to disconnect cleanly:', err)
+    }
   }
 }

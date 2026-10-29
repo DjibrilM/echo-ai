@@ -32,6 +32,7 @@ export interface ActivityItem {
   waveform?: number[]
   wordsCount?: string
   textExcerpt?: string
+  audioUrl?: string
 }
 
 export interface ActiveMedia {

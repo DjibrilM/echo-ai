@@ -12,6 +12,8 @@ export interface SpeechEditorActionBarProps {
   isSynthesizing: boolean
   /** Whether all required voice engine models are downloaded/ready */
   modelsReady: boolean
+  /** Whether the persistent bottom audio player is rendered */
+  hasMediaPlayer?: boolean
   /** Trigger automated emotion/pace tag detection based on script sentiment */
   onAutoTag: () => void
   /** Clear the editor and start fresh */
@@ -28,13 +30,19 @@ export function SpeechEditorActionBar({
   totalCharacters,
   isSynthesizing,
   modelsReady,
+  hasMediaPlayer = false,
   onAutoTag,
   onClear,
   onGenerate,
 }: SpeechEditorActionBarProps) {
 
   return (
-    <div className="absolute bottom-15 left-0 right-0 z-10 flex items-center justify-between border-t border-[#1f1f23] bg-[#0f0f10]/95 px-6 py-1.5 backdrop-blur-md">
+    <div
+      className={cn(
+        'absolute left-0 right-0 z-10 flex items-center justify-between border-t border-[#1f1f23] bg-[#0f0f10]/95 px-6 py-1.5 backdrop-blur-md transition-all duration-200',
+        hasMediaPlayer ? 'bottom-15' : 'bottom-0'
+      )}
+    >
       <div />
 
       {/* Right action group: Counter, Auto-tag, Generate speech */}

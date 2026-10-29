@@ -1,10 +1,12 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
-import { Plus } from 'lucide-react'
+import { Plus, Play, Pause, Download } from 'lucide-react'
 import { motion, AnimatePresence, LayoutGroup, Reorder } from 'framer-motion'
 import { Button } from '@/components/ui/button'
-import { WavesurferAudioPlayer } from '@/components/wavesurfer-audio-player'
+import { TrackWavePlayer } from '@/components/player/TrackWavePlayer'
 import { ShimmeringText } from '@/components/ui/shimmering-text'
 import { useModels } from '@/modules/models'
+import { usePlayer } from '@/hooks/usePlayer'
+import { useAudioEffect } from '@/hooks/useAudioEffect'
 import { cn } from '@/lib/utils'
 
 import { Voice, SpeechRound, Generation, HistoryEntry, LANGUAGES, getVoicesForLanguage } from '../types'
@@ -21,15 +23,14 @@ import {
 } from '../services/audioCache'
 import { dbService } from '@/lib/services/dbService'
 import { useTextToSpeechState } from '../hooks/useTextToSpeechState'
-import { useSpeechPlayback } from '../hooks/useSpeechPlayback'
 import { useVoiceCloneRecording } from '../hooks/useVoiceCloneRecording'
 import { useVoicePreview } from '../hooks/useVoicePreview'
 import { useIpcEffect } from '@/hooks/useIpcEffect'
+import type { PlayerTrack } from '@/store/playerStore'
 
 import { TopSubHeader } from '../components/TopSubHeader'
 import { DialogueRoundCard } from '../components/DialogueRoundCard'
 import { SpeechEditorActionBar } from '../components/SpeechEditorActionBar'
-import { SpeechPlayerBar } from '../components/SpeechPlayerBar'
 import { SettingsDrawer } from '../components/SettingsDrawer'
 import { HistoryDrawer } from '../components/HistoryDrawer'
 import { VoiceCloneModal } from '../components/VoiceCloneModal'
@@ -40,9 +41,40 @@ export function TextToSpeechScreen() {
   const [state, updateState] = useTextToSpeechState()
   const [loadedHistoryId, setLoadedHistoryId] = useState<string | null>(null)
   const { allRequiredReady, deleteAllModels, selectedEngine, setSelectedEngine } = useModels()
-  const playback = useSpeechPlayback({ state, updateState })
+  const player = usePlayer()
   const recording = useVoiceCloneRecording({ state, updateState })
   const voicePreview = useVoicePreview()
+
+  // Build a global-player track from a TTS generation so the app-wide audio player can render/play it
+  const buildTrackFromGeneration = useCallback(
+    (gen: Generation): PlayerTrack => ({
+      id: gen.id,
+      title: gen.title,
+      subtitle: gen.speakerName,
+      artist: gen.speakerName,
+      audioUrl: gen.audioUrl,
+      duration: gen.duration || 8,
+      waveform: gen.waveform && gen.waveform.length > 0 ? gen.waveform : [],
+    }),
+    []
+  )
+
+  // Mirror the single global audio element's state back into the TTS screen so the
+  // generation card + history drawer stay highlighted while only the global player plays
+  useAudioEffect({
+    onTimeUpdate: (time, dur) => {
+      updateState({
+        currentTime: time,
+        playbackProgress: dur > 0 ? Math.min(1, time / dur) : 0,
+      })
+    },
+    onStateChange: (playing) => {
+      updateState({
+        isPlaying: playing,
+        ...(!playing ? { playingHistoryId: null } : {}),
+      })
+    },
+  })
 
   // Real-time IPC Event Gateway listener for incoming generation progress and logs
   useIpcEffect({
@@ -155,8 +187,16 @@ export function TextToSpeechScreen() {
 
   const handleTogglePlay = useCallback(() => {
     voicePreview.stopPreview()
-    playback.togglePlayPause()
-  }, [playback, voicePreview])
+    const gen = state.activeGeneration || state.generations[0]
+    if (!gen || !gen.audioUrl) return
+    // Route all TTS playback through the single global audio player
+    if (player.currentTrack?.id === gen.id) {
+      player.togglePlay()
+    } else {
+      player.play(buildTrackFromGeneration(gen))
+    }
+    updateState({ activeGeneration: gen, playingHistoryId: null })
+  }, [player, state.activeGeneration, state.generations, buildTrackFromGeneration, voicePreview, updateState])
 
   const handleVoicesLoaded = useCallback(
     (loadedVoices: Voice[]) => {
@@ -207,6 +247,12 @@ export function TextToSpeechScreen() {
   const activeLanguage = useMemo(
     () => LANGUAGES.find((l) => l.name === state.language) || LANGUAGES[0],
     [state.language]
+  )
+
+  // Generation that the TTS screen surfaces (latest or loaded history entry)
+  const currentGeneration = state.activeGeneration || state.generations[0] || null
+  const isGenerationPlaying = Boolean(
+    currentGeneration && player.currentTrack?.id === currentGeneration.id && player.isPlaying
   )
 
   const handleSaveVoice = useCallback(
@@ -310,7 +356,7 @@ export function TextToSpeechScreen() {
   const handleClearEditor = () => {
     if (state.isSynthesizing) return
     voicePreview.stopPreview()
-    playback.stopActiveAudio()
+    player.pause()
     const voiceId = state.rounds[0]?.voiceId || state.selectedVoiceId
     updateState({
       rounds: [
@@ -342,7 +388,7 @@ export function TextToSpeechScreen() {
 
     // Immediately stop voice audition previews and clear previous playback
     voicePreview.stopPreview()
-    playback.stopActiveAudio()
+    player.pause()
     const currentEngine = state.engine || selectedEngine || 'cosyvoice3'
     updateState({
       isSynthesizing: true,
@@ -491,7 +537,7 @@ export function TextToSpeechScreen() {
     async (item: HistoryEntry) => {
       if (!item) return
       voicePreview.stopPreview()
-      playback.stopActiveAudio()
+      player.pause()
 
       const targetEngine =
         item.engine ||
@@ -559,55 +605,60 @@ export function TextToSpeechScreen() {
         playingHistoryId: null,
       })
     },
-    [parseDurationStringToSec, playback, setSelectedEngine, state.selectedVoiceId, updateState, voicePreview]
+    [parseDurationStringToSec, player, setSelectedEngine, state.selectedVoiceId, updateState, voicePreview]
   )
 
   const handleTogglePlayHistory = useCallback(
     async (item: HistoryEntry) => {
       voicePreview.stopPreview()
-      if (state.playingHistoryId === item.id && state.isPlaying) {
-        playback.stopActiveAudio()
-        updateState({ playingHistoryId: null, isPlaying: false })
-      } else {
-        playback.stopActiveAudio()
-        let audioUrl = item.audioUrl
-        if (!audioUrl) {
-          audioUrl = (await getAudioFromCache(item.id)) || undefined
-        }
-        if (audioUrl) {
-          const durSec =
-            item.durationSec ||
-            (item.duration ? parseDurationStringToSec(item.duration) : 8)
-          const gen: Generation = {
-            id: item.generationId || `gen-${item.id}`,
-            roundIndex: 0,
-            title:
-              item.speakerCount && item.speakerCount > 1
-                ? `${item.speakerCount} Speakers Dialogue`
-                : item.voiceName || 'Dialogue',
-            textSnippet: item.text,
-            speakerName: item.voiceName,
-            speakerColor: item.voiceColor || '#10b981',
-            speakerAvatarUrl: item.voiceAvatarUrl,
-            duration: durSec,
-            waveform: item.waveform && item.waveform.length > 0 ? item.waveform : [],
-            timestamp: item.timeAgo || 'Just now',
-            emotion: item.emotion || 'Neutral',
-            audioUrl,
-          }
-          setLoadedHistoryId(item.id)
-          updateState({
-            generations: [gen],
-            activeGeneration: gen,
-            isPlaying: true,
-            playingHistoryId: item.id,
-            currentTime: 0,
-            playbackProgress: 0,
-          })
-        }
+      const genId = item.generationId || `gen-${item.id}`
+
+      // Same history entry already loaded in the global player -> just toggle it
+      if (player.currentTrack?.id === genId) {
+        player.togglePlay()
+        return
       }
+
+      let audioUrl = item.audioUrl
+      if (!audioUrl) {
+        audioUrl = (await getAudioFromCache(item.id)) || undefined
+      }
+      if (!audioUrl) return
+
+      const durSec =
+        item.durationSec ||
+        (item.duration ? parseDurationStringToSec(item.duration) : 8)
+
+      const gen: Generation = {
+        id: genId,
+        roundIndex: 0,
+        title:
+          item.speakerCount && item.speakerCount > 1
+            ? `${item.speakerCount} Speakers Dialogue`
+            : item.voiceName || 'Dialogue',
+        textSnippet: item.text,
+        speakerName: item.voiceName,
+        speakerColor: item.voiceColor || '#10b981',
+        speakerAvatarUrl: item.voiceAvatarUrl,
+        duration: durSec,
+        waveform: item.waveform && item.waveform.length > 0 ? item.waveform : [],
+        timestamp: item.timeAgo || 'Just now',
+        emotion: item.emotion || 'Neutral',
+        audioUrl,
+      }
+
+      setLoadedHistoryId(item.id)
+      player.play(buildTrackFromGeneration(gen))
+      updateState({
+        generations: [gen],
+        activeGeneration: gen,
+        isPlaying: true,
+        playingHistoryId: item.id,
+        currentTime: 0,
+        playbackProgress: 0,
+      })
     },
-    [parseDurationStringToSec, playback, state.isPlaying, state.playingHistoryId, updateState, voicePreview]
+    [parseDurationStringToSec, player, buildTrackFromGeneration, updateState, voicePreview]
   )
 
   return (
@@ -663,50 +714,54 @@ export function TextToSpeechScreen() {
                   className="w-full flex flex-col gap-6"
                   as="div"
                 >
-                  {state.rounds.map((round, index) => {
-                    const speaker = getVoice(round.voiceId)
-                    const isFocused = state.focusedRoundIndex === index
-                    const isShuffling = state.shufflingRoundId === round.id
+                  <AnimatePresence initial={false}>
+                    {state.rounds.map((round, index) => {
+                      const speaker = getVoice(round.voiceId)
+                      const isFocused = state.focusedRoundIndex === index
+                      const isShuffling = state.shufflingRoundId === round.id
+                      const isFirstDefault = index === 0 && round.id === 'round-1'
 
-                    return (
-                      <DialogueRoundCard
-                        key={round.id}
-                        round={round}
-                        index={index}
-                        totalRounds={state.rounds.length}
-                        speaker={speaker}
-                        voices={state.voices}
-                        isFocused={isFocused}
-                        isShuffling={isShuffling}
-                        playingVoiceId={voicePreview.playingVoiceId}
-                        onTogglePreview={voicePreview.togglePreview}
-                        engine={state.engine || selectedEngine}
-                        onFocus={() => {
-                          updateState({
-                            focusedRoundIndex: index,
-                            selectedVoiceId: round.voiceId,
-                          })
-                        }}
-                        onUpdateRound={(updated) => {
-                          updateState({
-                            rounds: state.rounds.map((r, i) =>
-                              i === index ? { ...r, ...updated } : r
-                            ),
-                            focusedRoundIndex: index,
-                            ...(updated.voiceId ? { selectedVoiceId: updated.voiceId } : {}),
-                          })
-                        }}
-                        onRemoveRound={() => handleRemoveRound(round.id)}
-                        onOpenCloneModal={() => updateState({ isCloneModalOpen: true })}
-                        onOpenExplorerModal={() => updateState({ isLanguageSelectorOpen: true })}
-                        onInsertPauseTag={(tag) => handleInsertPauseTag(tag, index)}
-                      />
-                    )
-                  })}
+                      return (
+                        <DialogueRoundCard
+                          key={round.id}
+                          round={round}
+                          index={index}
+                          totalRounds={state.rounds.length}
+                          speaker={speaker}
+                          voices={state.voices}
+                          isFocused={isFocused}
+                          isShuffling={isShuffling}
+                          playingVoiceId={voicePreview.playingVoiceId}
+                          onTogglePreview={voicePreview.togglePreview}
+                          engine={state.engine || selectedEngine}
+                          disableEnterAnimation={isFirstDefault}
+                          onFocus={() => {
+                            updateState({
+                              focusedRoundIndex: index,
+                              selectedVoiceId: round.voiceId,
+                            })
+                          }}
+                          onUpdateRound={(updated) => {
+                            updateState({
+                              rounds: state.rounds.map((r, i) =>
+                                i === index ? { ...r, ...updated } : r
+                              ),
+                              focusedRoundIndex: index,
+                              ...(updated.voiceId ? { selectedVoiceId: updated.voiceId } : {}),
+                            })
+                          }}
+                          onRemoveRound={() => handleRemoveRound(round.id)}
+                          onOpenCloneModal={() => updateState({ isCloneModalOpen: true })}
+                          onOpenExplorerModal={() => updateState({ isLanguageSelectorOpen: true })}
+                          onInsertPauseTag={(tag) => handleInsertPauseTag(tag, index)}
+                        />
+                      )
+                    })}
+                  </AnimatePresence>
                 </Reorder.Group>
 
                 {/* Add Speaker Round button */}
-                <div className="flex justify-start mt-6">
+                <motion.div layout="position" className="flex justify-start mt-6">
                   <Button
                     type="button"
                     variant="outline"
@@ -716,11 +771,11 @@ export function TextToSpeechScreen() {
                     <Plus className="size-3.5 text-zinc-400" />
                     <span>Add Speaker Round</span>
                   </Button>
-                </div>
+                </motion.div>
 
                 {/* Latest Generation Wave Player with Emotion & Cloned Timbre metadata */}
                 {state.generations.length > 0 && state.generations[0] && (
-                  <div className="mt-4 flex w-fit max-w-full flex-col items-start gap-2.5">
+                  <div className="mt-4 flex w-full max-w-2xl flex-col items-start gap-2.5">
                     {/* Generation Metadata */}
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-zinc-400">
                       <span className="inline-flex items-center gap-1.5 font-medium text-zinc-200">
@@ -757,39 +812,56 @@ export function TextToSpeechScreen() {
                       )}
                     </div>
 
-                    <WavesurferAudioPlayer
-                      key={state.generations[0].id}
-                      url={state.generations[0].audioUrl}
-                      waveform={state.generations[0].waveform}
-                      defaultDuration={state.generations[0].duration}
-                      isCur={true}
-                      isPlaying={state.isPlaying}
-                      currentTime={state.currentTime}
-                      volume={state.isMuted ? 0 : state.volume}
-                      isMuted={state.isMuted}
-                      seekTarget={state.seekTarget}
-                      onTogglePlay={handleTogglePlay}
-                      onPlayStateChange={(playing) =>
-                        updateState({
-                          isPlaying: playing,
-                          ...(!playing && state.playingHistoryId ? { playingHistoryId: null } : {}),
-                        })
-                      }
-                      onTimeUpdate={(time, _dur, ratio) => {
-                        updateState({
-                          currentTime: time,
-                          playbackProgress: ratio,
-                        })
-                      }}
-                      onDownload={() => {
-                        if (state.generations[0].audioUrl) {
-                          downloadDataUriAsWav(
-                            state.generations[0].audioUrl,
-                            `${state.generations[0].title.replace(/\s+/g, "_")}-${state.generations[0].speakerName}.wav`
-                          )
-                        }
-                      }}
-                    />
+                    {/* Single global audio player: interactive waveform bound to the central audio element */}
+                    <div className="flex w-full items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={handleTogglePlay}
+                        className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white text-black hover:bg-zinc-200 transition-all active:scale-95 cursor-pointer shadow-xs"
+                        title={isGenerationPlaying ? 'Pause' : 'Play'}
+                      >
+                        {isGenerationPlaying ? (
+                          <Pause className="size-4 fill-black text-black" />
+                        ) : (
+                          <Play className="size-4 fill-black text-black ml-0.5" />
+                        )}
+                      </button>
+
+                      <div className="flex-1 min-w-0">
+                        <TrackWavePlayer
+                          trackId={state.generations[0].id}
+                          waveform={
+                            state.generations[0].waveform &&
+                            state.generations[0].waveform.length > 0
+                              ? state.generations[0].waveform
+                              : undefined
+                          }
+                          duration={state.generations[0].duration || 8}
+                          onPlay={handleTogglePlay}
+                          height={32}
+                        />
+                      </div>
+
+                      <span className="text-xs font-mono text-zinc-400 tabular-nums select-none shrink-0 min-w-[28px] text-right">
+                        {formatTime(isGenerationPlaying ? state.currentTime : state.generations[0].duration || 8)}
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (state.generations[0].audioUrl) {
+                            downloadDataUriAsWav(
+                              state.generations[0].audioUrl,
+                              `${state.generations[0].title.replace(/\s+/g, "_")}-${state.generations[0].speakerName}.wav`
+                            )
+                          }
+                        }}
+                        className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-white/[0.06] transition-colors cursor-pointer shrink-0"
+                        title="Download Audio (.wav)"
+                      >
+                        <Download className="size-4" />
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -815,7 +887,10 @@ export function TextToSpeechScreen() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: 20 }}
-              className="absolute bottom-28 left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 rounded-xl border border-[#27272a] bg-[#18181b]/95 px-4 py-2.5 text-xs font-medium text-white shadow-2xl backdrop-blur-md"
+              className={cn(
+                'absolute left-1/2 -translate-x-1/2 z-30 flex items-center gap-3 rounded-xl border border-[#27272a] bg-[#18181b]/95 px-4 py-2.5 text-xs font-medium text-white shadow-2xl backdrop-blur-md transition-all duration-200',
+                state.activeGeneration ? 'bottom-28' : 'bottom-14'
+              )}
             >
               <div className="size-2 rounded-full bg-white animate-ping shrink-0" />
               <ShimmeringText
@@ -832,27 +907,7 @@ export function TextToSpeechScreen() {
         </AnimatePresence>
 
         {/* PERSISTENT BOTTOM AUDIO PLAYER */}
-        <SpeechPlayerBar
-          activeGeneration={state.activeGeneration}
-          isPlaying={state.isPlaying}
-          currentTime={state.currentTime}
-          playbackProgress={state.playbackProgress}
-          isMuted={state.isMuted}
-          volume={state.volume}
-          onTogglePlay={handleTogglePlay}
-          onSeek={playback.handleSeek}
-          onSkip={playback.handleSkip}
-          onToggleMute={playback.toggleMute}
-          onVolumeChange={playback.handleVolumeChange}
-          onDownload={() => {
-            if (state.activeGeneration?.audioUrl) {
-              downloadDataUriAsWav(
-                state.activeGeneration.audioUrl,
-                `${state.activeGeneration.title.replace(/\s+/g, '_')}-${state.activeGeneration.speakerName}.wav`
-              )
-            }
-          }}
-        />
+        {/* Playback is handled by the app-wide GlobalPlayerBar (RootLayout) - no local player here */}
       </div>
 
       {/* ======================================================== */}

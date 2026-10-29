@@ -3,9 +3,13 @@ import { Link } from 'react-router-dom'
 import { Play, Pause, ChevronRight, Download, Check, FileText, ArrowUpRight } from 'lucide-react'
 import { motion, LayoutGroup } from 'framer-motion'
 import clsx from 'clsx/lite'
-import { Waveform, ScrollingWaveform } from '@/components/ui/waveform'
+import { TrackWavePlayer } from '@/components/player/TrackWavePlayer'
+import { usePlayer } from '@/hooks/usePlayer'
+import type { PlayerTrack } from '@/store/playerStore'
 import { ActivityItem, ActivityTabId } from '../types'
 import { ACTIVITIES, ACTIVITIES_TABS } from '../services/dashboard-service'
+import { dbService } from '@/lib/services/dbService'
+import type { ActivityTtsOrigin, ActivityMusicOrigin, ActivityStoryOrigin } from '@/lib/interfaces/activity'
 
 export interface RecentActivitiesProps {
   activeActivityTab: ActivityTabId
@@ -28,18 +32,97 @@ export function RecentActivities({
 }: RecentActivitiesProps) {
   const [isSliding, setIsSliding] = useState(false)
   const [panelHeight, setPanelHeight] = useState<number | undefined>(undefined)
+  const [dbActivities, setDbActivities] = useState<ActivityItem[]>([])
   const panelRefs = useRef<(HTMLDivElement | null)[]>([])
 
   const activeTabIndex = ACTIVITIES_TABS.findIndex((t) => t.id === activeActivityTab)
 
+  useEffect(() => {
+    dbService.getActivities().then((items) => {
+      if (items && items.length > 0) {
+        const mapped: ActivityItem[] = items.map((a) => {
+          const tts = a.tts || (a.type === 'tts' && a.data ? (a.data as unknown as ActivityTtsOrigin) : undefined)
+          const music = a.music || (a.type === 'music' && a.data ? (a.data as unknown as ActivityMusicOrigin) : undefined)
+          const story = a.story || ((a.type === 'story' || a.type === 'stories') && a.data ? (a.data as unknown as ActivityStoryOrigin) : undefined)
+
+          let itemType: ActivityItem['type'] = 'audio'
+          if (a.type === 'story' || a.type === 'stories') {
+            itemType = 'stories'
+          } else if (a.type === 'texts') {
+            itemType = 'texts'
+          }
+
+          let cover = '/covers/got/winterfell.jpg'
+          if (story?.cover) cover = story.cover
+          else if (music?.cover) cover = music.cover
+          else if (tts?.voiceAvatarUrl) cover = tts.voiceAvatarUrl
+
+          let duration = 'Audio'
+          if (tts?.duration) duration = tts.duration
+          else if (music?.duration) duration = music.duration
+          else if (story?.duration) duration = story.duration
+          else if (a.metadata?.duration) duration = String(a.metadata.duration)
+
+          let waveform: number[] = [25, 40, 65, 85, 45, 30]
+          if (tts?.waveform && tts.waveform.length > 0) waveform = tts.waveform
+          else if (music?.waveform && music.waveform.length > 0) waveform = music.waveform
+          else if (Array.isArray(a.metadata?.waveform) && a.metadata.waveform.length > 0) waveform = a.metadata.waveform as number[]
+
+          const textExcerpt = a.description || tts?.text || music?.lyrics || story?.text || ''
+
+          let audioUrl: string | undefined = undefined
+          if (music?.audioUrl) audioUrl = music.audioUrl
+          else if (tts?.audioUrl) audioUrl = tts.audioUrl
+          else if (story?.audioUrl) audioUrl = story.audioUrl
+          else if (a.metadata?.audioUrl) audioUrl = String(a.metadata.audioUrl)
+
+          const subCategory =
+            a.subCategory ||
+            (tts?.voiceName
+              ? tts.voiceName
+              : music?.caption
+              ? music.caption
+              : story?.narrator
+              ? story.narrator
+              : 'Single Speaker')
+
+          const category =
+            a.category ||
+            (a.type === 'music'
+              ? 'Music Generation'
+              : a.type === 'story' || a.type === 'stories'
+              ? 'Audio Story'
+              : 'Text to Speech')
+
+          return {
+            id: a.id,
+            title: a.title,
+            category,
+            subCategory,
+            type: itemType,
+            duration,
+            plays: a.type === 'music' ? 'Generated' : a.type === 'story' || a.type === 'stories' ? 'Story' : 'Synthesized',
+            cover,
+            waveform,
+            textExcerpt,
+            audioUrl,
+          }
+        })
+        setDbActivities(mapped)
+      }
+    }).catch(console.error)
+  }, [])
+
+  const allItems = useMemo(() => [...dbActivities, ...ACTIVITIES], [dbActivities])
+
   const tabPanels = useMemo(
     () => [
-      { id: 'all', items: ACTIVITIES },
-      { id: 'audio', items: ACTIVITIES.filter((a) => a.type === 'audio') },
-      { id: 'stories', items: ACTIVITIES.filter((a) => a.type === 'stories') },
-      { id: 'texts', items: ACTIVITIES.filter((a) => a.type === 'texts') },
+      { id: 'all', items: allItems },
+      { id: 'audio', items: allItems.filter((a) => a.type === 'audio') },
+      { id: 'stories', items: allItems.filter((a) => a.type === 'stories') },
+      { id: 'texts', items: allItems.filter((a) => a.type === 'texts') },
     ],
-    []
+    [allItems]
   )
 
   useEffect(() => {
@@ -57,8 +140,59 @@ export function RecentActivities({
     return () => observer.disconnect()
   }, [activeTabIndex])
 
+  const player = usePlayer()
+
+  const handlePlayRow = (activity: ActivityItem) => {
+    if (activity.type === 'texts') return
+
+    if (player.currentTrack?.id === activity.id) {
+      player.togglePlay()
+      return
+    }
+
+    const currentTab = tabPanels[activeTabIndex]
+    const playableItems = (currentTab ? currentTab.items : allItems).filter(
+      (a) => a.type !== 'texts'
+    )
+
+    const playlistTracks: PlayerTrack[] = playableItems.map((item) => {
+      let durSec = 60
+      if (typeof item.duration === 'string') {
+        const parts = item.duration.split(':')
+        if (parts.length === 2) {
+          durSec = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10)
+        } else {
+          const m = item.duration.match(/\d+/)
+          if (m) durSec = parseInt(m[0], 10)
+        }
+      }
+      return {
+        id: item.id,
+        title: item.title,
+        artist: `${item.category} › ${item.subCategory}`,
+        cover: item.cover,
+        coverUrl: item.cover,
+        audioUrl: item.audioUrl || '',
+        waveform: item.waveform,
+        duration: durSec,
+      }
+    })
+
+    const startIndex = playlistTracks.findIndex((t) => t.id === activity.id)
+    const tabName = ACTIVITIES_TABS[activeTabIndex]?.label || 'Recent'
+    player.playList(
+      playlistTracks,
+      Math.max(0, startIndex),
+      `${tabName} Activities`
+    )
+
+    onPlayActivity?.(activity)
+  }
+
   const renderActivityRow = (activity: ActivityItem) => {
-    const isThisPlaying = activeMediaId === activity.id && isPlaying
+    const isThisPlaying =
+      (player.currentTrack?.id === activity.id && player.isPlaying) ||
+      (activeMediaId === activity.id && isPlaying)
     const isText = activity.type === 'texts'
 
     return (
@@ -66,7 +200,7 @@ export function RecentActivities({
         key={activity.id}
         onClick={() => {
           if (!isText) {
-            onPlayActivity(activity)
+            handlePlayRow(activity)
           }
         }}
         className={clsx(
@@ -96,7 +230,7 @@ export function RecentActivities({
               type="button"
               onClick={(e) => {
                 e.stopPropagation()
-                onPlayActivity(activity)
+                handlePlayRow(activity)
               }}
               className={clsx(
                 'size-8 sm:size-9 rounded-full flex items-center justify-center transition-all shrink-0 cursor-pointer',
@@ -166,31 +300,14 @@ export function RecentActivities({
           <div className="flex items-center gap-3 sm:gap-4 shrink-0">
             {activity.waveform && (
               <div className="hidden md:flex items-center h-6 w-32 lg:w-44 px-1 shrink-0">
-                {isThisPlaying ? (
-                  <ScrollingWaveform
-                    data={activity.waveform.map((v) => v / 100)}
-                    height={22}
-                    barWidth={2.5}
-                    barGap={2}
-                    barRadius={1.5}
-                    speed={35}
-                    barColor="#ffffff"
-                    fadeEdges={true}
-                    fadeWidth={10}
-                    className="w-full"
-                  />
-                ) : (
-                  <Waveform
-                    data={activity.waveform.map((v) => v / 100)}
-                    height={22}
-                    barWidth={2.5}
-                    barGap={2}
-                    barRadius={1.5}
-                    barColor="rgba(255, 255, 255, 0.4)"
-                    fadeEdges={false}
-                    className="w-full transition-opacity group-hover:opacity-90"
-                  />
-                )}
+                <TrackWavePlayer
+                  trackId={activity.id}
+                  waveform={activity.waveform}
+                  duration={activity.duration}
+                  onPlay={() => handlePlayRow(activity)}
+                  height={22}
+                  className="w-full"
+                />
               </div>
             )}
 

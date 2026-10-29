@@ -1,6 +1,16 @@
 export type VoiceEngineType = 'cosyvoice3' | 'chatterbox'
+export type MusicEngineType = 'acestep' | 'minimax'
+export type AnyEngineType = VoiceEngineType | MusicEngineType
 
-export type ModelCategory = 'backbone' | 'vocoder' | 'enhancer' | 'multilingual'
+export type ModelCategory =
+  | 'backbone'
+  | 'vocoder'
+  | 'enhancer'
+  | 'multilingual'
+  | 'text-encoder'
+  | 'lm'
+  | 'dit'
+  | 'vae'
 
 export type ModelStatus = 'idle' | 'downloading' | 'ready' | 'error'
 
@@ -12,7 +22,7 @@ export interface VoiceModelInfo {
   sizeFormatted: string
   description: string
   category: ModelCategory
-  engine?: VoiceEngineType | 'shared'
+  engine?: AnyEngineType | 'shared'
   required: boolean
   downloaded: boolean
   status: ModelStatus
@@ -40,7 +50,7 @@ export interface ModelDownloadProgressPayload {
 export interface ModelDownloadOptions {
   modelId?: string
   allRequired?: boolean
-  engine?: VoiceEngineType
+  engine?: AnyEngineType
 }
 
 export interface ModelDownloadResult {

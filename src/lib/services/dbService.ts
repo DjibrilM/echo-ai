@@ -1,6 +1,56 @@
 import { HistoryEntry, Voice } from '../interfaces/voice'
+import { Activity } from '../interfaces/activity'
 
 export class DbService {
+  /**
+   * Load all activities from SQLite database via IPC
+   */
+  public async getActivities(): Promise<Activity[]> {
+    if (typeof window !== 'undefined' && window.ipcRenderer) {
+      try {
+        const res = await window.ipcRenderer.invoke('activity:list')
+        if (res?.success && Array.isArray(res.data)) {
+          return res.data
+        }
+      } catch (err) {
+        console.error('[DbService] Failed to load activities from SQLite:', err)
+      }
+    }
+    return []
+  }
+
+  /**
+   * Get a single activity by origin ID (e.g. conversationId)
+   */
+  public async getActivityByOrigin(originId: string): Promise<Activity | null> {
+    if (typeof window !== 'undefined' && window.ipcRenderer) {
+      try {
+        const res = await window.ipcRenderer.invoke('activity:get-by-origin', { originId })
+        if (res?.success && res.data) {
+          return res.data
+        }
+      } catch (err) {
+        console.error('[DbService] Failed to get activity by origin from SQLite:', err)
+      }
+    }
+    return null
+  }
+
+  /**
+   * Delete an activity from SQLite
+   */
+  public async deleteActivity(id: string): Promise<boolean> {
+    if (typeof window !== 'undefined' && window.ipcRenderer) {
+      try {
+        const res = await window.ipcRenderer.invoke('activity:delete', { id })
+        return !!res?.success
+      } catch (err) {
+        console.error('[DbService] Failed to delete activity from SQLite:', err)
+        return false
+      }
+    }
+    return false
+  }
   /**
    * Load all saved conversations from SQLite database via IPC
    */
