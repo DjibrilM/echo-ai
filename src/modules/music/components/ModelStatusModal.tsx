@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { modelStatusModalOpenAtom, ditVariantAtom } from '../store/musicStore';
+import { modelStatusModalOpenAtom, ditVariantAtom, engineAtom } from '../store/musicStore';
 import {
   getMusicModelStatus,
   assessMusicFit,
@@ -18,6 +18,7 @@ import {
 export const ModelStatusModal: React.FC = () => {
   const [open, setOpen] = useAtom(modelStatusModalOpenAtom);
   const [ditVariant] = useAtom(ditVariantAtom);
+  const [engine] = useAtom(engineAtom);
   const [status, setStatus] = useState<Record<string, unknown> | null>(null);
   const [fitResult, setFitResult] = useState<Record<string, unknown> | null>(null);
   const [isAssessing, setIsAssessing] = useState(false);
@@ -38,7 +39,7 @@ export const ModelStatusModal: React.FC = () => {
   const handleAssessFit = async () => {
     setIsAssessing(true);
     try {
-      const res = await assessMusicFit({ engine: 'acestep', ditVariant });
+      const res = await assessMusicFit({ engine, ditVariant });
       if (res.success && res.data) {
         setFitResult(res.data);
       }

@@ -144,6 +144,28 @@ export function MusicIcon({ className, ...props }: React.ComponentProps<"svg">) 
   )
 }
 
+export function SongsIcon({ className, ...props }: React.ComponentProps<"svg">) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} {...props}>
+      <circle cx="9" cy="9" r="6.75" stroke="currentColor" strokeWidth="1.5" />
+      <circle cx="9" cy="9" r="2.25" stroke="currentColor" strokeWidth="1.5" />
+      <path d="M9 2.25V4.5M9 13.5V15.75M2.25 9H4.5M13.5 9H15.75" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  )
+}
+
+export function BeatsIcon({ className, ...props }: React.ComponentProps<"svg">) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} {...props}>
+      <path d="M2.25 9H3.75L5.25 4.5L7.5 13.5L9.75 6L11.25 12L12.75 7.5L14.25 9H15.75" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="5.25" cy="4.5" r="0.75" fill="currentColor" />
+      <circle cx="7.5" cy="13.5" r="0.75" fill="currentColor" />
+      <circle cx="9.75" cy="6" r="0.75" fill="currentColor" />
+      <circle cx="11.25" cy="12" r="0.75" fill="currentColor" />
+    </svg>
+  )
+}
+
 export function SpeechToTextIcon({ className, ...props }: React.ComponentProps<"svg">) {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" className={className} {...props}>

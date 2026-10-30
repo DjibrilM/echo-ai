@@ -8,7 +8,6 @@ export interface MusicTopSubHeaderProps {
   onSelectTab: (tab: MusicTab) => void
   onBack?: () => void
   engine?: string
-  onEngineToggle?: () => void
   generationsCount?: number
   tracksCount?: number
 }
@@ -17,34 +16,21 @@ export const MusicTopSubHeader: React.FC<MusicTopSubHeaderProps> = ({
   activeTab,
   onSelectTab,
   onBack,
-  engine = 'acestep',
-  onEngineToggle,
+  engine = 'minimax',
   generationsCount = 0,
   tracksCount = 0,
 }) => {
+  const featureLabel = 'Songs'
+
   return (
     <div className="flex h-10 shrink-0 items-center justify-between border-b border-[#1f1f23] px-6 bg-[#0c0c0e]">
       {/* Left: View title / breadcrumb & Engine toggle - minimalist matching TTS */}
       <div className="flex items-center gap-2.5">
-        {activeTab === 'generations' ? (
+        {onBack && (
           <>
             <button
               type="button"
-              onClick={() => onSelectTab('activities')}
-              className="flex items-center gap-1 text-xs font-medium text-zinc-400 hover:text-zinc-100 transition-colors cursor-pointer select-none"
-              title="Return to Activities"
-            >
-              <ChevronLeft className="size-3.5" />
-              <span>Activities</span>
-            </button>
-            <span className="text-zinc-600 text-xs">•</span>
-            <span className="text-xs font-medium text-zinc-200">Studio</span>
-          </>
-        ) : activeTab === 'models' ? (
-          <>
-            <button
-              type="button"
-              onClick={onBack || (() => onSelectTab('activities'))}
+              onClick={onBack}
               className="flex items-center gap-1 text-xs font-medium text-zinc-400 hover:text-zinc-100 transition-colors cursor-pointer select-none"
               title="Return to previous screen"
             >
@@ -52,22 +38,49 @@ export const MusicTopSubHeader: React.FC<MusicTopSubHeaderProps> = ({
               <span>Back</span>
             </button>
             <span className="text-zinc-600 text-xs">•</span>
-            <span className="text-xs font-medium text-zinc-200">Models</span>
+          </>
+        )}
+
+        {activeTab === 'generations' ? (
+          <>
+            <button
+              type="button"
+              onClick={() => onSelectTab('activities')}
+              className="text-xs font-medium text-zinc-400 hover:text-zinc-100 transition-colors cursor-pointer select-none"
+              title="Return to Activities"
+            >
+              Activities
+            </button>
+            <span className="text-zinc-600 text-xs">•</span>
+            <span className="text-xs font-medium text-zinc-200">{featureLabel} Studio</span>
+          </>
+        ) : activeTab === 'models' ? (
+          <>
+            <button
+              type="button"
+              onClick={() => onSelectTab('activities')}
+              className="text-xs font-medium text-zinc-400 hover:text-zinc-100 transition-colors cursor-pointer select-none"
+              title="Return to Activities"
+            >
+              Activities
+            </button>
+            <span className="text-zinc-600 text-xs">•</span>
+            <span className="text-xs font-medium text-zinc-200">{featureLabel} Models</span>
           </>
         ) : (
-          <span className="text-xs font-medium text-zinc-400">Activities</span>
+          <span className="text-xs font-medium text-zinc-300">{featureLabel} Activities</span>
         )}
 
         <span className="text-zinc-600 text-xs">•</span>
 
-        {/* Engine Toggle Button */}
+        {/* Engine Badge */}
         <button
           type="button"
-          onClick={onEngineToggle}
+          onClick={() => onSelectTab('models')}
           className="flex items-center px-2 py-0.5 rounded-md text-[11px] font-medium bg-[#161619] hover:bg-[#1e1e22] text-zinc-300 hover:text-zinc-100 border border-[#27272a] hover:border-zinc-700 transition-colors cursor-pointer select-none"
-          title="Toggle Music Engine"
+          title="View MiniMax Models"
         >
-          <span>{engine === 'acestep' ? 'ACE-Step v1.5' : 'MiniMax Music'}</span>
+          <span>MiniMax Music-v3</span>
         </button>
       </div>
 
@@ -84,7 +97,7 @@ export const MusicTopSubHeader: React.FC<MusicTopSubHeaderProps> = ({
           <div className="flex items-center gap-1.5 text-xs text-zinc-500">
             <span>Engine:</span>
             <span className="font-semibold text-zinc-300">
-              {engine === 'acestep' ? 'ACE-Step 1.5' : 'MiniMax'}
+              {engine === 'minimax' ? 'MiniMax Music-v3' : 'MiniMax'}
             </span>
           </div>
         ) : (

@@ -14,10 +14,11 @@ export const InstallRequiredMusicModelsView: React.FC<InstallRequiredMusicModels
   onContinue,
 }) => {
   const {
-    selectedEngine,
-    setSelectedEngine,
-    activeEngineModels,
-    totalSizeGb,
+    minimaxModels,
+    totalSuiteSizeFormatted,
+    remainingSizeFormatted,
+    downloadedCount,
+    totalCount,
     allRequiredReady,
     downloadingModels,
     downloadModel,
@@ -45,61 +46,49 @@ export const InstallRequiredMusicModelsView: React.FC<InstallRequiredMusicModels
     }
   }
 
+  const title = 'Set up MiniMax Songs Models'
+  const description =
+    'Download MiniMax Music-v3 neural models (~7 GB) for high-fidelity human vocals, lyric generation, and complete song composition.'
+
   return (
     <div className="flex h-full w-full flex-1 items-center justify-center overflow-y-auto p-6">
       <div className="flex w-full max-w-xl flex-col gap-6">
         <header className="space-y-2">
           <h1 className="text-xl font-semibold tracking-tight text-foreground">
-            Set up Music Engine Models
+            {title}
           </h1>
 
           <p className="text-sm text-muted-foreground">
-            Choose your neural music generation engine based on your hardware and requirements.
+            {description}
           </p>
 
-          {/* Engine Selector Segmented Tabs - Parity with Voice Engine Selector */}
-          <div className="grid grid-cols-2 gap-2 pt-2">
-            <button
-              type="button"
-              onClick={() => setSelectedEngine('acestep')}
+          {/* Engine Banner - MiniMax for Songs */}
+          <div className="grid grid-cols-1 pt-2">
+            <div
               className={cn(
-                'flex flex-col items-start gap-1 p-3 rounded-xl border text-left transition-all cursor-pointer',
-                selectedEngine === 'acestep'
-                  ? 'border-white/30 bg-white/10 text-white shadow-sm'
-                  : 'border-[#27272a] bg-[#161619] text-zinc-400 hover:text-zinc-200 hover:border-zinc-700'
+                'flex flex-col items-start gap-1 p-3 rounded-xl border text-left',
+                'border-white/30 bg-white/10 text-white shadow-sm'
               )}
             >
               <div className="flex items-center gap-1.5 font-medium text-xs">
-                <span>ACE-Step v1.5</span>
+                <span>MiniMax Music-v3 (Songs Engine)</span>
               </div>
               <span className="text-[11px] text-zinc-400 leading-tight">
-                Fast Turbo DiT & 5Hz LM (4 models • 3.3 GB)
+                Neural Music3 Transformer & Vocoder ({totalCount} models &bull; {totalSuiteSizeFormatted}
+                {downloadedCount > 0 && !allRequiredReady && (
+                  <span className="text-emerald-400 ml-1">
+                    &bull; {downloadedCount}/{totalCount} ready ({remainingSizeFormatted} remaining)
+                  </span>
+                )}
+                )
               </span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setSelectedEngine('minimax')}
-              className={cn(
-                'flex flex-col items-start gap-1 p-3 rounded-xl border text-left transition-all cursor-pointer',
-                selectedEngine === 'minimax'
-                  ? 'border-white/30 bg-white/10 text-white shadow-sm'
-                  : 'border-[#27272a] bg-[#161619] text-zinc-400 hover:text-zinc-200 hover:border-zinc-700'
-              )}
-            >
-              <div className="flex items-center gap-1.5 font-medium text-xs">
-                <span>MiniMax Music</span>
-              </div>
-              <span className="text-[11px] text-zinc-400 leading-tight">
-                Neural Music3 Transformer & Vocoder (2 models • 2.3 GB)
-              </span>
-            </button>
+            </div>
           </div>
         </header>
 
         {/* Model Cards List */}
         <div className="space-y-2">
-          {activeEngineModels.map((model) => {
+          {minimaxModels.map((model) => {
             const download = downloadingModels[model.id]
             const isDownloading = !!download
             const progress = Math.max(
@@ -111,52 +100,70 @@ export const InstallRequiredMusicModelsView: React.FC<InstallRequiredMusicModels
             return (
               <div
                 key={model.id}
-                className="rounded-lg border border-border bg-background p-4"
+                className={cn(
+                  'flex flex-col gap-3 rounded-xl border p-4 transition-colors',
+                  isReady
+                    ? 'border-emerald-500/20 bg-emerald-500/5'
+                    : isDownloading
+                      ? 'border-primary/30 bg-primary/5'
+                      : 'border-border/60 bg-card/40'
+                )}
               >
-                <div className="flex items-center justify-between gap-4">
-                  <div className="min-w-0 flex-1">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="space-y-1 min-w-0">
                     <p className="truncate text-sm font-medium text-foreground">
                       {model.name}
                     </p>
 
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      {model.sizeFormatted} &bull; {model.description}
+                    <p className="line-clamp-2 text-xs text-muted-foreground">
+                      {model.description}
                     </p>
+
+                    <div className="flex items-center gap-2 pt-1 text-[11px] text-muted-foreground">
+                      <span>{model.sizeFormatted}</span>
+                      <span>&bull;</span>
+                      <span className="uppercase">{model.category}</span>
+                      <span>&bull;</span>
+                      <span className="font-mono text-zinc-400">{model.id}</span>
+                    </div>
                   </div>
 
-                  {isReady ? (
-                    <span className="flex shrink-0 items-center gap-1.5 text-xs text-emerald-400 font-medium">
-                      <CheckCircle2 className="size-4 text-emerald-400" />
-                      Ready
-                    </span>
-                  ) : isDownloading ? (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => cancelDownload(model.id)}
-                      className="shrink-0 text-muted-foreground hover:text-white"
-                    >
-                      Cancel
-                    </Button>
-                  ) : (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => downloadModel(model.id)}
-                      className="shrink-0"
-                    >
-                      <Download className="mr-1.5 size-3.5" />
-                      Download
-                    </Button>
-                  )}
+                  <div className="flex shrink-0 items-center gap-2">
+                    {isReady ? (
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-500">
+                        <CheckCircle2 className="size-4" />
+                        <span>Ready</span>
+                      </span>
+                    ) : isDownloading ? (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => cancelDownload(model.id)}
+                        className="text-xs text-muted-foreground hover:text-foreground"
+                      >
+                        Cancel
+                      </Button>
+                    ) : (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => downloadModel(model.id)}
+                        className="gap-1.5 text-xs"
+                      >
+                        <Download className="size-3.5" />
+                        <span>Download</span>
+                      </Button>
+                    )}
+                  </div>
                 </div>
 
+                {/* Progress bar when downloading */}
                 {isDownloading && (
-                  <div className="mt-3 space-y-1.5">
+                  <div className="space-y-1 pt-1">
                     <div
-                      className="h-1.5 w-full overflow-hidden rounded-full bg-muted"
+                      className="h-1.5 w-full overflow-hidden rounded-full bg-secondary"
                       role="progressbar"
                       aria-label={`Downloading ${model.name}`}
                       aria-valuemin={0}
@@ -188,17 +195,19 @@ export const InstallRequiredMusicModelsView: React.FC<InstallRequiredMusicModels
             type="button"
             onClick={handleInstallAll}
             disabled={isStartingAll || anyDownloading}
-            className="w-full"
+            className="w-full font-medium"
           >
             {allRequiredReady ? (
               <span className="flex items-center gap-1.5">
-                <span>All models ready &bull; Continue to Music</span>
+                <span>All models ready &bull; Continue to Songs</span>
                 <ArrowRight className="size-4" />
               </span>
             ) : isStartingAll ? (
               'Starting downloads...'
+            ) : downloadedCount > 0 ? (
+              `Download remaining ${totalCount - downloadedCount} models (${remainingSizeFormatted} of ${totalSuiteSizeFormatted})`
             ) : (
-              `Download all (${totalSizeGb} GB)`
+              `Download all models (${totalSuiteSizeFormatted})`
             )}
           </Button>
 
@@ -208,7 +217,7 @@ export const InstallRequiredMusicModelsView: React.FC<InstallRequiredMusicModels
               onClick={onBack}
               className="w-full text-center text-xs text-zinc-500 hover:text-zinc-300 transition-colors py-1 cursor-pointer select-none"
             >
-              {allRequiredReady ? 'Return to Activities' : 'Skip for now and return'}
+              {allRequiredReady ? 'Return to Activities' : 'Return to previous screen'}
             </button>
           )}
         </div>

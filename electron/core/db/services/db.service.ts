@@ -1,7 +1,13 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import { createRequire } from 'node:module'
 import { app } from 'electron'
-import { PrismaClient } from '@prisma/client'
+import type { PrismaClient as PrismaClientType } from '@prisma/client'
+
+const require = createRequire(import.meta.url)
+const { PrismaClient } = require('@prisma/client') as {
+  PrismaClient: typeof PrismaClientType
+}
 
 export interface ActivityModelDelegate {
   findMany(args?: {
@@ -44,12 +50,12 @@ export interface ActivityModelDelegate {
   }): Promise<Record<string, unknown>>
 }
 
-export type EchoPrismaClient = PrismaClient & {
+export type EchoPrismaClient = PrismaClientType & {
   activity: ActivityModelDelegate
 }
 
 export class DatabaseService {
-  private prisma: PrismaClient
+  private prisma: PrismaClientType
   private initialized = false
   private initPromise: Promise<void> | null = null
 

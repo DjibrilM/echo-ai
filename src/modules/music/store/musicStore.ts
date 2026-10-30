@@ -10,12 +10,75 @@ import type {
   MusicPromptPreset,
 } from '../types';
 
-export const MUSIC_PRESETS: MusicPromptPreset[] = [
+export const SONG_PRESETS: MusicPromptPreset[] = [
+  {
+    id: 'pop-anthem',
+    title: 'Upbeat Pop Anthem',
+    genre: 'Pop / Modern',
+    caption: 'Upbeat modern pop anthem with bright vocal harmonies, energetic synth pads, infectious rhythm and hook',
+    bpm: 124,
+    keyscale: 'C major',
+    timesignature: '4/4',
+    duration: 30,
+  },
+  {
+    id: 'piano-ballad',
+    title: 'Emotional Piano Ballad',
+    genre: 'Ballad / Acoustic',
+    caption: 'Emotional soul ballad with expressive lead vocals, warm grand piano, subtle cello harmonies, and passionate climax',
+    bpm: 76,
+    keyscale: 'Eb major',
+    timesignature: '4/4',
+    duration: 30,
+  },
+  {
+    id: 'rnb-slow-jam',
+    title: 'R&B Soul Slow Jam',
+    genre: 'R&B / Soul',
+    caption: 'Sensual contemporary R&B song with silky smooth falsetto vocals, rhodes chords, deep sub bass, and crisp snap beat',
+    bpm: 85,
+    keyscale: 'Ab minor',
+    timesignature: '4/4',
+    duration: 30,
+  },
+  {
+    id: 'indie-rock',
+    title: 'Indie Rock Song',
+    genre: 'Rock / Indie',
+    caption: 'Driving indie rock song with raw emotive vocals, overdriven electric guitars, punchy live drums, and anthemic chorus',
+    bpm: 128,
+    keyscale: 'D major',
+    timesignature: '4/4',
+    duration: 30,
+  },
+  {
+    id: 'future-bass-vocal',
+    title: 'Future Bass Vocal Anthem',
+    genre: 'EDM / Dance',
+    caption: 'Euphoric EDM vocal track with catchy vocal chops, sparkling arpeggios, massive supersaw chord drops, and energetic beat',
+    bpm: 140,
+    keyscale: 'F# minor',
+    timesignature: '4/4',
+    duration: 30,
+  },
+];
+
+export const BEAT_PRESETS: MusicPromptPreset[] = [
+  {
+    id: 'trap-808-heat',
+    title: 'Hard 808 Trap Beat',
+    genre: 'Trap / Hip-Hop',
+    caption: 'Dark energetic trap beat with heavy distorted 808 glides, rapid hi-hat rolls, crisp clap, and eerie bell melody',
+    bpm: 140,
+    keyscale: 'F minor',
+    timesignature: '4/4',
+    duration: 30,
+  },
   {
     id: 'lofi-chill',
-    title: 'Lo-Fi Chillhop',
+    title: 'Lo-Fi Chillhop Beat',
     genre: 'Lo-Fi / Hip-Hop',
-    caption: 'Lo-fi hip hop with mellow rhodes piano, soft dusty vinyl crackle, warm bassline and laid-back beat',
+    caption: 'Dusty lo-fi hip hop beat with warm rhodes keys, vinyl crackle, mellow bassline, and laid-back boom bap drum pattern',
     bpm: 82,
     keyscale: 'Eb major',
     timesignature: '4/4',
@@ -23,54 +86,49 @@ export const MUSIC_PRESETS: MusicPromptPreset[] = [
   },
   {
     id: 'synthwave-drive',
-    title: 'Neon Synthwave',
+    title: 'Neon Synthwave Beat',
     genre: 'Synthwave / Retro',
-    caption: 'Energetic 80s synthwave with analog synthesizer arpeggios, punchy gated reverb snare, and driving bassline',
+    caption: 'Pulsing 80s outrun synthwave beat with analog arpeggios, punchy gated snare, driving bassline, and vintage drum machine',
     bpm: 120,
     keyscale: 'D minor',
     timesignature: '4/4',
     duration: 30,
   },
   {
-    id: 'cinematic-orchestra',
-    title: 'Epic Cinematic',
-    genre: 'Cinematic / Orchestral',
-    caption: 'Dramatic cinematic orchestral piece with soaring legato strings, thunderous taiko drums, brass stabs, and emotional climax',
-    bpm: 96,
+    id: 'boom-bap-90s',
+    title: '90s Boom Bap Beat',
+    genre: 'Hip-Hop / Classic',
+    caption: 'Raw 90s East Coast boom bap beat with soulful jazz horn samples, heavy acoustic kick and snare, and upright bass groove',
+    bpm: 90,
     keyscale: 'C minor',
     timesignature: '4/4',
     duration: 30,
   },
   {
-    id: 'acoustic-folk',
-    title: 'Acoustic Sunrise',
-    genre: 'Acoustic / Folk',
-    caption: 'Gentle acoustic folk guitar fingerpicking with warm upright bass, subtle mandolin harmonies, and peaceful morning vibe',
-    bpm: 104,
-    keyscale: 'G major',
+    id: 'drill-uk',
+    title: 'UK Drill Beat',
+    genre: 'Drill / Urban',
+    caption: 'Dark atmospheric UK drill beat with sliding 808s, haunting piano loop, syncopated snare bounces, and intense percussion',
+    bpm: 142,
+    keyscale: 'E minor',
     timesignature: '4/4',
-    duration: 25,
+    duration: 30,
   },
   {
     id: 'neo-soul-groove',
-    title: 'Neo-Soul Groove',
-    genre: 'R&B / Neo-Soul',
-    caption: 'Smooth neo-soul groove with lush jazz chords on Wurlitzer, tight syncopated drums, and melodic walking bass',
+    title: 'Neo-Soul Groove Beat',
+    genre: 'R&B / Groove',
+    caption: 'Tight neo-soul groove with syncopated live drums, warm walking bass, subtle brass stabs, and jazz guitar licks',
     bpm: 88,
     keyscale: 'Ab minor',
     timesignature: '4/4',
     duration: 30,
   },
-  {
-    id: 'cyberpunk-dark',
-    title: 'Cyberpunk Industrial',
-    genre: 'Industrial / Electro',
-    caption: 'Dark gritty cyberpunk mid-tempo electro with distorted saw leads, heavy sub bass hits, and futuristic sound design',
-    bpm: 110,
-    keyscale: 'F minor',
-    timesignature: '4/4',
-    duration: 30,
-  },
+];
+
+export const MUSIC_PRESETS: MusicPromptPreset[] = [
+  ...BEAT_PRESETS,
+  ...SONG_PRESETS,
 ];
 
 // Prompt & Content Atoms
@@ -86,7 +144,7 @@ export type MusicVocalMode = 'instrumental' | 'manual' | 'auto';
 export const vocalModeAtom = atomWithStorage<MusicVocalMode>('echo_music_vocal_mode', 'auto');
 
 // Engine & Model Variants
-export const engineAtom = atomWithStorage<MusicEngine>('echo_music_engine', 'acestep');
+export const engineAtom = atomWithStorage<MusicEngine>('echo_music_engine', 'minimax');
 export const ditVariantAtom = atomWithStorage<MusicDitVariant>('echo_music_dit_variant', 'turbo-q4');
 
 // Musical Steering Controls
