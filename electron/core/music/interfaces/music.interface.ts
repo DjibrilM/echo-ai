@@ -130,6 +130,8 @@ export interface MusicProgressPayload {
   total: number;
   percentage: number;
   message?: string;
+  etaFormatted?: string;
+  etaSeconds?: number;
 }
 
 export interface MusicGenerationOutput {

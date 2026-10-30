@@ -48,7 +48,7 @@ export const InstallRequiredMusicModelsView: React.FC<InstallRequiredMusicModels
 
   const title = 'Set up MiniMax Songs Models'
   const description =
-    'Download MiniMax Music-v3 neural models (~7 GB) for high-fidelity human vocals, lyric generation, and complete song composition.'
+    'Download MiniMax Music-v3 neural models and Qwen lyric generator (~8.2 GB) for high-fidelity human vocals, lyric generation, and complete song composition.'
 
   return (
     <div className="flex h-full w-full flex-1 items-center justify-center overflow-y-auto p-6">
@@ -74,7 +74,7 @@ export const InstallRequiredMusicModelsView: React.FC<InstallRequiredMusicModels
                 <span>MiniMax Music-v3 (Songs Engine)</span>
               </div>
               <span className="text-[11px] text-zinc-400 leading-tight">
-                Neural Music3 Transformer & Vocoder ({totalCount} models &bull; {totalSuiteSizeFormatted}
+                Neural Music3 Transformer, Vocoder & Lyric LLM ({totalCount} models &bull; {totalSuiteSizeFormatted}
                 {downloadedCount > 0 && !allRequiredReady && (
                   <span className="text-emerald-400 ml-1">
                     &bull; {downloadedCount}/{totalCount} ready ({remainingSizeFormatted} remaining)

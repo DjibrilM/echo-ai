@@ -5,7 +5,6 @@ import {
   Star,
   Download,
   Trash2,
-  ArrowUpRight,
 } from 'lucide-react'
 import { TrackWavePlayer } from '@/components/player/TrackWavePlayer'
 import { formatDuration } from '../utils/formatDuration'
@@ -26,7 +25,6 @@ export const StudioTrackItem: React.FC<StudioTrackItemProps> = ({
   isThisPlaying,
   isFav,
   onPlay,
-  onOpenEditModal,
   onToggleFavorite,
   onDeleteTrack,
 }) => {
@@ -53,7 +51,7 @@ export const StudioTrackItem: React.FC<StudioTrackItemProps> = ({
           : 'border-[#27272a] hover:border-zinc-700'
       }`}
     >
-      {/* Header of Item: Title, Badge, Tags & Edit Song Button */}
+      {/* Header of Item: Title, Badge, Tags */}
       <div className="flex items-center justify-between gap-3 min-w-0 w-full">
         <div className="flex items-center gap-2 min-w-0">
           <h4 className="text-xs font-semibold text-zinc-100 truncate group-hover:text-white transition-colors">
@@ -66,23 +64,6 @@ export const StudioTrackItem: React.FC<StudioTrackItemProps> = ({
             <span className="text-[11px] text-zinc-500 truncate hidden sm:inline">
               · {item.keyscale}
             </span>
-          )}
-        </div>
-
-        <div className="flex items-center gap-1.5 shrink-0">
-          {onOpenEditModal && (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation()
-                onPlay()
-                onOpenEditModal()
-              }}
-              className="flex items-center gap-1 text-xs text-zinc-400 hover:text-white transition-colors cursor-pointer select-none px-2 py-1 rounded hover:bg-white/5"
-            >
-              <span>Edit Song</span>
-              <ArrowUpRight className="size-3 text-white" />
-            </button>
           )}
         </div>
       </div>

@@ -100,7 +100,7 @@ export const MusicPromptEditor: React.FC = () => {
             {timesignature}
           </span>
           <span className="rounded-md bg-muted px-2 py-0.5 font-mono text-[11px]">
-            ~{duration}s
+            ~{duration >= 60 ? `${duration / 60}m` : `${duration}s`}
           </span>
         </div>
       </div>
@@ -156,9 +156,16 @@ export const MusicPromptEditor: React.FC = () => {
                   <span className="inline-block size-2 rounded-full bg-primary animate-ping" />
                   {generationProgress.stage || 'Synthesizing Audio...'}
                 </span>
-                <span className="font-mono text-muted-foreground">
-                  {generationProgress.percentage}% ({generationProgress.step}/{generationProgress.total || '?'})
-                </span>
+                <div className="flex items-center gap-1.5 font-mono text-muted-foreground">
+                  {generationProgress.etaFormatted && (
+                    <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary font-sans font-medium border border-primary/20">
+                      ~{generationProgress.etaFormatted}
+                    </span>
+                  )}
+                  <span>
+                    {generationProgress.percentage}% ({generationProgress.step}/{generationProgress.total || '?'})
+                  </span>
+                </div>
               </div>
               <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
                 <div

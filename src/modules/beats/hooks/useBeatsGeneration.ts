@@ -11,6 +11,9 @@ import {
   beatGuidanceScaleAtom,
   beatInferenceStepsAtom,
   beatShiftAtom,
+  beatDcwEnabledAtom,
+  beatDcwScalerAtom,
+  beatDcwHighScalerAtom,
   isBeatGeneratingAtom,
   beatGenerationProgressAtom,
   beatGenerationErrorAtom,
@@ -33,6 +36,9 @@ export function useBeatsGeneration() {
   const [guidanceScale, setGuidanceScale] = useAtom(beatGuidanceScaleAtom);
   const [inferenceSteps, setInferenceSteps] = useAtom(beatInferenceStepsAtom);
   const [shift, setShift] = useAtom(beatShiftAtom);
+  const [dcwEnabled] = useAtom(beatDcwEnabledAtom);
+  const [dcwScaler] = useAtom(beatDcwScalerAtom);
+  const [dcwHighScaler] = useAtom(beatDcwHighScalerAtom);
 
   const [isGenerating, setIsGenerating] = useAtom(isBeatGeneratingAtom);
   const [generationProgress, setGenerationProgress] = useAtom(beatGenerationProgressAtom);
@@ -141,6 +147,9 @@ export function useBeatsGeneration() {
         guidanceScale,
         inferenceSteps,
         shift,
+        dcwEnabled,
+        dcwScaler,
+        dcwHighScaler,
         seed: seed === -1 ? Math.floor(Math.random() * 1000000) : seed,
       });
 

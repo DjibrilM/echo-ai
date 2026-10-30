@@ -203,6 +203,18 @@ export class ModelsService {
       engine: 'minimax',
       required: true,
     },
+    {
+      id: 'qwen3-1.7b-lyric-generator',
+      name: 'Qwen3-1.7B Lyric Generator (Q4_0 GGUF)',
+      descriptorName: 'QWEN3_1_7B_INST_Q4',
+      sizeBytes: 1056782912,
+      sizeFormatted: '1.05 GB',
+      description:
+        'Local 1.7B Instruct LLM for composing rhyming song lyrics, verse/chorus structures, and stylistic themes from prompts.',
+      category: 'lm',
+      engine: 'minimax',
+      required: true,
+    },
   ]
 
   constructor() {
@@ -365,6 +377,12 @@ export class ModelsService {
           ) {
             foundModelIds.add('minimax-music-vocoder')
           }
+          if (
+            (lower.includes('qwen3-1.7b') || lower.includes('qwen3_1.7b') || lower.includes('qwen3-1_7b') || lower.includes('qwen3-1-7b')) &&
+            lower.endsWith('.gguf')
+          ) {
+            foundModelIds.add('qwen3-1.7b-lyric-generator')
+          }
         }
 
         const topFiles = fs.readdirSync(this.cacheDir)
@@ -401,7 +419,7 @@ export class ModelsService {
 
         // Prune any models that are NOT found on disk (strictly prevents false downloads)
         for (const id of Array.from(this.downloadedModelIds)) {
-          if ((id.startsWith('minimax-') || id.startsWith('audiogen-')) && !foundModelIds.has(id)) {
+          if ((id.startsWith('minimax-') || id.startsWith('audiogen-') || id.startsWith('qwen3-')) && !foundModelIds.has(id)) {
             this.downloadedModelIds.delete(id)
             changed = true
           }
@@ -720,6 +738,10 @@ export class ModelsService {
         url: 'https://huggingface.co/scragnog/MiniMax-Music3-GGUF/resolve/main/mm3-synth-Q4_K_M.gguf',
         filename: 'mm3-synth-Q4_K_M.gguf',
       },
+      'qwen3-1.7b-lyric-generator': {
+        url: 'https://huggingface.co/unsloth/Qwen3-1.7B-GGUF/resolve/main/Qwen3-1.7B-Q4_0.gguf',
+        filename: 'Qwen3-1.7B-Q4_0.gguf',
+      },
     }
 
     const target = modelUrls[modelId]
@@ -742,6 +764,26 @@ export class ModelsService {
     try {
       if (fs.existsSync(finalPath)) {
         const stats = fs.statSync(finalPath)
+        if (stats.size > 1024 * 1024) {
+          this.downloadedModelIds.add(modelId)
+          this.syncCacheFromDisk()
+          this.saveState()
+          onProgress?.({
+            modelId,
+            percentage: 100,
+            downloaded: stats.size,
+            total: stats.size,
+            speed: 'Ready',
+          })
+          return { success: true, modelId }
+        }
+      }
+
+      // Check if file exists with hash prefix (e.g. f7cce66406dee646_Qwen3-1.7B-Q4_0.gguf)
+      const existingFiles = fs.readdirSync(this.cacheDir)
+      const matchingFile = existingFiles.find((f) => f.toLowerCase().endsWith(target.filename.toLowerCase()))
+      if (matchingFile) {
+        const stats = fs.statSync(path.join(this.cacheDir, matchingFile))
         if (stats.size > 1024 * 1024) {
           this.downloadedModelIds.add(modelId)
           this.syncCacheFromDisk()

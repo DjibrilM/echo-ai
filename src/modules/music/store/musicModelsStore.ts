@@ -16,7 +16,7 @@ import { engineAtom } from './musicStore'
 
 export type MusicEngineType = 'minimax' | 'acestep'
 
-// Songs feature is powered by MiniMax Music-v3 (~7.1 GB, vocal synthesis & lyrics)
+// Songs feature is powered by MiniMax Music-v3 & Qwen3 Lyric LLM (~8.2 GB, vocal synthesis & lyrics)
 export const defaultMusicModels: VoiceModelInfo[] = [
   {
     id: 'minimax-music-v3-transformer',
@@ -39,6 +39,19 @@ export const defaultMusicModels: VoiceModelInfo[] = [
     sizeFormatted: '1.98 GB',
     description: 'Full synthesis pipeline: RVQ depth decoder, condition encoder, flow-matching DiT, and stereo vocoder for high-fidelity human vocals.',
     category: 'vocoder',
+    engine: 'minimax',
+    required: true,
+    downloaded: false,
+    status: 'idle',
+  },
+  {
+    id: 'qwen3-1.7b-lyric-generator',
+    name: 'Qwen3-1.7B Lyric Generator (Q4_0 GGUF)',
+    descriptorName: 'QWEN3_1_7B_INST_Q4',
+    sizeBytes: 1056782912,
+    sizeFormatted: '1.05 GB',
+    description: 'Local 1.7B Instruct LLM for composing rhyming song lyrics, verse/chorus structures, and stylistic themes from prompts.',
+    category: 'lm',
     engine: 'minimax',
     required: true,
     downloaded: false,

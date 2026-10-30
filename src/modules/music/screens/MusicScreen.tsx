@@ -158,8 +158,8 @@ export const MusicScreen: React.FC = () => {
         tracksCount={historyList.length}
       />
 
-      {/* 2. Main View Screens (Scrolls at page level under the pinned subheader) */}
-      <div className="flex-1 overflow-y-auto flex flex-col min-h-0 sidebar-scrollbar">
+      {/* 2. Main View Screens */}
+      <div className={`flex-1 flex flex-col min-h-0 ${activeTab === 'activities' || showModelsView ? 'overflow-y-auto sidebar-scrollbar' : 'overflow-hidden'}`}>
         {showModelsView ? (
           <InstallRequiredMusicModelsView
             onBack={handleReturnToPreviousScreen}
@@ -203,7 +203,7 @@ export const MusicScreen: React.FC = () => {
             generationProgress={generationProgress}
             generationError={generationError}
             onDismissError={dismissError}
-            history={studioSessionTracks}
+            history={studioSessionTracks.length > 0 ? studioSessionTracks : historyList}
             activeTrack={activeTrack}
             isPlaying={isPlaying}
             onPlayTrack={(t) => selectTrack(t, false)}

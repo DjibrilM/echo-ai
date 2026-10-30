@@ -243,7 +243,7 @@ export const MusicActivitiesView: React.FC<MusicActivitiesViewProps> = ({
   }, [historyTracks, dbMusicTracks, searchQuery])
 
   return (
-    <div className="relative flex-1 min-h-0 overflow-y-auto px-6 md:px-8 py-6 w-full flex flex-col gap-8 select-none sidebar-scrollbar">
+    <div className="relative flex-1 min-h-0 px-6 md:px-8 py-6 w-full flex flex-col gap-8 select-none">
       {/* YouTube Music Ambient Dynamic Gradient Backdrop - Confined strictly to prompt hero area */}
       <div className="absolute top-0 left-0 right-0 h-[260px] pointer-events-none overflow-hidden select-none z-0">
         {/* Layer 1: Top-wide deep crimson / ruby radial wash */}

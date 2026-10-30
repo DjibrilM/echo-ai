@@ -19,6 +19,7 @@ import type {
 import { MusicLoggerService } from './music-logger.service';
 import { MusicSanitizerService } from './music-sanitizer.service';
 import { MusicDspService } from './music-dsp.service';
+import { QwenLyricService } from './qwen-lyric.service';
 
 /**
  * Creates a valid 44-byte RIFF WAV file from interleaved PCM buffer
@@ -262,6 +263,14 @@ export class MusicEngineService {
   }
 
   /**
+   * Checks whether MiniMax Music-v3 models are installed and accessible on disk
+   */
+  public areMiniMaxModelsAvailable(): boolean {
+    const { lmModelSrc, synthModelSrc } = this.resolveMiniMaxModelPaths();
+    return Boolean(lmModelSrc && synthModelSrc);
+  }
+
+  /**
    * Resolves the DiT model source constant based on user variant selection
    */
   private resolveDitModelSrc(ditVariant?: MusicDitVariant) {
@@ -400,6 +409,18 @@ export class MusicEngineService {
 
       this.logger.logMilestone('model-load', 'LOAD_START', `Loading MiniMax models into QVAC runtime (LM: ${lmModelSrc}, Synth: ${synthModelSrc})`);
 
+      // Free the lyric LLM first: MiniMax needs ~7+ GB and low free memory causes swapping.
+      await QwenLyricService.getInstance().unload();
+      const freeGb = os.freemem() / 1024 ** 3;
+      if (freeGb < 8) {
+        this.logger.logMilestone(
+          'model-load',
+          'LOW_MEMORY',
+          `Only ${freeGb.toFixed(1)} GB reported free before MiniMax load; generation may be slow. Close heavy apps for best speed.`
+        );
+        console.warn(`[MusicEngineService] Low free memory before MiniMax load: ${freeGb.toFixed(1)} GB`);
+      }
+
       try {
         const modelId = await qvacSdk.loadModel({
           modelType: 'audiogen',
@@ -515,6 +536,34 @@ export class MusicEngineService {
       }
 
       if (engine === 'acestep') {
+        // ACE-Step 5Hz LM architecture is strictly bounded to 60 seconds (300 codes).
+        // Requesting 120s or 180s on ACE-Step causes the 5Hz LM to output EOS immediately
+        // resulting in "acestep engine: LM produced no audio codes".
+        // If MiniMax models are available on disk and duration > 60s, automatically elevate to MiniMax
+        // which effortlessly generates 180s (3m) full tracks; otherwise clamp duration to 60s for ACE-Step.
+        if (sanitized.duration > 60) {
+          const hasMiniMax = this.areMiniMaxModelsAvailable();
+          if (hasMiniMax) {
+            this.logger.logMilestone(
+              taskId,
+              'ENGINE_ELEVATED',
+              `Extended duration (${sanitized.duration}s) exceeds ACE-Step's 60s window. Seamlessly routing to MiniMax Music-v3 Global LM.`
+            );
+            return await this.generate({
+              ...options,
+              engine: 'minimax',
+            }, onProgress, onLog, isCancelled);
+          } else {
+            this.logger.logMilestone(
+              taskId,
+              'DURATION_CLAMPED',
+              `ACE-Step 5Hz LM natively supports up to 60s. Clamping from ${sanitized.duration}s to 60s to ensure successful synthesis.`
+            );
+            sanitized.duration = 60;
+            runParams.duration = 60;
+          }
+        }
+
         // Vocal generation requested without explicit lyrics:
         // Do NOT set [Instrumental]! Enable simpleMode so ACE-Step LM writes lyrics & vocals!
         if (options.simpleMode !== false && !sanitized.isInstrumental && !options.lyrics) {
@@ -548,27 +597,55 @@ export class MusicEngineService {
         if (options.generateLrc) runParams.generateLrc = true;
         if (options.computeQualityScore) runParams.computeQualityScore = true;
 
-        // Output and guidance
+        // Output and acoustic guidance for ACE-Step
         if (options.normalizeLoudness !== undefined) {
           runParams.normalizeLoudness = options.normalizeLoudness;
+        } else {
+          runParams.normalizeLoudness = true;
         }
-        if (options.guidanceScale !== undefined) {
-          runParams.guidanceScale = options.guidanceScale;
+
+        const isTurbo = !options.ditVariant || options.ditVariant.includes('turbo');
+
+        // 1. Classifier-Free Guidance (CFG / guidanceScale)
+        // Turbo DiTs are distilled: CFG > 1.5 causes harsh clipping, severe noise over-saturation,
+        // and phase distortion. Set to 0 (auto: 1.0) or 1.0 for turbo; 7.0 for SFT/base.
+        if (isTurbo) {
+          if (options.guidanceScale && options.guidanceScale > 1.5) {
+            console.warn(`[MusicEngineService] Clamping high guidanceScale (${options.guidanceScale}) to 1.0 on turbo DiT to prevent distortion.`);
+            runParams.guidanceScale = 1.0;
+          } else {
+            runParams.guidanceScale = options.guidanceScale !== undefined ? options.guidanceScale : 0;
+          }
+        } else {
+          runParams.guidanceScale = options.guidanceScale !== undefined ? options.guidanceScale : 7.0;
         }
-        if (options.dcwEnabled !== undefined) {
-          runParams.dcwEnabled = options.dcwEnabled;
+
+        // 2. Timestep Shift
+        // Turbo DiT requires shift = 3.0 (official default). A shift of 1.0 leaves high frequencies
+        // unresolved in 8-12 steps, making drums and instruments sound muffled/underwater.
+        if (isTurbo) {
+          if (options.shift && options.shift < 2.0) {
+            console.warn(`[MusicEngineService] Correcting low shift (${options.shift}) to 3.0 on turbo DiT for acoustic clarity.`);
+            runParams.shift = 3.0;
+          } else {
+            runParams.shift = options.shift !== undefined ? options.shift : 3.0;
+          }
+        } else {
+          runParams.shift = options.shift !== undefined ? options.shift : 1.0;
         }
-        if (options.dcwScaler !== undefined) {
-          runParams.dcwScaler = options.dcwScaler;
-        }
-        if (options.dcwHighScaler !== undefined) {
-          runParams.dcwHighScaler = options.dcwHighScaler;
-        }
-        if (options.inferenceSteps !== undefined) {
-          runParams.inferenceSteps = options.inferenceSteps;
-        }
-        if (options.shift !== undefined) {
-          runParams.shift = options.shift;
+
+        // 3. Haar Dual-Channel Wavelet (DCW) frequency separation
+        // Mandatory for preventing sub-bass from clashing with mid/high harmonics.
+        runParams.dcwEnabled = options.dcwEnabled !== undefined ? options.dcwEnabled : true;
+        runParams.dcwScaler = options.dcwScaler !== undefined ? options.dcwScaler : 0.05;
+        runParams.dcwHighScaler = options.dcwHighScaler !== undefined ? options.dcwHighScaler : 0.02;
+
+        // 4. Diffusion Steps
+        // 10 steps on turbo yields dramatically clearer transients and stereo width than 8 steps.
+        if (options.inferenceSteps) {
+          runParams.inferenceSteps = isTurbo ? Math.max(8, options.inferenceSteps) : Math.max(30, options.inferenceSteps);
+        } else {
+          runParams.inferenceSteps = isTurbo ? 10 : 50;
         }
 
         // Reference Audio & Cover Tasks
@@ -620,13 +697,32 @@ export class MusicEngineService {
 
       // 4. Stream real-time progress
       (async () => {
+        const stageStart = new Map<string, number>();
+        const formatEta = (ms: number) => {
+          const s = Math.max(0, Math.round(ms / 1000));
+          return s >= 60 ? `${Math.floor(s / 60)}m ${s % 60}s` : `${s}s`;
+        };
         try {
           for await (const progress of run.progressStream) {
             if (isCancelled?.()) break;
             const pct = progress.total > 0 ? Math.round((progress.step / progress.total) * 100) : 0;
-            const msg = progress.total > 0
+            let msg = progress.total > 0
               ? `${progress.stage}: step ${progress.step}/${progress.total}`
               : `${progress.stage}: step ${progress.step}`;
+
+            // Per-stage ETA from the observed step rate
+            if (!stageStart.has(progress.stage)) stageStart.set(progress.stage, Date.now());
+            let etaSeconds: number | undefined;
+            let etaFormatted: string | undefined;
+
+            const minStepsForEta = progress.total > 12 ? 5 : 2;
+            if (progress.total > 0 && progress.step >= minStepsForEta && progress.step < progress.total) {
+              const elapsed = Date.now() - (stageStart.get(progress.stage) as number);
+              const remainingMs = (elapsed / progress.step) * (progress.total - progress.step);
+              etaSeconds = Math.max(1, Math.round(remainingMs / 1000));
+              etaFormatted = formatEta(remainingMs);
+              msg += ` · ~${etaFormatted} remaining`;
+            }
 
             onProgress?.({
               taskId,
@@ -635,6 +731,8 @@ export class MusicEngineService {
               total: progress.total,
               percentage: pct,
               message: msg,
+              etaSeconds,
+              etaFormatted,
             });
 
             onLog?.({ text: `▸ [${progress.stage}] ${progress.step}/${progress.total || '?'}`, stream: 'stdout' });
@@ -661,6 +759,18 @@ export class MusicEngineService {
         text: `▸ Compute Backend: ${backendName}`,
         stream: 'system',
       });
+
+      // Per-stage timing so we can see where MiniMax spends its time (AR vs flow vs vocoder)
+      const s = stats as any;
+      if (s && (s.arMs !== undefined || s.flowMs !== undefined || s.totalTimeMs !== undefined)) {
+        const sec = (ms?: number) => (typeof ms === 'number' ? `${(ms / 1000).toFixed(1)}s` : 'n/a');
+        const timing =
+          `total=${sec(s.totalTimeMs)} | AR=${sec(s.arMs)} | condition=${sec(s.conditionMs)} | flow=${sec(s.flowMs)} | vocoder=${sec(s.vocoderMs)}` +
+          ` | frames=${s.emittedFrames ?? 'n/a'}${s.emittedFrames ? ` (~${(s.emittedFrames / 25).toFixed(0)}s audio)` : ''}` +
+          ` | RTF=${typeof s.realTimeFactor === 'number' ? s.realTimeFactor.toFixed(2) : 'n/a'}`;
+        this.logger.logMilestone(taskId, 'STAGE_TIMINGS', timing);
+        onLog?.({ text: `▸ Stage timings: ${timing}`, stream: 'system' });
+      }
 
       onLog?.({ text: `▸ Synthesis completed! Mastering ${audio.pcm.byteLength} raw PCM bytes...`, stream: 'system' });
 
