@@ -190,7 +190,7 @@ export function useMusicGeneration() {
         player.play({
           id: generation.id,
           title: generation.caption || 'Generated Track',
-          artist: generation.keyscale ? `${generation.keyscale} · ${generation.bpm || 120} BPM` : 'ACE-Step v1.5',
+          artist: generation.keyscale ? `${generation.keyscale} · ${generation.bpm || 120} BPM` : 'MiniMax Music-v3',
           coverUrl: '/covers/stardust_visitor.jpg',
           audioUrl: generation.audioUrl,
           waveform: generation.waveform,

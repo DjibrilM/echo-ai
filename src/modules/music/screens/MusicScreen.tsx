@@ -15,7 +15,6 @@ import type { MusicGenerationOutput } from '../types'
 export const MusicScreen: React.FC = () => {
   const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<MusicTab>('activities')
-  const [isModelsSkipped, setIsModelsSkipped] = useState(false)
   const [, setAudioEditModalOpen] = useAtom(audioEditModalOpenAtom)
 
   const {
@@ -51,58 +50,56 @@ export const MusicScreen: React.FC = () => {
     allRequiredReady,
   } = useMusicModels()
 
-  const handleEngineToggle = () => {
-    const next = selectedEngine === 'acestep' ? 'minimax' : 'acestep'
-    setSelectedEngine(next)
-    setEngine(next)
-    setIsModelsSkipped(false)
+  // Ensure MiniMax Music-v3 is selected for Songs composition
+  useEffect(() => {
+    if (selectedEngine !== 'minimax') {
+      setSelectedEngine('minimax')
+      setEngine('minimax')
+    }
+  }, [selectedEngine, setSelectedEngine, setEngine])
+
+  // Navigate to the previous screen in application history
+  const handleReturnToPreviousScreen = () => {
+    navigate(-1)
   }
 
-  // Whenever the active engine changes and its required models are not yet downloaded,
-  // ensure the models setup UI is presented instead of being suppressed by a stale skipped flag
-  useEffect(() => {
-    if (!allRequiredReady) {
-      setIsModelsSkipped(false)
-    }
-  }, [selectedEngine, allRequiredReady])
+  // STRICT REQUIREMENT: User must NEVER see the creation interfaces before having all models in place
+  if (!allRequiredReady) {
+    return (
+      <div className="flex flex-col h-full w-full min-h-0 overflow-hidden bg-[#0e0e11] text-foreground select-none relative">
+        <MusicTopSubHeader
+          activeTab="models"
+          onSelectTab={() => {}}
+          onBack={handleReturnToPreviousScreen}
+          engine="minimax"
+          generationsCount={0}
+          tracksCount={0}
+        />
+        <div className="flex-1 overflow-y-auto flex flex-col min-h-0 sidebar-scrollbar">
+          <InstallRequiredMusicModelsView
+            onBack={handleReturnToPreviousScreen}
+            onContinue={() => setActiveTab('activities')}
+          />
+        </div>
+      </div>
+    )
+  }
 
-  const showModelsView = activeTab === 'models' || (!allRequiredReady && !isModelsSkipped)
+  const showModelsView = activeTab === 'models'
 
   const handleSelectTab = (tab: MusicTab) => {
     if (tab === 'models') {
-      setIsModelsSkipped(false)
       setActiveTab('models')
     } else {
       if (tab === 'generations' && activeTab !== 'generations') {
         setStudioSessionTracks([])
       }
-      setIsModelsSkipped(true)
       setActiveTab(tab)
-    }
-  }
-
-  // Navigate to the previous screen in application history
-  const handleReturnToPreviousScreen = () => {
-    if (window.history.state && typeof window.history.state.idx === 'number' && window.history.state.idx > 0) {
-      navigate(-1)
-    } else if (window.history.length > 1) {
-      navigate(-1)
-    } else {
-      navigate('/')
     }
   }
 
   // Continue to music activities or studio once models are ready
   const handleContinueAfterModels = () => {
-    setIsModelsSkipped(true)
-    if (activeTab === 'models') {
-      setActiveTab('activities')
-    }
-  }
-
-  // Skip or go back from models view without quitting the music screen
-  const handleModelsBack = () => {
-    setIsModelsSkipped(true)
     if (activeTab === 'models') {
       setActiveTab('activities')
     }
@@ -110,7 +107,6 @@ export const MusicScreen: React.FC = () => {
 
   // Only navigate to the generation studio view after clicking generate
   const handleGenerate = () => {
-    setIsModelsSkipped(true)
     startGeneration()
     setActiveTab('generations')
   }
@@ -156,9 +152,8 @@ export const MusicScreen: React.FC = () => {
       <MusicTopSubHeader
         activeTab={showModelsView ? 'models' : activeTab}
         onSelectTab={handleSelectTab}
-        onBack={showModelsView ? handleModelsBack : handleReturnToPreviousScreen}
+        onBack={handleReturnToPreviousScreen}
         engine={selectedEngine}
-        onEngineToggle={handleEngineToggle}
         generationsCount={historyList.length}
         tracksCount={historyList.length}
       />
@@ -167,7 +162,7 @@ export const MusicScreen: React.FC = () => {
       <div className="flex-1 overflow-y-auto flex flex-col min-h-0 sidebar-scrollbar">
         {showModelsView ? (
           <InstallRequiredMusicModelsView
-            onBack={handleModelsBack}
+            onBack={handleReturnToPreviousScreen}
             onContinue={handleContinueAfterModels}
           />
         ) : activeTab === 'activities' ? (
@@ -202,11 +197,6 @@ export const MusicScreen: React.FC = () => {
             duration={duration}
             onChangeDuration={setDuration}
             engine={selectedEngine}
-            onChangeEngine={(eng) => {
-              setSelectedEngine(eng)
-              setEngine(eng)
-              setIsModelsSkipped(false)
-            }}
             onGenerate={startGeneration}
             onCancelGeneration={cancelActiveTask}
             isGenerating={isGenerating}

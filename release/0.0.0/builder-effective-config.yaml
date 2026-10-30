@@ -28,4 +28,4 @@ linux:
   target:
     - AppImage
   artifactName: ${productName}-Linux-${version}.${ext}
-electronVersion: 44.9.3
+electronVersion: 44.10.0

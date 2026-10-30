@@ -8,7 +8,8 @@ import {
   VoiceCreationPage,
   VoiceChangerPage,
   SpeechToTextPage,
-  MusicPage,
+  SongsPage,
+  BeatsPage,
   AudiobooksPage,
   VoicesPage,
   StudioPage,
@@ -88,7 +89,23 @@ export const router = createHashRouter([
       },
       {
         path: 'music',
-        element: <MusicPage />,
+        element: <Navigate to="/music/songs" replace />,
+      },
+      {
+        path: 'music/songs',
+        element: <SongsPage />,
+      },
+      {
+        path: 'music/beats',
+        element: <BeatsPage />,
+      },
+      {
+        path: 'songs',
+        element: <Navigate to="/music/songs" replace />,
+      },
+      {
+        path: 'beats',
+        element: <Navigate to="/music/beats" replace />,
       },
       {
         path: 'speech-to-text',

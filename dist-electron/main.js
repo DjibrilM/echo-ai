@@ -1,94 +1,81 @@
-var __defProp = Object.defineProperty;
-var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
-import path from "node:path";
-import fs from "node:fs";
-import { app, shell, ipcMain, protocol, BrowserWindow } from "electron";
-import { fileURLToPath } from "node:url";
-import { Readable } from "node:stream";
-import os from "node:os";
-import * as qvacSdk from "@qvac/sdk";
-import { execFileSync } from "node:child_process";
-import { PrismaClient } from "@prisma/client";
-const workerCandidatePaths = [
-  path.resolve(process.cwd(), "node_modules/@qvac/sdk/dist/src/worker/index.js"),
-  path.resolve(process.cwd(), "node_modules/.pnpm/@qvac+sdk@0.22.0/node_modules/@qvac/sdk/dist/src/worker/index.js")
+var je = Object.defineProperty;
+var He = (h, e, t) => e in h ? je(h, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : h[e] = t;
+var b = (h, e, t) => He(h, typeof e != "symbol" ? e + "" : e, t);
+import y from "node:path";
+import g from "node:fs";
+import { app as U, shell as We, ipcMain as A, protocol as xe, BrowserWindow as Ne } from "electron";
+import { fileURLToPath as Qe } from "node:url";
+import { Readable as Ye } from "node:stream";
+import O from "node:os";
+import * as v from "@qvac/sdk";
+import { execFileSync as Xe } from "node:child_process";
+import { createRequire as Ke } from "node:module";
+process.env.QVAC_RPC_INIT_TIMEOUT_MS || (process.env.QVAC_RPC_INIT_TIMEOUT_MS = "120000");
+const Je = [
+  y.resolve(process.cwd(), "node_modules/@qvac/sdk/dist/src/worker/index.js")
 ];
-for (const p of workerCandidatePaths) {
-  if (fs.existsSync(p)) {
-    process.env.QVAC_WORKER_PATH = p;
+for (const h of Je)
+  if (g.existsSync(h)) {
+    try {
+      process.env.QVAC_WORKER_PATH = g.realpathSync(h);
+    } catch {
+      process.env.QVAC_WORKER_PATH = h;
+    }
     break;
   }
-}
-class SystemService {
+class Ze {
   constructor() {
-    __publicField(this, "prevCpuTimes", null);
+    b(this, "prevCpuTimes", null);
   }
   /**
    * Calculate live CPU usage from os.cpus()
    */
   getCpuUsage() {
-    const cpus = os.cpus();
-    let idle = 0;
-    let total = 0;
-    for (const cpu of cpus) {
-      for (const type of Object.keys(cpu.times)) {
-        total += cpu.times[type];
-      }
-      idle += cpu.times.idle;
+    const e = O.cpus();
+    let t = 0, s = 0;
+    for (const n of e) {
+      for (const a of Object.keys(n.times))
+        s += n.times[a];
+      t += n.times.idle;
     }
-    if (!this.prevCpuTimes) {
-      this.prevCpuTimes = { idle, total };
-      return 14;
-    }
-    const idleDelta = idle - this.prevCpuTimes.idle;
-    const totalDelta = total - this.prevCpuTimes.total;
-    this.prevCpuTimes = { idle, total };
-    if (totalDelta <= 0) return 14;
-    const usage = Math.round((totalDelta - idleDelta) / totalDelta * 100);
-    return Math.max(1, Math.min(100, usage));
+    if (!this.prevCpuTimes)
+      return this.prevCpuTimes = { idle: t, total: s }, 14;
+    const i = t - this.prevCpuTimes.idle, r = s - this.prevCpuTimes.total;
+    if (this.prevCpuTimes = { idle: t, total: s }, r <= 0) return 14;
+    const o = Math.round((r - i) / r * 100);
+    return Math.max(1, Math.min(100, o));
   }
   /**
    * Query full hardware telemetry (RAM, CPU, GPU)
    */
   getMetrics() {
-    var _a;
-    const totalMem = os.totalmem();
-    const freeMem = os.freemem();
-    const usedMem = Math.max(0, totalMem - freeMem);
-    const baseRam = usedMem / totalMem * 100;
-    const memFluctuation = Math.sin(Date.now() / 3e3) * 0.8 + (Math.random() * 0.4 - 0.2);
-    const ramPercent = Math.max(5, Math.min(99, Math.round(baseRam + memFluctuation)));
-    const rawCpu = this.getCpuUsage();
-    const cpuVariation = Math.round(Math.sin(Date.now() / 2e3) * 3 + (Math.random() * 3 - 1));
-    const cpuPercent = Math.max(3, Math.min(98, Math.round(rawCpu + cpuVariation)));
-    let gpuPercent = 12;
+    var u;
+    const e = O.totalmem(), t = O.freemem(), s = Math.max(0, e - t), i = s / e * 100, r = Math.sin(Date.now() / 3e3) * 0.8 + (Math.random() * 0.4 - 0.2), o = Math.max(5, Math.min(99, Math.round(i + r))), n = this.getCpuUsage(), a = Math.round(Math.sin(Date.now() / 2e3) * 3 + (Math.random() * 3 - 1)), c = Math.max(3, Math.min(98, Math.round(n + a)));
+    let l = 12;
     try {
-      const metrics = app.getAppMetrics();
-      const gpuMetric = metrics.find((m) => m.type === "GPU");
-      if (gpuMetric) {
-        gpuPercent = Math.min(100, Math.max(8, Math.round(gpuMetric.cpu.percentCPUUsage * 2 + 10)));
-      } else {
-        const gpuJitter = Math.round(Math.cos(Date.now() / 2500) * 3 + (Math.random() * 2 - 1));
-        gpuPercent = Math.max(6, Math.min(94, Math.round(cpuPercent * 0.7 + 8 + gpuJitter)));
+      const f = U.getAppMetrics().find((S) => S.type === "GPU");
+      if (f)
+        l = Math.min(100, Math.max(8, Math.round(f.cpu.percentCPUUsage * 2 + 10)));
+      else {
+        const S = Math.round(Math.cos(Date.now() / 2500) * 3 + (Math.random() * 2 - 1));
+        l = Math.max(6, Math.min(94, Math.round(c * 0.7 + 8 + S)));
       }
     } catch {
-      gpuPercent = Math.max(6, Math.min(94, Math.round(cpuPercent * 0.7 + 8)));
+      l = Math.max(6, Math.min(94, Math.round(c * 0.7 + 8)));
     }
-    const dynamicUsed = usedMem / (1024 * 1024 * 1024) + memFluctuation * 0.1;
     return {
       ram: {
-        usedGB: dynamicUsed.toFixed(1),
-        totalGB: (totalMem / (1024 * 1024 * 1024)).toFixed(1),
-        percent: ramPercent
+        usedGB: (s / (1024 * 1024 * 1024) + r * 0.1).toFixed(1),
+        totalGB: (e / (1024 * 1024 * 1024)).toFixed(1),
+        percent: o
       },
       cpu: {
-        percent: cpuPercent,
-        cores: os.cpus().length,
-        model: ((_a = os.cpus()[0]) == null ? void 0 : _a.model) || "Processor"
+        percent: c,
+        cores: O.cpus().length,
+        model: ((u = O.cpus()[0]) == null ? void 0 : u.model) || "Processor"
       },
       gpu: {
-        percent: gpuPercent,
+        percent: l,
         name: process.platform === "darwin" ? "Apple Silicon GPU" : "GPU Compute"
       }
     };
@@ -98,21 +85,16 @@ class SystemService {
    */
   async openExportsFolder() {
     try {
-      const exportsDir = path.join(app.getPath("documents"), "Echo", "Exports");
-      if (!fs.existsSync(exportsDir)) {
-        fs.mkdirSync(exportsDir, { recursive: true });
-      }
-      await shell.openPath(exportsDir);
-      return { success: true, path: exportsDir };
-    } catch (error) {
-      console.error("[SystemService] Failed to open exports directory:", error);
-      return { success: false, error: String(error) };
+      const e = y.join(U.getPath("documents"), "Echo", "Exports");
+      return g.existsSync(e) || g.mkdirSync(e, { recursive: !0 }), await We.openPath(e), { success: !0, path: e };
+    } catch (e) {
+      return console.error("[SystemService] Failed to open exports directory:", e), { success: !1, error: String(e) };
     }
   }
 }
-class BaseController {
+class ie {
 }
-const IPC_CHANNELS = {
+const w = {
   // Voices domain (metadata & SQLite persistence)
   VOICES_SCAN: "voices:scan",
   VOICES_LOAD: "voices:load",
@@ -181,34 +163,22 @@ const IPC_CHANNELS = {
   LEGACY_GET_SYSTEM_METRICS: "get-system-metrics",
   LEGACY_OPEN_EXPORTS_FOLDER: "open-exports-folder"
 };
-class SystemController extends BaseController {
-  constructor(systemService) {
-    super();
-    this.systemService = systemService;
+class et extends ie {
+  constructor(e) {
+    super(), this.systemService = e;
   }
   init() {
-    ipcMain.handle(IPC_CHANNELS.SYSTEM_GET_METRICS, async () => {
-      return this.systemService.getMetrics();
-    });
-    ipcMain.handle(IPC_CHANNELS.LEGACY_GET_SYSTEM_METRICS, async () => {
-      return this.systemService.getMetrics();
-    });
-    ipcMain.handle(IPC_CHANNELS.SYSTEM_OPEN_EXPORTS, async () => {
-      return this.systemService.openExportsFolder();
-    });
-    ipcMain.handle(IPC_CHANNELS.LEGACY_OPEN_EXPORTS_FOLDER, async () => {
-      return this.systemService.openExportsFolder();
-    });
+    A.handle(w.SYSTEM_GET_METRICS, async () => this.systemService.getMetrics()), A.handle(w.LEGACY_GET_SYSTEM_METRICS, async () => this.systemService.getMetrics()), A.handle(w.SYSTEM_OPEN_EXPORTS, async () => this.systemService.openExportsFolder()), A.handle(w.LEGACY_OPEN_EXPORTS_FOLDER, async () => this.systemService.openExportsFolder());
   }
 }
-class ModelsService {
+class Te {
   constructor() {
-    __publicField(this, "cacheDir");
-    __publicField(this, "stateFilePath");
-    __publicField(this, "downloadedModelIds", /* @__PURE__ */ new Set());
-    __publicField(this, "activeDownloads", /* @__PURE__ */ new Map());
+    b(this, "cacheDir");
+    b(this, "stateFilePath");
+    b(this, "downloadedModelIds", /* @__PURE__ */ new Set());
+    b(this, "activeDownloads", /* @__PURE__ */ new Map());
     // Full specification of neural TTS voice models
-    __publicField(this, "modelDefinitions", [
+    b(this, "modelDefinitions", [
       {
         id: "chatterbox-t3-turbo-q8_0",
         name: "Chatterbox T3 Turbo Backbone (Q8_0 GGUF)",
@@ -218,7 +188,7 @@ class ModelsService {
         description: "Fast and expressive autoregressive T3 speech backbone with high dynamic range and instant voice cloning.",
         category: "backbone",
         engine: "chatterbox",
-        required: false
+        required: !1
       },
       {
         id: "chatterbox-s3gen-q8_0",
@@ -229,7 +199,7 @@ class ModelsService {
         description: "Companion diffusion vocoder for realistic breath, timbre, and natural prosody in Chatterbox speech.",
         category: "vocoder",
         engine: "chatterbox",
-        required: false
+        required: !1
       },
       {
         id: "chatterbox-t3-multilingual-q8_0",
@@ -240,7 +210,7 @@ class ModelsService {
         description: "Multilingual T3 speech model supporting 23 international languages with cross-lingual voice cloning.",
         category: "backbone",
         engine: "chatterbox",
-        required: false
+        required: !1
       },
       {
         id: "chatterbox-s3gen-multilingual-q8_0",
@@ -251,7 +221,7 @@ class ModelsService {
         description: "Multilingual diffusion vocoder generating clean, natural acoustic waveforms across 23 languages.",
         category: "vocoder",
         engine: "chatterbox",
-        required: false
+        required: !1
       },
       {
         id: "cosyvoice3-llm-q8_0",
@@ -262,7 +232,7 @@ class ModelsService {
         description: "Zero-shot neural speech generator with instruct conditioning for voice design & cloning (optimized for Apple Silicon / M-series).",
         category: "backbone",
         engine: "cosyvoice3",
-        required: false
+        required: !1
       },
       {
         id: "cosyvoice3-flow-fp16",
@@ -273,7 +243,7 @@ class ModelsService {
         description: "Uncompressed FP16 flow-matching ODE acoustic generator for pristine vocal detail, breath dynamics, and zero metallic distortion.",
         category: "vocoder",
         engine: "cosyvoice3",
-        required: false
+        required: !1
       },
       {
         id: "lavasr-enhancer",
@@ -284,7 +254,7 @@ class ModelsService {
         description: "Deep spectral bandwidth upsampler and harmonic clarity enhancer for studio-grade 48kHz ultra-HD audio.",
         category: "enhancer",
         engine: "shared",
-        required: false
+        required: !1
       },
       {
         id: "cosyvoice3-s3tok-fp16",
@@ -295,7 +265,7 @@ class ModelsService {
         description: "Neural speech tokenizer required for high-fidelity instant voice cloning in CosyVoice 3.",
         category: "vocoder",
         engine: "cosyvoice3",
-        required: false
+        required: !1
       },
       {
         id: "cosyvoice3-campplus-fp32",
@@ -306,7 +276,7 @@ class ModelsService {
         description: "Deep acoustic timbre and speaker embedding extractor for voice cloning in CosyVoice 3.",
         category: "multilingual",
         engine: "cosyvoice3",
-        required: false
+        required: !1
       },
       // Music Generation Models (ACE-Step & MiniMax AudioGen)
       {
@@ -318,7 +288,7 @@ class ModelsService {
         description: "Encodes captions, prompts, and vocal lyrics into continuous musical semantic space.",
         category: "text-encoder",
         engine: "acestep",
-        required: true
+        required: !0
       },
       {
         id: "audiogen-acestep-5hz-lm",
@@ -329,7 +299,7 @@ class ModelsService {
         description: "Plans song structure, tempo, arrangement, and section transitions at 5 Hz.",
         category: "lm",
         engine: "acestep",
-        required: true
+        required: !0
       },
       {
         id: "audiogen-acestep-turbo-dit",
@@ -340,7 +310,7 @@ class ModelsService {
         description: "Fast 8-step Diffusion Transformer with Haar DCW for expressive music audio latents.",
         category: "dit",
         engine: "acestep",
-        required: true
+        required: !0
       },
       {
         id: "audiogen-vae-bf16",
@@ -351,7 +321,7 @@ class ModelsService {
         description: "Acoustic decoder rendering pristine 48 kHz stereo PCM audio waveforms.",
         category: "vae",
         engine: "acestep",
-        required: true
+        required: !0
       },
       {
         id: "minimax-music-v3-transformer",
@@ -362,7 +332,7 @@ class ModelsService {
         description: "Qwen3-8B based global language model with extended audio vocabulary, planning semantic music structures.",
         category: "lm",
         engine: "minimax",
-        required: true
+        required: !0
       },
       {
         id: "minimax-music-vocoder",
@@ -373,19 +343,17 @@ class ModelsService {
         description: "Full synthesis pipeline: RVQ depth decoder, condition encoder, flow-matching DiT, and stereo vocoder.",
         category: "vocoder",
         engine: "minimax",
-        required: true
+        required: !0
       }
     ]);
-    this.cacheDir = path.join(os.homedir(), ".qvac", "models");
-    const userData = app ? app.getPath("userData") : path.join(os.homedir(), ".echo-ai");
-    if (!fs.existsSync(userData)) {
+    this.cacheDir = y.join(O.homedir(), ".qvac", "models");
+    const e = U ? U.getPath("userData") : y.join(O.homedir(), ".echo-ai");
+    if (!g.existsSync(e))
       try {
-        fs.mkdirSync(userData, { recursive: true });
+        g.mkdirSync(e, { recursive: !0 });
       } catch {
       }
-    }
-    this.stateFilePath = path.join(userData, "voice_engine_state.json");
-    this.loadState();
+    this.stateFilePath = y.join(e, "voice_engine_state.json"), this.loadState();
   }
   /**
    * Returns list of configured model definitions
@@ -396,27 +364,21 @@ class ModelsService {
   /**
    * Fast check if a specific model is downloaded and ready
    */
-  isModelDownloaded(modelId) {
-    if (this.downloadedModelIds.has(modelId)) return true;
-    for (const id of this.downloadedModelIds) {
-      if (id === modelId) return true;
-      if (id.startsWith(modelId) || modelId.startsWith(id) && !modelId.startsWith("minimax-")) {
-        return true;
-      }
-    }
-    return false;
+  isModelDownloaded(e) {
+    if (this.downloadedModelIds.has(e)) return !0;
+    for (const t of this.downloadedModelIds)
+      if (t === e || t.startsWith(e) || e.startsWith(t) && !e.startsWith("minimax-"))
+        return !0;
+    return !1;
   }
   /**
    * Load persisted downloaded model status and discover cached weights
    */
   loadState() {
     try {
-      if (fs.existsSync(this.stateFilePath)) {
-        const raw = fs.readFileSync(this.stateFilePath, "utf-8");
-        const data = JSON.parse(raw);
-        if (Array.isArray(data.downloadedModelIds)) {
-          this.downloadedModelIds = new Set(data.downloadedModelIds);
-        }
+      if (g.existsSync(this.stateFilePath)) {
+        const e = g.readFileSync(this.stateFilePath, "utf-8"), t = JSON.parse(e);
+        Array.isArray(t.downloadedModelIds) && (this.downloadedModelIds = new Set(t.downloadedModelIds));
       }
     } catch (e) {
       console.warn("[ModelsService] Could not load state file:", e);
@@ -428,11 +390,11 @@ class ModelsService {
    */
   saveState() {
     try {
-      const data = {
+      const e = {
         downloadedModelIds: Array.from(this.downloadedModelIds),
         updatedAt: (/* @__PURE__ */ new Date()).toISOString()
       };
-      fs.writeFileSync(this.stateFilePath, JSON.stringify(data, null, 2), "utf-8");
+      g.writeFileSync(this.stateFilePath, JSON.stringify(e, null, 2), "utf-8");
     } catch (e) {
       console.warn("[ModelsService] Could not save state file:", e);
     }
@@ -441,341 +403,229 @@ class ModelsService {
    * Scan disk cache directory for downloaded models and verify their file presence/integrity
    */
   syncCacheFromDisk() {
-    let changed = false;
+    let e = !1;
     try {
-      if (fs.existsSync(this.cacheDir)) {
-        const foundModelIds = /* @__PURE__ */ new Set();
-        const checkFileOrDir = (filePath, filename) => {
-          const lower = filename.toLowerCase();
-          if (lower.endsWith(".download") || lower.endsWith(".tmp") || lower.endsWith(".partial") || lower.endsWith(".crdownload")) {
+      if (g.existsSync(this.cacheDir)) {
+        const t = /* @__PURE__ */ new Set(), s = (o, n) => {
+          const a = n.toLowerCase();
+          if (a.endsWith(".download") || a.endsWith(".tmp") || a.endsWith(".partial") || a.endsWith(".crdownload"))
             return;
-          }
-          let stats = null;
+          let c = null;
           try {
-            stats = fs.statSync(filePath);
+            c = g.statSync(o);
           } catch {
             return;
           }
-          const isAdequateSize = stats.isFile() && stats.size > 1024 * 1024;
-          if (!isAdequateSize) return;
-          if (lower.includes("parler-large-v1-f16") || lower.includes("parler-large-v1-fp16")) {
-            foundModelIds.add("chatterbox-t3-turbo-q8_0");
-          } else if (lower.includes("chatterbox-s3gen-q8") || lower.includes("chatterbox-s3gen")) {
-            foundModelIds.add("chatterbox-s3gen-q8_0");
-          } else if (lower.includes("chatterbox-t3-multilingual")) {
-            foundModelIds.add("chatterbox-t3-multilingual-q8_0");
-          } else if (lower.includes("chatterbox-s3gen-multilingual")) {
-            foundModelIds.add("chatterbox-s3gen-multilingual-q8_0");
-          } else if (lower.includes("chatterbox-t3") || lower.includes("chatterbox")) {
-            foundModelIds.add("chatterbox-t3-turbo-q8_0");
-          }
-          if (lower.includes("cosyvoice3-llm") || lower.includes("cosy_voice")) {
-            foundModelIds.add("cosyvoice3-llm-q8_0");
-          }
-          if (lower.includes("cosyvoice3-flow-f16") || lower.includes("cosyvoice3-flow-fp16") || lower.includes("cosyvoice3-flow-f32") || lower.includes("cosyvoice3-flow")) {
-            foundModelIds.add("cosyvoice3-flow-fp16");
-          }
-          if (lower.includes("lavasr") || lower.includes("enhancer")) {
-            foundModelIds.add("lavasr-enhancer");
-          }
-          if (lower.includes("cosyvoice3-s3tok") || lower.includes("s3tok")) {
-            foundModelIds.add("cosyvoice3-s3tok-fp16");
-          }
-          if (lower.includes("cosyvoice3-campplus") || lower.includes("campplus")) {
-            foundModelIds.add("cosyvoice3-campplus-fp32");
-          }
-          if (lower.includes("qwen3-embedding") || lower.includes("qwen3_embedding")) {
-            foundModelIds.add("audiogen-qwen3-embedding");
-          }
-          if (lower.includes("acestep-5hz") || lower.includes("acestep_5hz")) {
-            foundModelIds.add("audiogen-acestep-5hz-lm");
-          }
-          if (lower.includes("acestep-v15-turbo") || lower.includes("acestep_v15_turbo") || lower.includes("turbo-q4_k_m")) {
-            foundModelIds.add("audiogen-acestep-turbo-dit");
-          }
-          if (lower.includes("vae-bf16") || lower.includes("audiogen-vae") || lower.includes("audiogen_vae")) {
-            foundModelIds.add("audiogen-vae-bf16");
-          }
-          if ((lower.includes("mm3-lm") || lower.includes("minimax") && (lower.includes("transformer") || lower.includes("lm"))) && !lower.includes("vocoder") && !lower.includes("synth")) {
-            foundModelIds.add("minimax-music-v3-transformer");
-          }
-          if ((lower.includes("mm3-synth") || lower.includes("minimax") && (lower.includes("vocoder") || lower.includes("synth"))) && !lower.includes("transformer") && !lower.includes("lm")) {
-            foundModelIds.add("minimax-music-vocoder");
-          }
-        };
-        const topFiles = fs.readdirSync(this.cacheDir);
-        for (const file of topFiles) {
-          const fullPath = path.join(this.cacheDir, file);
-          checkFileOrDir(fullPath, file);
+          c.isFile() && c.size > 1024 * 1024 && (a.includes("parler-large-v1-f16") || a.includes("parler-large-v1-fp16") ? t.add("chatterbox-t3-turbo-q8_0") : a.includes("chatterbox-s3gen-q8") || a.includes("chatterbox-s3gen") ? t.add("chatterbox-s3gen-q8_0") : a.includes("chatterbox-t3-multilingual") ? t.add("chatterbox-t3-multilingual-q8_0") : a.includes("chatterbox-s3gen-multilingual") ? t.add("chatterbox-s3gen-multilingual-q8_0") : (a.includes("chatterbox-t3") || a.includes("chatterbox")) && t.add("chatterbox-t3-turbo-q8_0"), (a.includes("cosyvoice3-llm") || a.includes("cosy_voice")) && t.add("cosyvoice3-llm-q8_0"), (a.includes("cosyvoice3-flow-f16") || a.includes("cosyvoice3-flow-fp16") || a.includes("cosyvoice3-flow-f32") || a.includes("cosyvoice3-flow")) && t.add("cosyvoice3-flow-fp16"), (a.includes("lavasr") || a.includes("enhancer")) && t.add("lavasr-enhancer"), (a.includes("cosyvoice3-s3tok") || a.includes("s3tok")) && t.add("cosyvoice3-s3tok-fp16"), (a.includes("cosyvoice3-campplus") || a.includes("campplus")) && t.add("cosyvoice3-campplus-fp32"), (a.includes("qwen3-embedding") || a.includes("qwen3_embedding")) && t.add("audiogen-qwen3-embedding"), (a.includes("acestep-5hz") || a.includes("acestep_5hz")) && t.add("audiogen-acestep-5hz-lm"), (a.includes("acestep-v15-turbo") || a.includes("acestep_v15_turbo") || a.includes("turbo-q4_k_m")) && t.add("audiogen-acestep-turbo-dit"), (a.includes("vae-bf16") || a.includes("audiogen-vae") || a.includes("audiogen_vae")) && t.add("audiogen-vae-bf16"), (a.includes("mm3-lm") || a.includes("minimax") && (a.includes("transformer") || a.includes("lm"))) && !a.includes("vocoder") && !a.includes("synth") && t.add("minimax-music-v3-transformer"), (a.includes("mm3-synth") || a.includes("minimax") && (a.includes("vocoder") || a.includes("synth"))) && !a.includes("transformer") && !a.includes("lm") && t.add("minimax-music-vocoder"));
+        }, i = g.readdirSync(this.cacheDir);
+        for (const o of i) {
+          const n = y.join(this.cacheDir, o);
+          s(n, o);
         }
-        const setsDir = path.join(this.cacheDir, "sets");
-        if (fs.existsSync(setsDir)) {
-          const setDirs = fs.readdirSync(setsDir);
-          for (const sd of setDirs) {
-            const setPath = path.join(setsDir, sd);
+        const r = y.join(this.cacheDir, "sets");
+        if (g.existsSync(r)) {
+          const o = g.readdirSync(r);
+          for (const n of o) {
+            const a = y.join(r, n);
             try {
-              if (fs.existsSync(setPath)) {
-                const setFiles = fs.readdirSync(setPath);
-                for (const sf of setFiles) {
-                  const subFilePath = path.join(setPath, sf);
-                  checkFileOrDir(subFilePath, sf);
+              if (g.existsSync(a)) {
+                const c = g.readdirSync(a);
+                for (const l of c) {
+                  const d = y.join(a, l);
+                  s(d, l);
                 }
               }
             } catch {
             }
           }
         }
-        for (const id of foundModelIds) {
-          if (!this.downloadedModelIds.has(id)) {
-            this.downloadedModelIds.add(id);
-            changed = true;
-          }
-        }
-        for (const id of Array.from(this.downloadedModelIds)) {
-          if ((id.startsWith("minimax-") || id.startsWith("audiogen-")) && !foundModelIds.has(id)) {
-            this.downloadedModelIds.delete(id);
-            changed = true;
-          }
-        }
+        for (const o of t)
+          this.downloadedModelIds.has(o) || (this.downloadedModelIds.add(o), e = !0);
+        for (const o of Array.from(this.downloadedModelIds))
+          (o.startsWith("minimax-") || o.startsWith("audiogen-")) && !t.has(o) && (this.downloadedModelIds.delete(o), e = !0);
       }
-    } catch (err) {
-      console.warn("[ModelsService] Error syncing cache from disk:", err);
+    } catch (t) {
+      console.warn("[ModelsService] Error syncing cache from disk:", t);
     }
-    if (changed) {
-      this.saveState();
-    }
+    e && this.saveState();
   }
   /**
    * Get complete status of all voice engine models scoped to the selected engine.
    * CosyVoice 3 requires: backbone, enhancer, s3tok, campplus (flow is optional high precision).
    * Parler requires any downloaded Parler backbone model.
    */
-  getStatus(selectedEngine) {
+  getStatus(e) {
     this.syncCacheFromDisk();
-    const models = this.modelDefinitions.map((def) => {
-      const isDownloaded = this.downloadedModelIds.has(def.id);
-      const isDownloading = this.activeDownloads.has(def.id);
-      const isRequired = selectedEngine ? selectedEngine === "cosyvoice3" ? def.engine === "cosyvoice3" && def.id !== "cosyvoice3-flow-fp16" || def.engine === "shared" : selectedEngine === "chatterbox" ? def.engine === "chatterbox" && (def.id === "chatterbox-t3-turbo-q8_0" || def.id === "chatterbox-s3gen-q8_0") : def.engine === selectedEngine : def.category === "backbone";
+    const t = this.modelDefinitions.map((i) => {
+      const r = this.downloadedModelIds.has(i.id), o = this.activeDownloads.has(i.id), n = e ? e === "cosyvoice3" ? i.engine === "cosyvoice3" && i.id !== "cosyvoice3-flow-fp16" || i.engine === "shared" : e === "chatterbox" ? i.engine === "chatterbox" && (i.id === "chatterbox-t3-turbo-q8_0" || i.id === "chatterbox-s3gen-q8_0") : i.engine === e : i.category === "backbone";
       return {
-        ...def,
-        required: isRequired,
-        downloaded: isDownloaded,
-        status: isDownloading ? "downloading" : isDownloaded ? "ready" : "idle"
+        ...i,
+        required: n,
+        downloaded: r,
+        status: o ? "downloading" : r ? "ready" : "idle"
       };
     });
-    let allRequiredDownloaded = false;
-    if (selectedEngine === "chatterbox") {
-      const hasBackbone = models.some(
-        (m) => m.engine === "chatterbox" && m.category === "backbone" && m.downloaded
+    let s = !1;
+    if (e === "chatterbox") {
+      const i = t.some(
+        (o) => o.engine === "chatterbox" && o.category === "backbone" && o.downloaded
+      ), r = t.some(
+        (o) => o.engine === "chatterbox" && o.category === "vocoder" && o.downloaded
       );
-      const hasVocoder = models.some(
-        (m) => m.engine === "chatterbox" && m.category === "vocoder" && m.downloaded
-      );
-      allRequiredDownloaded = hasBackbone && hasVocoder;
+      s = i && r;
     } else {
-      const activeRequiredModels = selectedEngine ? models.filter((m) => m.required) : models.filter((m) => m.category === "backbone");
-      allRequiredDownloaded = activeRequiredModels.length > 0 && activeRequiredModels.every((m) => m.downloaded);
+      const i = e ? t.filter((r) => r.required) : t.filter((r) => r.category === "backbone");
+      s = i.length > 0 && i.every((r) => r.downloaded);
     }
     return {
-      ready: allRequiredDownloaded,
-      allRequiredDownloaded,
-      models,
+      ready: s,
+      allRequiredDownloaded: s,
+      models: t,
       cacheDirectory: this.cacheDir
     };
   }
   /**
    * Helper to check if an engine is fully ready for speech synthesis
    */
-  areAllRequiredModelsDownloaded(selectedEngine = "cosyvoice3") {
-    const status = this.getStatus(selectedEngine);
-    return status.allRequiredDownloaded;
+  areAllRequiredModelsDownloaded(e = "cosyvoice3") {
+    return this.getStatus(e).allRequiredDownloaded;
   }
   /**
    * Download a single model with live progress updates.
    * Correctly handles single-file, sharded, and companion set downloads with smooth monotonic percentages.
    */
-  async downloadModel(modelId, onProgress) {
-    const def = this.modelDefinitions.find((m) => m.id === modelId);
-    if (!def) {
-      return { success: false, modelId, error: `Unknown model ID: ${modelId}` };
-    }
-    this.syncCacheFromDisk();
-    if (this.downloadedModelIds.has(modelId)) {
-      onProgress == null ? void 0 : onProgress({
-        modelId,
+  async downloadModel(e, t) {
+    const s = this.modelDefinitions.find((n) => n.id === e);
+    if (!s)
+      return { success: !1, modelId: e, error: `Unknown model ID: ${e}` };
+    if (this.syncCacheFromDisk(), this.downloadedModelIds.has(e))
+      return t == null || t({
+        modelId: e,
         percentage: 100,
-        downloaded: def.sizeBytes,
-        total: def.sizeBytes,
+        downloaded: s.sizeBytes,
+        total: s.sizeBytes,
         speed: "Ready"
-      });
-      return { success: true, modelId };
-    }
-    if (def.engine === "minimax") {
-      return await this.downloadMiniMaxModel(modelId, def, onProgress);
-    }
-    let isCancelled = false;
-    let lastPct = 0;
-    let totalModelBytes = def.sizeBytes;
-    this.activeDownloads.set(modelId, {
+      }), { success: !0, modelId: e };
+    if (s.engine === "minimax")
+      return await this.downloadMiniMaxModel(e, s, t);
+    let i = !1, r = 0, o = s.sizeBytes;
+    this.activeDownloads.set(e, {
       cancel: () => {
-        isCancelled = true;
+        i = !0;
       }
     });
     try {
-      const sdk = qvacSdk;
-      const sdkDescriptor = sdk[def.descriptorName] || null;
-      if (!sdkDescriptor || typeof qvacSdk.downloadAsset !== "function") {
+      const a = v[s.descriptorName] || null;
+      if (!a || typeof v.downloadAsset != "function")
         return {
-          success: false,
-          modelId,
-          error: `No asset descriptor found for ${modelId} (${def.descriptorName})`
+          success: !1,
+          modelId: e,
+          error: `No asset descriptor found for ${e} (${s.descriptorName})`
         };
-      }
-      let lastErr = null;
-      for (let attempt = 1; attempt <= 2; attempt++) {
+      let c = null;
+      for (let l = 1; l <= 2; l++)
         try {
-          const downloadPromise = qvacSdk.downloadAsset({
-            assetSrc: sdkDescriptor,
-            onProgress: (p) => {
-              var _a, _b, _c, _d, _e, _f, _g, _h;
-              if (isCancelled) return;
-              const overallPct = ((_a = p.fileSetInfo) == null ? void 0 : _a.overallPercentage) ?? ((_b = p.shardInfo) == null ? void 0 : _b.overallPercentage) ?? (p.fileSetInfo || p.shardInfo ? 0 : p.percentage ?? 0);
-              const totalBytes = ((_c = p.fileSetInfo) == null ? void 0 : _c.overallTotal) ?? ((_d = p.shardInfo) == null ? void 0 : _d.overallTotal) ?? p.total ?? def.sizeBytes;
-              totalModelBytes = totalBytes;
-              const downloadedBytes = ((_e = p.fileSetInfo) == null ? void 0 : _e.overallDownloaded) ?? ((_f = p.shardInfo) == null ? void 0 : _f.overallDownloaded) ?? p.downloaded ?? Math.round((overallPct || 0) / 100 * totalBytes);
-              const currentPct = Math.min(99, Math.max(1, Math.round(overallPct || 0)));
-              lastPct = Math.max(lastPct, currentPct);
-              let speed = p.speed || "Downloading...";
-              if ((_g = p.fileSetInfo) == null ? void 0 : _g.currentFile) {
-                speed = `${p.fileSetInfo.currentFile} (${p.fileSetInfo.fileIndex}/${p.fileSetInfo.totalFiles})`;
-              } else if ((_h = p.shardInfo) == null ? void 0 : _h.shardName) {
-                speed = `${p.shardInfo.shardName} (${p.shardInfo.currentShard}/${p.shardInfo.totalShards})`;
-              }
-              const isFinished = downloadedBytes >= totalBytes && totalBytes > 0 || overallPct >= 100;
-              if (isFinished) {
-                this.downloadedModelIds.add(modelId);
-                this.syncCacheFromDisk();
-                this.saveState();
-              }
-              onProgress == null ? void 0 : onProgress({
-                modelId,
-                percentage: isFinished ? 100 : lastPct,
-                downloaded: downloadedBytes,
-                total: totalBytes,
-                speed: isFinished ? "Completed" : speed
+          const d = v.downloadAsset({
+            assetSrc: a,
+            onProgress: (u) => {
+              var _, D, T, x, M, E, p, $;
+              if (i) return;
+              const m = ((_ = u.fileSetInfo) == null ? void 0 : _.overallPercentage) ?? ((D = u.shardInfo) == null ? void 0 : D.overallPercentage) ?? (u.fileSetInfo || u.shardInfo ? 0 : u.percentage ?? 0), f = ((T = u.fileSetInfo) == null ? void 0 : T.overallTotal) ?? ((x = u.shardInfo) == null ? void 0 : x.overallTotal) ?? u.total ?? s.sizeBytes;
+              o = f;
+              const S = ((M = u.fileSetInfo) == null ? void 0 : M.overallDownloaded) ?? ((E = u.shardInfo) == null ? void 0 : E.overallDownloaded) ?? u.downloaded ?? Math.round((m || 0) / 100 * f), C = Math.min(99, Math.max(1, Math.round(m || 0)));
+              r = Math.max(r, C);
+              let L = u.speed || "Downloading...";
+              (p = u.fileSetInfo) != null && p.currentFile ? L = `${u.fileSetInfo.currentFile} (${u.fileSetInfo.fileIndex}/${u.fileSetInfo.totalFiles})` : ($ = u.shardInfo) != null && $.shardName && (L = `${u.shardInfo.shardName} (${u.shardInfo.currentShard}/${u.shardInfo.totalShards})`);
+              const N = S >= f && f > 0 || m >= 100;
+              N && (this.downloadedModelIds.add(e), this.syncCacheFromDisk(), this.saveState()), t == null || t({
+                modelId: e,
+                percentage: N ? 100 : r,
+                downloaded: S,
+                total: f,
+                speed: N ? "Completed" : L
               });
             }
           });
-          if (downloadPromise && downloadPromise.requestId) {
-            this.activeDownloads.set(modelId, {
-              cancel: () => {
-                isCancelled = true;
-                try {
-                  if (typeof qvacSdk.cancel === "function") {
-                    ;
-                    qvacSdk.cancel({
-                      requestId: downloadPromise.requestId
-                    });
-                  }
-                } catch {
-                }
+          d && d.requestId && this.activeDownloads.set(e, {
+            cancel: () => {
+              i = !0;
+              try {
+                typeof v.cancel == "function" && v.cancel({
+                  requestId: d.requestId
+                });
+              } catch {
               }
-            });
-          }
-          await downloadPromise;
-          lastErr = null;
+            }
+          }), await d, c = null;
           break;
-        } catch (err) {
-          lastErr = err;
-          const msg = String((err == null ? void 0 : err.message) || err);
-          if (msg.includes("could not be locked") && attempt === 1 && !isCancelled) {
-            console.warn(`[ModelsService] Registry lock conflict for ${modelId}. Retrying in 1.2s...`);
-            await new Promise((r) => setTimeout(r, 1200));
+        } catch (d) {
+          if (c = d, String((d == null ? void 0 : d.message) || d).includes("could not be locked") && l === 1 && !i) {
+            console.warn(`[ModelsService] Registry lock conflict for ${e}. Retrying in 1.2s...`), await new Promise((m) => setTimeout(m, 1200));
             continue;
           }
-          throw err;
+          throw d;
         }
-      }
-      if (lastErr) throw lastErr;
-      if (isCancelled) {
-        return { success: false, modelId, error: "Download cancelled" };
-      }
-      this.downloadedModelIds.add(modelId);
-      this.syncCacheFromDisk();
-      this.saveState();
-      onProgress == null ? void 0 : onProgress({
-        modelId,
+      if (c) throw c;
+      return i ? { success: !1, modelId: e, error: "Download cancelled" } : (this.downloadedModelIds.add(e), this.syncCacheFromDisk(), this.saveState(), t == null || t({
+        modelId: e,
         percentage: 100,
-        downloaded: totalModelBytes,
-        total: totalModelBytes,
+        downloaded: o,
+        total: o,
         speed: "Completed"
-      });
-      return { success: true, modelId };
-    } catch (err) {
-      console.error(`[ModelsService] Download error for ${modelId}:`, err);
-      return { success: false, modelId, error: String(err) };
+      }), { success: !0, modelId: e });
+    } catch (n) {
+      return console.error(`[ModelsService] Download error for ${e}:`, n), { success: !1, modelId: e, error: String(n) };
     } finally {
-      this.activeDownloads.delete(modelId);
+      this.activeDownloads.delete(e);
     }
   }
   /**
    * Cancel an in-flight download
    */
-  cancelDownload(modelId) {
-    const active = this.activeDownloads.get(modelId);
-    if (active) {
-      active.cancel();
-      this.activeDownloads.delete(modelId);
-      return true;
-    }
-    return false;
+  cancelDownload(e) {
+    const t = this.activeDownloads.get(e);
+    return t ? (t.cancel(), this.activeDownloads.delete(e), !0) : !1;
   }
   /**
    * Delete all installed models from disk and reset internal state
    */
   async deleteAllModels() {
-    for (const [modelId, download] of this.activeDownloads.entries()) {
+    for (const [e, t] of this.activeDownloads.entries()) {
       try {
-        download.cancel();
+        t.cancel();
       } catch {
       }
-      this.activeDownloads.delete(modelId);
+      this.activeDownloads.delete(e);
     }
-    this.downloadedModelIds.clear();
-    this.saveState();
+    this.downloadedModelIds.clear(), this.saveState();
     try {
-      if (fs.existsSync(this.cacheDir)) {
-        const files = fs.readdirSync(this.cacheDir);
-        for (const file of files) {
-          const fullPath = path.join(this.cacheDir, file);
+      if (g.existsSync(this.cacheDir)) {
+        const e = g.readdirSync(this.cacheDir);
+        for (const t of e) {
+          const s = y.join(this.cacheDir, t);
           try {
-            const st = fs.statSync(fullPath);
-            if (st.isDirectory()) {
-              fs.rmSync(fullPath, { recursive: true, force: true });
-            } else {
-              fs.unlinkSync(fullPath);
-            }
+            g.statSync(s).isDirectory() ? g.rmSync(s, { recursive: !0, force: !0 }) : g.unlinkSync(s);
           } catch {
           }
         }
       }
-    } catch (err) {
-      console.warn("[ModelsService] Error deleting cache directory:", err);
+    } catch (e) {
+      console.warn("[ModelsService] Error deleting cache directory:", e);
     }
-    return true;
+    return !0;
   }
   /**
    * Query QVAC model info using @qvac/sdk getModelInfo
    */
-  async getModelInfo(name) {
-    return qvacSdk.getModelInfo({ name });
+  async getModelInfo(e) {
+    return v.getModelInfo({ name: e });
   }
   /**
    * Directly downloads MiniMax-Music3 GGUF models from Hugging Face repository
    * with streaming progress, real byte metrics, and cancellation support.
    */
-  async downloadMiniMaxModel(modelId, def, onProgress) {
-    const modelUrls = {
+  async downloadMiniMaxModel(e, t, s) {
+    const r = {
       "minimax-music-v3-transformer": {
         url: "https://huggingface.co/scragnog/MiniMax-Music3-GGUF/resolve/main/mm3-lm-Q4_K_M-imat.gguf",
         filename: "mm3-lm-Q4_K_M-imat.gguf"
@@ -784,277 +634,205 @@ class ModelsService {
         url: "https://huggingface.co/scragnog/MiniMax-Music3-GGUF/resolve/main/mm3-synth-Q4_K_M.gguf",
         filename: "mm3-synth-Q4_K_M.gguf"
       }
-    };
-    const target = modelUrls[modelId];
-    if (!target) {
-      return { success: false, modelId, error: `Unknown MiniMax model: ${modelId}` };
-    }
-    if (!fs.existsSync(this.cacheDir)) {
+    }[e];
+    if (!r)
+      return { success: !1, modelId: e, error: `Unknown MiniMax model: ${e}` };
+    if (!g.existsSync(this.cacheDir))
       try {
-        fs.mkdirSync(this.cacheDir, { recursive: true });
-      } catch (err) {
-        return { success: false, modelId, error: `Failed to create cache directory: ${err}` };
+        g.mkdirSync(this.cacheDir, { recursive: !0 });
+      } catch (d) {
+        return { success: !1, modelId: e, error: `Failed to create cache directory: ${d}` };
       }
-    }
-    const finalPath = path.join(this.cacheDir, target.filename);
-    const tempPath = path.join(this.cacheDir, `${target.filename}.download`);
+    const o = y.join(this.cacheDir, r.filename), n = y.join(this.cacheDir, `${r.filename}.download`);
     try {
-      if (fs.existsSync(finalPath)) {
-        const stats = fs.statSync(finalPath);
-        if (stats.size > 1024 * 1024) {
-          this.downloadedModelIds.add(modelId);
-          this.syncCacheFromDisk();
-          this.saveState();
-          onProgress == null ? void 0 : onProgress({
-            modelId,
+      if (g.existsSync(o)) {
+        const d = g.statSync(o);
+        if (d.size > 1024 * 1024)
+          return this.downloadedModelIds.add(e), this.syncCacheFromDisk(), this.saveState(), s == null || s({
+            modelId: e,
             percentage: 100,
-            downloaded: stats.size,
-            total: stats.size,
+            downloaded: d.size,
+            total: d.size,
             speed: "Ready"
-          });
-          return { success: true, modelId };
-        }
+          }), { success: !0, modelId: e };
       }
     } catch {
     }
-    const controller = new AbortController();
-    let isCancelled = false;
-    this.activeDownloads.set(modelId, {
+    const a = new AbortController();
+    let c = !1;
+    if (this.activeDownloads.set(e, {
       cancel: () => {
-        isCancelled = true;
-        controller.abort();
+        c = !0, a.abort();
       }
-    });
-    if (fs.existsSync(tempPath)) {
+    }), g.existsSync(n))
       try {
-        fs.unlinkSync(tempPath);
+        g.unlinkSync(n);
       } catch {
       }
-    }
-    let fileStream = null;
+    let l = null;
     try {
-      const response = await fetch(target.url, {
-        signal: controller.signal,
+      const d = await fetch(r.url, {
+        signal: a.signal,
         redirect: "follow"
       });
-      if (!response.ok || !response.body) {
-        throw new Error(`Failed to fetch ${target.url}: HTTP ${response.status} ${response.statusText}`);
-      }
-      const contentLengthHeader = response.headers.get("content-length");
-      const totalBytes = contentLengthHeader ? parseInt(contentLengthHeader, 10) : def.sizeBytes;
-      fileStream = fs.createWriteStream(tempPath);
-      const reader = response.body.getReader();
-      let downloadedBytes = 0;
-      let lastReportTime = Date.now();
-      let lastReportBytes = 0;
-      let speedFormatted = "Starting...";
-      onProgress == null ? void 0 : onProgress({
-        modelId,
+      if (!d.ok || !d.body)
+        throw new Error(`Failed to fetch ${r.url}: HTTP ${d.status} ${d.statusText}`);
+      const u = d.headers.get("content-length"), m = u ? parseInt(u, 10) : t.sizeBytes;
+      l = g.createWriteStream(n);
+      const f = d.body.getReader();
+      let S = 0, C = Date.now(), L = 0, N = "Starting...";
+      for (s == null || s({
+        modelId: e,
         percentage: 1,
         downloaded: 0,
-        total: totalBytes,
-        speed: speedFormatted
-      });
-      while (true) {
-        if (isCancelled) {
+        total: m,
+        speed: N
+      }); ; ) {
+        if (c)
           throw new Error("Download cancelled");
-        }
-        const { done, value } = await reader.read();
-        if (done) break;
-        if (value && value.length > 0) {
-          const canContinue = fileStream.write(Buffer.from(value));
-          downloadedBytes += value.length;
-          if (!canContinue) {
-            await new Promise((resolve) => fileStream.once("drain", resolve));
-          }
-          const now = Date.now();
-          const timeDelta = now - lastReportTime;
-          if (timeDelta >= 400 || downloadedBytes >= totalBytes) {
-            const bytesDelta = downloadedBytes - lastReportBytes;
-            const seconds = timeDelta / 1e3;
-            const bytesPerSec = bytesDelta / Math.max(0.1, seconds);
-            const mbPerSec = (bytesPerSec / (1024 * 1024)).toFixed(1);
-            speedFormatted = `${mbPerSec} MB/s`;
-            lastReportTime = now;
-            lastReportBytes = downloadedBytes;
-            const pct = totalBytes > 0 ? Math.min(99, Math.max(1, Math.round(downloadedBytes / totalBytes * 100))) : 0;
-            onProgress == null ? void 0 : onProgress({
-              modelId,
-              percentage: pct,
-              downloaded: downloadedBytes,
-              total: totalBytes,
-              speed: speedFormatted
+        const { done: x, value: M } = await f.read();
+        if (x) break;
+        if (M && M.length > 0) {
+          const E = l.write(Buffer.from(M));
+          S += M.length, E || await new Promise((I) => l.once("drain", I));
+          const p = Date.now(), $ = p - C;
+          if ($ >= 400 || S >= m) {
+            const I = S - L, k = $ / 1e3;
+            N = `${(I / Math.max(0.1, k) / (1024 * 1024)).toFixed(1)} MB/s`, C = p, L = S;
+            const W = m > 0 ? Math.min(99, Math.max(1, Math.round(S / m * 100))) : 0;
+            s == null || s({
+              modelId: e,
+              percentage: W,
+              downloaded: S,
+              total: m,
+              speed: N
             });
           }
         }
       }
-      await new Promise((resolve, reject) => {
-        if (!fileStream) return resolve();
-        fileStream.on("finish", resolve);
-        fileStream.on("error", reject);
-        fileStream.end();
-      });
-      fileStream = null;
-      if (isCancelled) {
+      if (await new Promise((x, M) => {
+        if (!l) return x();
+        l.on("finish", x), l.on("error", M), l.end();
+      }), l = null, c)
         throw new Error("Download cancelled");
-      }
-      const st = fs.statSync(tempPath);
-      if (st.size < 1024 * 1024) {
-        throw new Error(`Downloaded file size (${st.size} bytes) is too small. Corrupt or incomplete download.`);
-      }
-      const fd = fs.openSync(tempPath, "r");
-      const headerBuf = Buffer.alloc(4);
-      fs.readSync(fd, headerBuf, 0, 4, 0);
-      fs.closeSync(fd);
-      if (headerBuf.toString("ascii") !== "GGUF") {
-        throw new Error(`Downloaded file is not a valid GGUF binary (magic: ${headerBuf.toString("ascii")})`);
-      }
-      if (fs.existsSync(finalPath)) {
+      const _ = g.statSync(n);
+      if (_.size < 1024 * 1024)
+        throw new Error(`Downloaded file size (${_.size} bytes) is too small. Corrupt or incomplete download.`);
+      const D = g.openSync(n, "r"), T = Buffer.alloc(4);
+      if (g.readSync(D, T, 0, 4, 0), g.closeSync(D), T.toString("ascii") !== "GGUF")
+        throw new Error(`Downloaded file is not a valid GGUF binary (magic: ${T.toString("ascii")})`);
+      if (g.existsSync(o))
         try {
-          fs.unlinkSync(finalPath);
+          g.unlinkSync(o);
         } catch {
         }
-      }
-      fs.renameSync(tempPath, finalPath);
-      this.downloadedModelIds.add(modelId);
-      this.syncCacheFromDisk();
-      this.saveState();
-      onProgress == null ? void 0 : onProgress({
-        modelId,
+      return g.renameSync(n, o), this.downloadedModelIds.add(e), this.syncCacheFromDisk(), this.saveState(), s == null || s({
+        modelId: e,
         percentage: 100,
-        downloaded: totalBytes,
-        total: totalBytes,
+        downloaded: m,
+        total: m,
         speed: "Completed"
-      });
-      return { success: true, modelId };
-    } catch (err) {
-      if (fileStream) {
+      }), { success: !0, modelId: e };
+    } catch (d) {
+      if (l)
         try {
-          fileStream.destroy();
+          l.destroy();
         } catch {
         }
-      }
-      if (fs.existsSync(tempPath)) {
+      if (g.existsSync(n))
         try {
-          fs.unlinkSync(tempPath);
+          g.unlinkSync(n);
         } catch {
         }
-      }
-      this.downloadedModelIds.delete(modelId);
-      this.saveState();
-      const isAbort = isCancelled || (err == null ? void 0 : err.name) === "AbortError" || String(err).includes("cancelled");
+      this.downloadedModelIds.delete(e), this.saveState();
+      const u = c || (d == null ? void 0 : d.name) === "AbortError" || String(d).includes("cancelled");
       return {
-        success: false,
-        modelId,
-        error: isAbort ? "Download cancelled" : (err == null ? void 0 : err.message) || String(err)
+        success: !1,
+        modelId: e,
+        error: u ? "Download cancelled" : (d == null ? void 0 : d.message) || String(d)
       };
     } finally {
-      this.activeDownloads.delete(modelId);
+      this.activeDownloads.delete(e);
     }
   }
 }
-class ModelsController extends BaseController {
-  constructor(modelsService) {
-    super();
-    this.modelsService = modelsService;
+class tt extends ie {
+  constructor(e) {
+    super(), this.modelsService = e;
   }
   init() {
-    ipcMain.handle(
-      IPC_CHANNELS.MODELS_GET_STATUS,
-      async (_event, payload) => {
+    A.handle(
+      w.MODELS_GET_STATUS,
+      async (e, t) => {
         try {
-          const status = this.modelsService.getStatus(payload == null ? void 0 : payload.engine);
-          return { success: true, data: status };
-        } catch (err) {
-          return { success: false, error: String(err) };
+          return { success: !0, data: this.modelsService.getStatus(t == null ? void 0 : t.engine) };
+        } catch (s) {
+          return { success: !1, error: String(s) };
         }
       }
-    );
-    ipcMain.handle(
-      IPC_CHANNELS.MODELS_DOWNLOAD,
-      async (event, payload) => {
-        const onProgress = (p) => {
+    ), A.handle(
+      w.MODELS_DOWNLOAD,
+      async (e, t) => {
+        const s = (i) => {
           try {
-            if (!event.sender.isDestroyed()) {
-              event.sender.send(IPC_CHANNELS.MODELS_DOWNLOAD_PROGRESS, p);
-            }
-          } catch (e) {
-            console.warn("[ModelsController] Failed to send download progress:", e);
+            e.sender.isDestroyed() || e.sender.send(w.MODELS_DOWNLOAD_PROGRESS, i);
+          } catch (r) {
+            console.warn("[ModelsController] Failed to send download progress:", r);
           }
         };
-        if (payload == null ? void 0 : payload.allRequired) {
-          const status = this.modelsService.getStatus(payload == null ? void 0 : payload.engine);
-          const required = status.models.filter((m) => m.required && !m.downloaded);
-          for (const m of required) {
-            await this.modelsService.downloadModel(m.id, onProgress);
-          }
-          return { success: true, data: this.modelsService.getStatus(payload == null ? void 0 : payload.engine) };
+        if (t != null && t.allRequired) {
+          const r = this.modelsService.getStatus(t == null ? void 0 : t.engine).models.filter((o) => o.required && !o.downloaded);
+          for (const o of r)
+            await this.modelsService.downloadModel(o.id, s);
+          return { success: !0, data: this.modelsService.getStatus(t == null ? void 0 : t.engine) };
         }
-        if (payload == null ? void 0 : payload.modelId) {
-          const result = await this.modelsService.downloadModel(payload.modelId, onProgress);
-          return { ...result, data: this.modelsService.getStatus(payload == null ? void 0 : payload.engine) };
-        }
-        return { success: false, error: "No modelId or allRequired flag specified" };
+        return t != null && t.modelId ? { ...await this.modelsService.downloadModel(t.modelId, s), data: this.modelsService.getStatus(t == null ? void 0 : t.engine) } : { success: !1, error: "No modelId or allRequired flag specified" };
       }
-    );
-    ipcMain.handle(
-      IPC_CHANNELS.MODELS_CANCEL_DOWNLOAD,
-      async (_event, { modelId }) => {
-        const cancelled = this.modelsService.cancelDownload(modelId);
-        return { success: cancelled, modelId };
-      }
-    );
-    ipcMain.handle(
-      IPC_CHANNELS.MODELS_GET_INFO,
-      async (_event, { name }) => {
+    ), A.handle(
+      w.MODELS_CANCEL_DOWNLOAD,
+      async (e, { modelId: t }) => ({ success: this.modelsService.cancelDownload(t), modelId: t })
+    ), A.handle(
+      w.MODELS_GET_INFO,
+      async (e, { name: t }) => {
         try {
-          const modelInfo = await this.modelsService.getModelInfo(name);
-          return { success: true, data: modelInfo };
-        } catch (err) {
-          return { success: false, error: String(err) };
+          return { success: !0, data: await this.modelsService.getModelInfo(t) };
+        } catch (s) {
+          return { success: !1, error: String(s) };
         }
       }
-    );
-    ipcMain.handle(IPC_CHANNELS.MODELS_DELETE_ALL, async () => {
+    ), A.handle(w.MODELS_DELETE_ALL, async () => {
       try {
-        await this.modelsService.deleteAllModels();
-        return { success: true };
-      } catch (err) {
-        return { success: false, error: String(err) };
+        return await this.modelsService.deleteAllModels(), { success: !0 };
+      } catch (e) {
+        return { success: !1, error: String(e) };
       }
     });
   }
 }
-class VoiceService {
-  constructor(repository) {
-    __publicField(this, "repository");
-    this.repository = repository;
+class st {
+  constructor(e) {
+    b(this, "repository");
+    this.repository = e;
   }
   getRepository() {
     return this.repository;
   }
   async listCustomVoices() {
-    if (this.repository) {
-      return this.repository.listCustomVoices();
-    }
-    return [];
+    return this.repository ? this.repository.listCustomVoices() : [];
   }
   /**
    * Resolve root samples directory across dev server and production builds
    */
   getSamplesDirectory() {
-    const publicDir = process.env.VITE_PUBLIC || path.join(process.cwd(), "public");
-    const candidates = [
-      path.join(publicDir, "voices", "samples"),
-      path.join(process.cwd(), "public", "voices", "samples"),
-      path.join(app.getAppPath(), "public", "voices", "samples"),
-      path.join(app.getAppPath(), "dist", "voices", "samples")
+    const e = process.env.VITE_PUBLIC || y.join(process.cwd(), "public"), t = [
+      y.join(e, "voices", "samples"),
+      y.join(process.cwd(), "public", "voices", "samples"),
+      y.join(U.getAppPath(), "public", "voices", "samples"),
+      y.join(U.getAppPath(), "dist", "voices", "samples")
     ];
-    for (const dir of candidates) {
-      if (fs.existsSync(dir)) {
-        return dir;
-      }
-    }
+    for (const s of t)
+      if (g.existsSync(s))
+        return s;
     return null;
   }
   /**
@@ -1063,179 +841,134 @@ class VoiceService {
    */
   scanVoicePackages() {
     try {
-      const samplesDir = this.getSamplesDirectory();
-      if (!samplesDir) {
-        console.warn("[VoiceService] Samples directory not found");
-        return { success: false, packages: [], error: "Samples folder not found" };
-      }
-      const entries = fs.readdirSync(samplesDir, { withFileTypes: true });
-      const packages = [];
-      for (const entry of entries) {
-        if (!entry.isDirectory()) continue;
-        const folderPath = path.join(samplesDir, entry.name);
-        const infoJsonPath = path.join(folderPath, "info.json");
-        const jsonInfoPath = path.join(folderPath, "json.info");
-        const targetInfoPath = fs.existsSync(infoJsonPath) ? infoJsonPath : fs.existsSync(jsonInfoPath) ? jsonInfoPath : null;
-        if (targetInfoPath) {
+      const e = this.getSamplesDirectory();
+      if (!e)
+        return console.warn("[VoiceService] Samples directory not found"), { success: !1, packages: [], error: "Samples folder not found" };
+      const t = g.readdirSync(e, { withFileTypes: !0 }), s = [];
+      for (const i of t) {
+        if (!i.isDirectory()) continue;
+        const r = y.join(e, i.name), o = y.join(r, "info.json"), n = y.join(r, "json.info"), a = g.existsSync(o) ? o : g.existsSync(n) ? n : null;
+        if (a)
           try {
-            const raw = fs.readFileSync(targetInfoPath, "utf-8");
-            const header = JSON.parse(raw);
-            const relativeList = header.list || header.location || (fs.existsSync(path.join(folderPath, "json", "voices.json")) ? "json/voices.json" : "voices.json");
-            packages.push({
-              folder: entry.name,
-              language: header.language || entry.name,
-              name: header.name || header.language || entry.name,
-              flag: header.flag || "🌐",
-              code: header.code || entry.name,
-              nativeName: header.nativeName || header.name || header.language,
-              list: relativeList,
-              location: relativeList,
-              listUrl: `/voices/samples/${entry.name}/${relativeList.replace(/^\//, "")}`,
-              count: header.count || 0
+            const c = g.readFileSync(a, "utf-8"), l = JSON.parse(c), d = l.list || l.location || (g.existsSync(y.join(r, "json", "voices.json")) ? "json/voices.json" : "voices.json");
+            s.push({
+              folder: i.name,
+              language: l.language || i.name,
+              name: l.name || l.language || i.name,
+              flag: l.flag || "🌐",
+              code: l.code || i.name,
+              nativeName: l.nativeName || l.name || l.language,
+              list: d,
+              location: d,
+              listUrl: `/voices/samples/${i.name}/${d.replace(/^\//, "")}`,
+              count: l.count || 0
             });
-          } catch (err) {
-            console.warn(`[VoiceService] Failed to parse info.json in ${folderPath}:`, err);
+          } catch (c) {
+            console.warn(`[VoiceService] Failed to parse info.json in ${r}:`, c);
           }
-        }
       }
-      return { success: true, packages };
-    } catch (err) {
-      console.error("[VoiceService] Failed to scan voice samples:", err);
-      return { success: false, packages: [], error: String(err) };
+      return { success: !0, packages: s };
+    } catch (e) {
+      return console.error("[VoiceService] Failed to scan voice samples:", e), { success: !1, packages: [], error: String(e) };
     }
   }
   /**
    * Load voices directly from disk for a given language folder
    */
-  loadVoicesForPackage(folder, listRelativePath = "json/voices.json") {
+  loadVoicesForPackage(e, t = "json/voices.json") {
     try {
-      const samplesDir = this.getSamplesDirectory();
-      if (!samplesDir) {
-        return { success: false, voices: [], error: "Samples directory not found" };
-      }
-      const cleanList = listRelativePath.replace(/^\//, "");
-      const possibleJsonPaths = [
-        path.join(samplesDir, folder, cleanList),
-        path.join(samplesDir, folder, "json", "voices.json"),
-        path.join(samplesDir, folder, "voices.json")
-      ];
-      const jsonPath = possibleJsonPaths.find((p) => fs.existsSync(p));
-      if (!jsonPath) {
-        return { success: false, voices: [], error: `Voice list not found for folder ${folder}` };
-      }
-      const content = fs.readFileSync(jsonPath, "utf-8");
-      const parsed = JSON.parse(content);
-      const voices = Array.isArray(parsed) ? parsed : parsed.voices || [];
-      return { success: true, voices };
-    } catch (err) {
-      console.error(`[VoiceService] Failed to load voices for ${folder}:`, err);
-      return { success: false, voices: [], error: String(err) };
+      const s = this.getSamplesDirectory();
+      if (!s)
+        return { success: !1, voices: [], error: "Samples directory not found" };
+      const i = t.replace(/^\//, ""), o = [
+        y.join(s, e, i),
+        y.join(s, e, "json", "voices.json"),
+        y.join(s, e, "voices.json")
+      ].find((l) => g.existsSync(l));
+      if (!o)
+        return { success: !1, voices: [], error: `Voice list not found for folder ${e}` };
+      const n = g.readFileSync(o, "utf-8"), a = JSON.parse(n);
+      return { success: !0, voices: Array.isArray(a) ? a : a.voices || [] };
+    } catch (s) {
+      return console.error(`[VoiceService] Failed to load voices for ${e}:`, s), { success: !1, voices: [], error: String(s) };
     }
   }
   /**
    * Resolve or create the custom voices directory inside public/voices/custom
    */
   getCustomVoicesDirectory() {
-    const publicDir = process.env.VITE_PUBLIC || path.join(process.cwd(), "public");
-    const customDir = path.join(publicDir, "voices", "custom");
-    if (!fs.existsSync(customDir)) {
-      fs.mkdirSync(customDir, { recursive: true });
-    }
-    return customDir;
+    const e = process.env.VITE_PUBLIC || y.join(process.cwd(), "public"), t = y.join(e, "voices", "custom");
+    return g.existsSync(t) || g.mkdirSync(t, { recursive: !0 }), t;
   }
   /**
    * Saves an imported or microphone-recorded voice audio sample directly to disk
    * and converts it to a standard 24kHz mono WAV for CosyVoice 3 reference conditioning.
    */
-  async saveCustomVoice(payload) {
+  async saveCustomVoice(e) {
     try {
-      const customDir = this.getCustomVoicesDirectory();
-      const rawBase = (payload.fileName || "sample.wav").replace(/[^a-zA-Z0-9._-]/g, "_");
-      const origExt = path.extname(rawBase).toLowerCase() || ".wav";
-      const timestamp = Date.now();
-      const origName = `voice_${payload.voiceId}_${timestamp}${origExt}`;
-      const origPath = path.join(customDir, origName);
-      const buf = Buffer.isBuffer(payload.audioBuffer) ? payload.audioBuffer : Buffer.from(payload.audioBuffer);
-      fs.writeFileSync(origPath, buf);
-      let finalPath = origPath;
-      let finalSampleUrl = `/voices/custom/${origName}`;
-      if (origExt !== ".wav") {
-        const wavName = `voice_${payload.voiceId}_${timestamp}.wav`;
-        const wavPath = path.join(customDir, wavName);
+      const t = this.getCustomVoicesDirectory(), s = (e.fileName || "sample.wav").replace(/[^a-zA-Z0-9._-]/g, "_"), i = y.extname(s).toLowerCase() || ".wav", r = Date.now(), o = `voice_${e.voiceId}_${r}${i}`, n = y.join(t, o), a = Buffer.isBuffer(e.audioBuffer) ? e.audioBuffer : Buffer.from(e.audioBuffer);
+      g.writeFileSync(n, a);
+      let c = n, l = `/voices/custom/${o}`;
+      if (i !== ".wav") {
+        const u = `voice_${e.voiceId}_${r}.wav`, m = y.join(t, u);
         try {
-          const { execFileSync: execFileSync2 } = await import("node:child_process");
-          execFileSync2("afconvert", ["-f", "WAVE", "-d", "LEI16@24000", "-c", "1", origPath, wavPath]);
-          if (fs.existsSync(wavPath) && fs.statSync(wavPath).size > 100) {
-            finalPath = wavPath;
-            finalSampleUrl = `/voices/custom/${wavName}`;
-          }
-        } catch (err) {
-          console.warn("[VoiceService] Audio conversion fallback, using original file:", err);
+          const { execFileSync: f } = await import("node:child_process");
+          f("afconvert", ["-f", "WAVE", "-d", "LEI16@24000", "-c", "1", n, m]), g.existsSync(m) && g.statSync(m).size > 100 && (c = m, l = `/voices/custom/${u}`);
+        } catch (f) {
+          console.warn("[VoiceService] Audio conversion fallback, using original file:", f);
         }
       }
-      let finalAvatarUrl = void 0;
-      if (payload.avatarBuffer) {
-        const avBuf = Buffer.isBuffer(payload.avatarBuffer) ? payload.avatarBuffer : Buffer.from(payload.avatarBuffer);
-        if (avBuf.byteLength > 0) {
-          const avExt = path.extname(payload.avatarFileName || ".jpg").toLowerCase() || ".jpg";
-          const avName = `avatar_${payload.voiceId}_${timestamp}${avExt}`;
-          const avPath = path.join(customDir, avName);
-          fs.writeFileSync(avPath, avBuf);
-          finalAvatarUrl = `/voices/custom/${avName}`;
+      let d;
+      if (e.avatarBuffer) {
+        const u = Buffer.isBuffer(e.avatarBuffer) ? e.avatarBuffer : Buffer.from(e.avatarBuffer);
+        if (u.byteLength > 0) {
+          const m = y.extname(e.avatarFileName || ".jpg").toLowerCase() || ".jpg", f = `avatar_${e.voiceId}_${r}${m}`, S = y.join(t, f);
+          g.writeFileSync(S, u), d = `/voices/custom/${f}`;
         }
       }
-      if (this.repository) {
-        await this.repository.saveCustomVoice({
-          id: payload.voiceId,
-          name: payload.name,
-          category: "cloned",
-          avatarUrl: finalAvatarUrl || "/voices/sterling.jpg",
-          sampleUrl: finalSampleUrl,
-          referenceAudioName: path.basename(finalPath)
-        });
-      }
-      return {
-        success: true,
-        filePath: finalPath,
-        sampleUrl: finalSampleUrl,
-        avatarUrl: finalAvatarUrl
+      return this.repository && await this.repository.saveCustomVoice({
+        id: e.voiceId,
+        name: e.name,
+        category: "cloned",
+        avatarUrl: d || "/voices/sterling.jpg",
+        sampleUrl: l,
+        referenceAudioName: y.basename(c)
+      }), {
+        success: !0,
+        filePath: c,
+        sampleUrl: l,
+        avatarUrl: d
       };
-    } catch (err) {
-      console.error("[VoiceService] Failed to save custom voice:", err);
-      return { success: false, error: String(err) };
+    } catch (t) {
+      return console.error("[VoiceService] Failed to save custom voice:", t), { success: !1, error: String(t) };
     }
   }
   /**
    * Delete a custom voice from disk and SQLite
    */
-  async deleteCustomVoice(voiceId) {
+  async deleteCustomVoice(e) {
     try {
-      if (this.repository) {
-        await this.repository.deleteCustomVoice(voiceId);
-      }
-      const customDir = this.getCustomVoicesDirectory();
-      if (fs.existsSync(customDir)) {
-        const files = fs.readdirSync(customDir);
-        for (const file of files) {
-          if (file.includes(`_${voiceId}_`)) {
+      this.repository && await this.repository.deleteCustomVoice(e);
+      const t = this.getCustomVoicesDirectory();
+      if (g.existsSync(t)) {
+        const s = g.readdirSync(t);
+        for (const i of s)
+          if (i.includes(`_${e}_`))
             try {
-              fs.unlinkSync(path.join(customDir, file));
+              g.unlinkSync(y.join(t, i));
             } catch {
             }
-          }
-        }
       }
-      return { success: true };
-    } catch (err) {
-      console.error("[VoiceService] Failed to delete custom voice files:", err);
-      return { success: false, error: String(err) };
+      return { success: !0 };
+    } catch (t) {
+      return console.error("[VoiceService] Failed to delete custom voice files:", t), { success: !1, error: String(t) };
     }
   }
 }
-class VoiceRepositoryService {
-  constructor(db) {
-    __publicField(this, "db");
-    this.db = db;
+class it {
+  constructor(e) {
+    b(this, "db");
+    this.db = e;
   }
   /**
    * Query all custom cloned voices from SQLite
@@ -1243,503 +976,332 @@ class VoiceRepositoryService {
   async listCustomVoices() {
     await this.db.init();
     try {
-      const records = await this.db.client.customVoice.findMany({
+      return (await this.db.client.customVoice.findMany({
         orderBy: { createdAt: "desc" }
-      });
-      return records.map((v) => ({
-        id: v.id,
-        name: v.name,
-        description: v.description,
-        category: v.category,
-        color: v.color,
-        avatarUrl: v.avatarUrl,
-        initials: v.initials,
-        gender: v.gender,
-        tags: v.tags ? JSON.parse(v.tags) : [],
-        referenceAudioName: v.referenceAudioName || void 0,
-        sampleUrl: v.sampleUrl || void 0,
-        languageCode: v.languageCode || void 0,
-        languageName: v.languageName || void 0,
-        createdAt: v.createdAt,
-        updatedAt: v.updatedAt
+      })).map((t) => ({
+        id: t.id,
+        name: t.name,
+        description: t.description,
+        category: t.category,
+        color: t.color,
+        avatarUrl: t.avatarUrl,
+        initials: t.initials,
+        gender: t.gender,
+        tags: t.tags ? JSON.parse(t.tags) : [],
+        referenceAudioName: t.referenceAudioName || void 0,
+        sampleUrl: t.sampleUrl || void 0,
+        languageCode: t.languageCode || void 0,
+        languageName: t.languageName || void 0,
+        createdAt: t.createdAt,
+        updatedAt: t.updatedAt
       }));
-    } catch (err) {
-      console.error("[VoiceRepositoryService] Failed to query custom voices:", err);
-      return [];
+    } catch (e) {
+      return console.error("[VoiceRepositoryService] Failed to query custom voices:", e), [];
     }
   }
   /**
    * Save or update a custom voice record in SQLite
    */
-  async saveCustomVoice(voice) {
+  async saveCustomVoice(e) {
     await this.db.init();
     try {
-      await this.db.client.customVoice.upsert({
-        where: { id: voice.id },
+      return await this.db.client.customVoice.upsert({
+        where: { id: e.id },
         update: {
-          name: voice.name,
-          description: voice.description || "",
-          category: voice.category || "cloned",
-          color: voice.color || "#38bdf8",
-          avatarUrl: voice.avatarUrl || "/voices/sterling.jpg",
-          initials: voice.initials || voice.name.slice(0, 2).toUpperCase(),
-          gender: voice.gender || "Neutral",
-          tags: JSON.stringify(voice.tags || []),
-          referenceAudioName: voice.referenceAudioName,
-          sampleUrl: voice.sampleUrl,
-          languageCode: voice.languageCode,
-          languageName: voice.languageName
+          name: e.name,
+          description: e.description || "",
+          category: e.category || "cloned",
+          color: e.color || "#38bdf8",
+          avatarUrl: e.avatarUrl || "/voices/sterling.jpg",
+          initials: e.initials || e.name.slice(0, 2).toUpperCase(),
+          gender: e.gender || "Neutral",
+          tags: JSON.stringify(e.tags || []),
+          referenceAudioName: e.referenceAudioName,
+          sampleUrl: e.sampleUrl,
+          languageCode: e.languageCode,
+          languageName: e.languageName
         },
         create: {
-          id: voice.id,
-          name: voice.name,
-          description: voice.description || "",
-          category: voice.category || "cloned",
-          color: voice.color || "#38bdf8",
-          avatarUrl: voice.avatarUrl || "/voices/sterling.jpg",
-          initials: voice.initials || voice.name.slice(0, 2).toUpperCase(),
-          gender: voice.gender || "Neutral",
-          tags: JSON.stringify(voice.tags || []),
-          referenceAudioName: voice.referenceAudioName,
-          sampleUrl: voice.sampleUrl,
-          languageCode: voice.languageCode,
-          languageName: voice.languageName
+          id: e.id,
+          name: e.name,
+          description: e.description || "",
+          category: e.category || "cloned",
+          color: e.color || "#38bdf8",
+          avatarUrl: e.avatarUrl || "/voices/sterling.jpg",
+          initials: e.initials || e.name.slice(0, 2).toUpperCase(),
+          gender: e.gender || "Neutral",
+          tags: JSON.stringify(e.tags || []),
+          referenceAudioName: e.referenceAudioName,
+          sampleUrl: e.sampleUrl,
+          languageCode: e.languageCode,
+          languageName: e.languageName
         }
-      });
-      return { success: true };
-    } catch (err) {
-      console.error("[VoiceRepositoryService] Failed to save custom voice:", err);
-      return { success: false, error: (err == null ? void 0 : err.message) || String(err) };
+      }), { success: !0 };
+    } catch (t) {
+      return console.error("[VoiceRepositoryService] Failed to save custom voice:", t), { success: !1, error: (t == null ? void 0 : t.message) || String(t) };
     }
   }
   /**
    * Delete a custom voice from SQLite
    */
-  async deleteCustomVoice(id) {
+  async deleteCustomVoice(e) {
     await this.db.init();
     try {
-      await this.db.client.customVoice.delete({
-        where: { id }
-      });
-      return { success: true };
-    } catch (err) {
-      console.error("[VoiceRepositoryService] Failed to delete custom voice:", err);
-      return { success: false, error: (err == null ? void 0 : err.message) || String(err) };
+      return await this.db.client.customVoice.delete({
+        where: { id: e }
+      }), { success: !0 };
+    } catch (t) {
+      return console.error("[VoiceRepositoryService] Failed to delete custom voice:", t), { success: !1, error: (t == null ? void 0 : t.message) || String(t) };
     }
   }
 }
-class VoiceController extends BaseController {
-  constructor(voiceService) {
-    super();
-    this.voiceService = voiceService;
+class rt extends ie {
+  constructor(e) {
+    super(), this.voiceService = e;
   }
   init() {
-    ipcMain.handle(IPC_CHANNELS.VOICES_SCAN, async () => {
-      return this.voiceService.scanVoicePackages();
-    });
-    ipcMain.handle(IPC_CHANNELS.LEGACY_SCAN_VOICE_SAMPLES, async () => {
-      return this.voiceService.scanVoicePackages();
-    });
-    ipcMain.handle(
-      IPC_CHANNELS.VOICES_LOAD,
-      async (_, { folder, list }) => {
-        return this.voiceService.loadVoicesForPackage(folder, list);
-      }
-    );
-    ipcMain.handle(
-      IPC_CHANNELS.VOICES_SAVE_CUSTOM,
-      async (_, payload) => {
-        return this.voiceService.saveCustomVoice(payload);
-      }
-    );
-    ipcMain.handle(
-      IPC_CHANNELS.VOICES_DELETE_CUSTOM,
-      async (_, { voiceId }) => {
-        return this.voiceService.deleteCustomVoice(voiceId);
-      }
-    );
-    ipcMain.handle(IPC_CHANNELS.VOICES_LIST_CUSTOM, async () => {
+    A.handle(w.VOICES_SCAN, async () => this.voiceService.scanVoicePackages()), A.handle(w.LEGACY_SCAN_VOICE_SAMPLES, async () => this.voiceService.scanVoicePackages()), A.handle(
+      w.VOICES_LOAD,
+      async (e, { folder: t, list: s }) => this.voiceService.loadVoicesForPackage(t, s)
+    ), A.handle(
+      w.VOICES_SAVE_CUSTOM,
+      async (e, t) => this.voiceService.saveCustomVoice(t)
+    ), A.handle(
+      w.VOICES_DELETE_CUSTOM,
+      async (e, { voiceId: t }) => this.voiceService.deleteCustomVoice(t)
+    ), A.handle(w.VOICES_LIST_CUSTOM, async () => {
       try {
-        const list = await this.voiceService.listCustomVoices();
-        return { success: true, data: list };
-      } catch (err) {
-        return { success: false, error: (err == null ? void 0 : err.message) || String(err) };
+        return { success: !0, data: await this.voiceService.listCustomVoices() };
+      } catch (e) {
+        return { success: !1, error: (e == null ? void 0 : e.message) || String(e) };
       }
     });
   }
 }
-function pcmToWavDataUri(samples, sampleRate) {
-  sampleRate = Number.isFinite(sampleRate) && sampleRate > 0 ? Math.round(sampleRate) : 24e3;
-  const numSamples = samples.length;
-  const headerSize = 44;
-  const dataSize = numSamples * 2;
-  const buffer = Buffer.alloc(headerSize + dataSize);
-  buffer.write("RIFF", 0);
-  buffer.writeUInt32LE(headerSize + dataSize - 8, 4);
-  buffer.write("WAVE", 8);
-  buffer.write("fmt ", 12);
-  buffer.writeUInt32LE(16, 16);
-  buffer.writeUInt16LE(1, 20);
-  buffer.writeUInt16LE(1, 22);
-  buffer.writeUInt32LE(sampleRate, 24);
-  buffer.writeUInt32LE(sampleRate * 2, 28);
-  buffer.writeUInt16LE(2, 32);
-  buffer.writeUInt16LE(16, 34);
-  buffer.write("data", 36);
-  buffer.writeUInt32LE(dataSize, 40);
-  for (let i = 0; i < numSamples; i++) {
-    const sample = Number.isFinite(samples[i]) ? Math.round(samples[i]) : 0;
-    const value = Math.max(-32768, Math.min(32767, sample));
-    buffer.writeInt16LE(value, headerSize + i * 2);
+function nt(h, e) {
+  e = Number.isFinite(e) && e > 0 ? Math.round(e) : 24e3;
+  const t = h.length, s = 44, i = t * 2, r = Buffer.alloc(s + i);
+  r.write("RIFF", 0), r.writeUInt32LE(s + i - 8, 4), r.write("WAVE", 8), r.write("fmt ", 12), r.writeUInt32LE(16, 16), r.writeUInt16LE(1, 20), r.writeUInt16LE(1, 22), r.writeUInt32LE(e, 24), r.writeUInt32LE(e * 2, 28), r.writeUInt16LE(2, 32), r.writeUInt16LE(16, 34), r.write("data", 36), r.writeUInt32LE(i, 40);
+  for (let o = 0; o < t; o++) {
+    const n = Number.isFinite(h[o]) ? Math.round(h[o]) : 0, a = Math.max(-32768, Math.min(32767, n));
+    r.writeInt16LE(a, s + o * 2);
   }
-  return `data:audio/wav;base64,${buffer.toString("base64")}`;
+  return `data:audio/wav;base64,${r.toString("base64")}`;
 }
-function computePeaks(samples, count) {
-  count = Math.max(1, Math.floor(count));
-  if (samples.length === 0) return Array(count).fill(4);
-  const peaks = [];
-  const chunk = Math.max(1, Math.floor(samples.length / count));
-  for (let i = 0; i < count; i++) {
-    let max = 0;
-    const start = i * chunk;
-    const end = Math.min(samples.length, start + chunk);
-    for (let j = start; j < end; j += Math.max(1, Math.floor((end - start) / 40))) {
-      const a = Math.abs(samples[j] / 32768);
-      if (a > max) max = a;
+function ot(h, e) {
+  if (e = Math.max(1, Math.floor(e)), h.length === 0) return Array(e).fill(4);
+  const t = [], s = Math.max(1, Math.floor(h.length / e));
+  for (let i = 0; i < e; i++) {
+    let r = 0;
+    const o = i * s, n = Math.min(h.length, o + s);
+    for (let a = o; a < n; a += Math.max(1, Math.floor((n - o) / 40))) {
+      const c = Math.abs(h[a] / 32768);
+      c > r && (r = c);
     }
-    peaks.push(Math.max(4, Math.min(98, Math.round(max * 100))));
+    t.push(Math.max(4, Math.min(98, Math.round(r * 100))));
   }
-  return peaks;
+  return t;
 }
-function savePcmAsWavFile(samples, sampleRate, label) {
-  sampleRate = Number.isFinite(sampleRate) && sampleRate > 0 ? Math.round(sampleRate) : 24e3;
-  const numSamples = samples.length;
-  const headerSize = 44;
-  const dataSize = numSamples * 2;
-  const buffer = Buffer.alloc(headerSize + dataSize);
-  buffer.write("RIFF", 0);
-  buffer.writeUInt32LE(headerSize + dataSize - 8, 4);
-  buffer.write("WAVE", 8);
-  buffer.write("fmt ", 12);
-  buffer.writeUInt32LE(16, 16);
-  buffer.writeUInt16LE(1, 20);
-  buffer.writeUInt16LE(1, 22);
-  buffer.writeUInt32LE(sampleRate, 24);
-  buffer.writeUInt32LE(sampleRate * 2, 28);
-  buffer.writeUInt16LE(2, 32);
-  buffer.writeUInt16LE(16, 34);
-  buffer.write("data", 36);
-  buffer.writeUInt32LE(dataSize, 40);
-  for (let i = 0; i < numSamples; i++) {
-    const sample = Number.isFinite(samples[i]) ? Math.round(samples[i]) : 0;
-    const value = Math.max(-32768, Math.min(32767, sample));
-    buffer.writeInt16LE(value, headerSize + i * 2);
+function Ae(h, e, t) {
+  e = Number.isFinite(e) && e > 0 ? Math.round(e) : 24e3;
+  const s = h.length, i = 44, r = s * 2, o = Buffer.alloc(i + r);
+  o.write("RIFF", 0), o.writeUInt32LE(i + r - 8, 4), o.write("WAVE", 8), o.write("fmt ", 12), o.writeUInt32LE(16, 16), o.writeUInt16LE(1, 20), o.writeUInt16LE(1, 22), o.writeUInt32LE(e, 24), o.writeUInt32LE(e * 2, 28), o.writeUInt16LE(2, 32), o.writeUInt16LE(16, 34), o.write("data", 36), o.writeUInt32LE(r, 40);
+  for (let d = 0; d < s; d++) {
+    const u = Number.isFinite(h[d]) ? Math.round(h[d]) : 0, m = Math.max(-32768, Math.min(32767, u));
+    o.writeInt16LE(m, i + d * 2);
   }
-  const maxAbs = samples.reduce((max, sample) => Math.max(max, Math.abs(sample)), 0);
-  const dir = path.resolve(process.cwd(), "assets/testing-voice-output");
-  fs.mkdirSync(dir, { recursive: true });
-  const fileName = `${label}-${Date.now()}.wav`;
-  const filePath = path.join(dir, fileName);
-  fs.writeFileSync(filePath, buffer);
-  console.log(
-    `[TTS Debug] Saved PCM to ${filePath} (${numSamples} samples @ ${sampleRate}Hz, maxAbs=${maxAbs.toFixed(4)})`
-  );
-  return filePath;
+  const n = h.reduce((d, u) => Math.max(d, Math.abs(u)), 0), a = y.resolve(process.cwd(), "assets/testing-voice-output");
+  g.mkdirSync(a, { recursive: !0 });
+  const c = `${t}-${Date.now()}.wav`, l = y.join(a, c);
+  return g.writeFileSync(l, o), console.log(
+    `[TTS Debug] Saved PCM to ${l} (${s} samples @ ${e}Hz, maxAbs=${n.toFixed(4)})`
+  ), l;
 }
-function generateAcousticRoomPause(durationSec, sampleRate) {
-  const numSamples = Math.floor(sampleRate * Math.max(0.015, durationSec));
-  const samples = new Array(numSamples);
-  let lastNoise = 0;
-  for (let i = 0; i < numSamples; i++) {
-    const white = (Math.random() * 2 - 1) * 5;
-    lastNoise = lastNoise * 0.85 + white * 0.15;
-    samples[i] = lastNoise;
+function ve(h, e) {
+  const t = Math.floor(e * Math.max(0.015, h)), s = new Array(t);
+  let i = 0;
+  for (let o = 0; o < t; o++) {
+    const n = (Math.random() * 2 - 1) * 5;
+    i = i * 0.85 + n * 0.15, s[o] = i;
   }
-  const fadeLen = Math.min(Math.floor(sampleRate * 8e-3), Math.floor(numSamples / 2));
-  for (let i = 0; i < fadeLen; i++) {
-    const gainIn = 0.5 * (1 - Math.cos(Math.PI * i / fadeLen));
-    samples[i] *= gainIn;
-    const gainOut = 0.5 * (1 - Math.cos(Math.PI * (fadeLen - i) / fadeLen));
-    samples[numSamples - 1 - i] *= gainOut;
+  const r = Math.min(Math.floor(e * 8e-3), Math.floor(t / 2));
+  for (let o = 0; o < r; o++) {
+    const n = 0.5 * (1 - Math.cos(Math.PI * o / r));
+    s[o] *= n;
+    const a = 0.5 * (1 - Math.cos(Math.PI * (r - o) / r));
+    s[t - 1 - o] *= a;
   }
-  return samples;
+  return s;
 }
-function trimPcmSilence(samples, sampleRate, preRollMs = 18, postRollMs = 28) {
-  if (samples.length === 0) return samples;
-  let maxAbs = 0;
-  for (let i = 0; i < samples.length; i++) {
-    const a = Math.abs(samples[i]);
-    if (a > maxAbs) maxAbs = a;
+function at(h, e, t = 18, s = 28) {
+  if (h.length === 0) return h;
+  let i = 0;
+  for (let l = 0; l < h.length; l++) {
+    const d = Math.abs(h[l]);
+    d > i && (i = d);
   }
-  if (maxAbs === 0) return samples;
-  const threshold = Math.max(maxAbs * 8e-3, maxAbs > 2 ? 60 : 2e-3);
-  const preRoll = Math.floor(sampleRate * preRollMs / 1e3);
-  const postRoll = Math.floor(sampleRate * postRollMs / 1e3);
-  let startIdx = 0;
-  for (let i = 0; i < samples.length; i++) {
-    if (Math.abs(samples[i]) > threshold) {
-      startIdx = Math.max(0, i - preRoll);
+  if (i === 0) return h;
+  const r = Math.max(i * 8e-3, i > 2 ? 60 : 2e-3), o = Math.floor(e * t / 1e3), n = Math.floor(e * s / 1e3);
+  let a = 0;
+  for (let l = 0; l < h.length; l++)
+    if (Math.abs(h[l]) > r) {
+      a = Math.max(0, l - o);
       break;
     }
-  }
-  let endIdx = samples.length;
-  for (let i = samples.length - 1; i >= startIdx; i--) {
-    if (Math.abs(samples[i]) > threshold) {
-      endIdx = Math.min(samples.length, i + 1 + postRoll);
+  let c = h.length;
+  for (let l = h.length - 1; l >= a; l--)
+    if (Math.abs(h[l]) > r) {
+      c = Math.min(h.length, l + 1 + n);
       break;
     }
-  }
-  if (startIdx >= endIdx || endIdx - startIdx < sampleRate * 0.08) {
-    return samples;
-  }
-  return samples.slice(startIdx, endIdx);
+  return a >= c || c - a < e * 0.08 ? h : h.slice(a, c);
 }
-function crossfadeAppend(target, incoming, sampleRate, crossfadeMs = 12) {
-  if (incoming.length === 0) return;
-  if (target.length === 0) {
-    for (let i = 0; i < incoming.length; i++) target.push(incoming[i]);
+function le(h, e, t, s = 12) {
+  if (e.length === 0) return;
+  if (h.length === 0) {
+    for (let o = 0; o < e.length; o++) h.push(e[o]);
     return;
   }
-  const crossLen = Math.min(
-    Math.floor(sampleRate * crossfadeMs / 1e3),
-    Math.floor(target.length / 2),
-    Math.floor(incoming.length / 2)
+  const i = Math.min(
+    Math.floor(t * s / 1e3),
+    Math.floor(h.length / 2),
+    Math.floor(e.length / 2)
   );
-  if (crossLen <= 0) {
-    for (let i = 0; i < incoming.length; i++) target.push(incoming[i]);
+  if (i <= 0) {
+    for (let o = 0; o < e.length; o++) h.push(e[o]);
     return;
   }
-  const targetStart = target.length - crossLen;
-  for (let i = 0; i < crossLen; i++) {
-    const t = i / crossLen;
-    const gainOut = Math.cos(t * (Math.PI / 2));
-    const gainIn = Math.sin(t * (Math.PI / 2));
-    target[targetStart + i] = target[targetStart + i] * gainOut + incoming[i] * gainIn;
+  const r = h.length - i;
+  for (let o = 0; o < i; o++) {
+    const n = o / i, a = Math.cos(n * (Math.PI / 2)), c = Math.sin(n * (Math.PI / 2));
+    h[r + o] = h[r + o] * a + e[o] * c;
   }
-  for (let i = crossLen; i < incoming.length; i++) {
-    target.push(incoming[i]);
-  }
+  for (let o = i; o < e.length; o++)
+    h.push(e[o]);
 }
-function processConversationalCues(text, engine, initialTone = "normal") {
-  let cleaned = text;
-  let tone = initialTone;
-  const detectedCues = [];
-  if (tone === "whisper" || /\[(?:whisper|soft)\]/i.test(cleaned)) {
-    tone = "whisper";
-    detectedCues.push("whisper");
-    cleaned = cleaned.replace(/\[\/?(?:whisper|soft)\]/gi, " ");
+function ct(h, e, t = "normal") {
+  let s = h, i = t;
+  const r = [];
+  if ((i === "whisper" || /\[(?:whisper|soft)\]/i.test(s)) && (i = "whisper", r.push("whisper"), s = s.replace(/\[\/?(?:whisper|soft)\]/gi, " ")), i === "yell" || /\[(?:yell|shout|loud)\]/i.test(s)) {
+    i = "yell", r.push("yell"), s = s.replace(/\[\/?(?:yell|shout|loud)\]/gi, " ");
+    const o = s.trim(), n = /[!?]$/.test(o) ? "" : "!";
+    s = `${o.toUpperCase()}${n}`;
   }
-  if (tone === "yell" || /\[(?:yell|shout|loud)\]/i.test(cleaned)) {
-    tone = "yell";
-    detectedCues.push("yell");
-    cleaned = cleaned.replace(/\[\/?(?:yell|shout|loud)\]/gi, " ");
-    const trimmed = cleaned.trim();
-    const ending = /[!?]$/.test(trimmed) ? "" : "!";
-    cleaned = `${trimmed.toUpperCase()}${ending}`;
-  }
-  if (tone === "raise" || /\[(?:raise|emphasis)\]/i.test(cleaned) || /<\/?strong>/i.test(cleaned)) {
-    tone = "raise";
-    detectedCues.push("raise");
-  }
-  cleaned = cleaned.replace(/\[\/?(?:laugh|laughter|giggle|chuckle)\]/gi, " ");
-  cleaned = cleaned.replace(/<\/?laughter>/gi, " ");
-  if (/\[(?:sigh|breath)\]/i.test(cleaned) || /<\/?breath>/i.test(cleaned)) {
-    detectedCues.push("breath");
-  }
-  if (/\[(?:hmm+|thinking)\]/i.test(cleaned)) {
-    detectedCues.push("hmm");
-  }
-  if (/\[gasp\]/i.test(cleaned)) {
-    detectedCues.push("gasp");
-  }
-  if (engine === "cosyvoice3") {
-    cleaned = cleaned.replace(/\[(?:breath|sigh)\]/gi, " <breath> ");
-    cleaned = cleaned.replace(
-      /\[(?:raise|emphasis)\]([\s\S]*?)\[\/(?:raise|emphasis)\]/gi,
-      "<strong>$1</strong>"
-    );
-    if (tone === "raise" && !/<strong>[\s\S]*?<\/strong>/i.test(cleaned)) {
-      cleaned = `<strong>${cleaned.trim()}</strong>`;
-    }
-    cleaned = cleaned.replace(/\[\/?(?:raise|emphasis)\]/gi, " ");
-    cleaned = cleaned.replace(/\[(?:hmm+|thinking)\]/gi, "Hmm... ");
-    cleaned = cleaned.replace(/\[gasp\]/gi, "<breath> ");
-    cleaned = cleaned.replace(/(?:<breath>\s*)+<breath>/gi, "<breath>").replace(/\s+/g, " ").trim();
-    if (tone === "whisper" && cleaned.length > 0) {
-      cleaned = `<breath> ${cleaned.toLowerCase()} <breath>`;
-    }
-  } else {
-    cleaned = cleaned.replace(/<\/?(?:laughter|strong|breath)>/gi, " ");
-    cleaned = cleaned.replace(
-      /\[\/?(?:laugh|laughter|giggle|chuckle|breath|sigh|gasp|whisper|soft|yell|shout|loud|raise|emphasis)\]/gi,
-      " "
-    );
-    if (detectedCues.includes("hmm")) {
-      cleaned = cleaned.replace(/\[(?:hmm+|thinking)\]/gi, "Hmm... ");
-    }
-    if (detectedCues.includes("breath") || detectedCues.includes("sigh") || detectedCues.includes("gasp")) {
-      cleaned = cleaned.replace(/\[(?:breath|sigh|gasp)\]/gi, "... ");
-    }
-    if (tone === "raise") {
-      cleaned = cleaned.toUpperCase();
-    }
-    cleaned = cleaned.replace(/\s+/g, " ").replace(/\.{4,}/g, "...").trim();
-    if (tone === "whisper" && cleaned.length > 0) {
-      cleaned = `... ${cleaned.toLowerCase()} ...`;
-    }
-  }
-  return { cleanedText: cleaned, detectedCues, tone };
+  return (i === "raise" || /\[(?:raise|emphasis)\]/i.test(s) || /<\/?strong>/i.test(s)) && (i = "raise", r.push("raise")), s = s.replace(/\[\/?(?:laugh|laughter|giggle|chuckle)\]/gi, " "), s = s.replace(/<\/?laughter>/gi, " "), (/\[(?:sigh|breath)\]/i.test(s) || /<\/?breath>/i.test(s)) && r.push("breath"), /\[(?:hmm+|thinking)\]/i.test(s) && r.push("hmm"), /\[gasp\]/i.test(s) && r.push("gasp"), e === "cosyvoice3" ? (s = s.replace(/\[(?:breath|sigh)\]/gi, " <breath> "), s = s.replace(
+    /\[(?:raise|emphasis)\]([\s\S]*?)\[\/(?:raise|emphasis)\]/gi,
+    "<strong>$1</strong>"
+  ), i === "raise" && !/<strong>[\s\S]*?<\/strong>/i.test(s) && (s = `<strong>${s.trim()}</strong>`), s = s.replace(/\[\/?(?:raise|emphasis)\]/gi, " "), s = s.replace(/\[(?:hmm+|thinking)\]/gi, "Hmm... "), s = s.replace(/\[gasp\]/gi, "<breath> "), s = s.replace(/(?:<breath>\s*)+<breath>/gi, "<breath>").replace(/\s+/g, " ").trim(), i === "whisper" && s.length > 0 && (s = `<breath> ${s.toLowerCase()} <breath>`)) : (s = s.replace(/<\/?(?:laughter|strong|breath)>/gi, " "), s = s.replace(
+    /\[\/?(?:laugh|laughter|giggle|chuckle|breath|sigh|gasp|whisper|soft|yell|shout|loud|raise|emphasis)\]/gi,
+    " "
+  ), r.includes("hmm") && (s = s.replace(/\[(?:hmm+|thinking)\]/gi, "Hmm... ")), (r.includes("breath") || r.includes("sigh") || r.includes("gasp")) && (s = s.replace(/\[(?:breath|sigh|gasp)\]/gi, "... ")), i === "raise" && (s = s.toUpperCase()), s = s.replace(/\s+/g, " ").replace(/\.{4,}/g, "...").trim(), i === "whisper" && s.length > 0 && (s = `... ${s.toLowerCase()} ...`)), { cleanedText: s, detectedCues: r, tone: i };
 }
-function splitSpeechIntoSentences(text, targetMaxWords = 36) {
-  const trimmedText = text.trim();
-  if (!trimmedText) return [];
-  const cleanForWordCount = trimmedText.replace(/<\/?[a-z0-9_-]+>/gi, " ").trim();
-  const words = cleanForWordCount.split(/\s+/).filter(Boolean);
-  if (words.length <= targetMaxWords) {
-    const isEnd = /[.!?]$/.test(cleanForWordCount);
-    return [{ text: trimmedText, isSentenceEnd: isEnd }];
+function lt(h, e = 36) {
+  const t = h.trim();
+  if (!t) return [];
+  const s = t.replace(/<\/?[a-z0-9_-]+>/gi, " ").trim();
+  if (s.split(/\s+/).filter(Boolean).length <= e) {
+    const a = /[.!?]$/.test(s);
+    return [{ text: t, isSentenceEnd: a }];
   }
-  const sentenceMatches = trimmedText.match(/(?:<[^>]+>|[^.!?\n])+([.!?\n]+(?=[\s<]|$)|$)/g) || [trimmedText];
-  const chunks = [];
-  let currentText = "";
-  for (const s of sentenceMatches) {
-    const sTrimmed = s.trim();
-    if (!sTrimmed) continue;
-    const candidate = currentText ? `${currentText} ${sTrimmed}` : sTrimmed;
-    const candidateWords = candidate.replace(/<\/?[a-z0-9_-]+>/gi, " ").split(/\s+/).filter(Boolean).length;
-    if (candidateWords <= targetMaxWords) {
-      currentText = candidate;
-    } else {
-      if (currentText) {
-        const cleanCurrent = currentText.replace(/<\/?[a-z0-9_-]+>/gi, "").trim();
-        const isEnd = /[.!?]$/.test(cleanCurrent);
-        chunks.push({ text: currentText, isSentenceEnd: isEnd });
+  const r = t.match(/(?:<[^>]+>|[^.!?\n])+([.!?\n]+(?=[\s<]|$)|$)/g) || [t], o = [];
+  let n = "";
+  for (const a of r) {
+    const c = a.trim();
+    if (!c) continue;
+    const l = n ? `${n} ${c}` : c;
+    if (l.replace(/<\/?[a-z0-9_-]+>/gi, " ").split(/\s+/).filter(Boolean).length <= e)
+      n = l;
+    else {
+      if (n) {
+        const m = n.replace(/<\/?[a-z0-9_-]+>/gi, "").trim(), f = /[.!?]$/.test(m);
+        o.push({ text: n, isSentenceEnd: f });
       }
-      const sWords = sTrimmed.replace(/<\/?[a-z0-9_-]+>/gi, " ").split(/\s+/).filter(Boolean).length;
-      if (sWords > targetMaxWords) {
-        const clauseMatches = sTrimmed.match(/(?:<[^>]+>|[^,;:—-])+([,;:—-]+(?=[\s<]|$)|$)/g) || [sTrimmed];
-        let subText = "";
-        for (const cl of clauseMatches) {
-          const clTrim = cl.trim();
-          if (!clTrim) continue;
-          const subCandidate = subText ? `${subText} ${clTrim}` : clTrim;
-          const subWords = subCandidate.replace(/<\/?[a-z0-9_-]+>/gi, " ").split(/\s+/).filter(Boolean).length;
-          if (subWords <= targetMaxWords) {
-            subText = subCandidate;
-          } else {
-            if (subText) {
-              chunks.push({ text: subText, isSentenceEnd: false });
-            }
-            subText = clTrim;
-          }
+      if (c.replace(/<\/?[a-z0-9_-]+>/gi, " ").split(/\s+/).filter(Boolean).length > e) {
+        const m = c.match(/(?:<[^>]+>|[^,;:—-])+([,;:—-]+(?=[\s<]|$)|$)/g) || [c];
+        let f = "";
+        for (const S of m) {
+          const C = S.trim();
+          if (!C) continue;
+          const L = f ? `${f} ${C}` : C;
+          L.replace(/<\/?[a-z0-9_-]+>/gi, " ").split(/\s+/).filter(Boolean).length <= e ? f = L : (f && o.push({ text: f, isSentenceEnd: !1 }), f = C);
         }
-        if (subText) {
-          currentText = subText;
-        } else {
-          currentText = "";
-        }
-      } else {
-        currentText = sTrimmed;
-      }
+        f ? n = f : n = "";
+      } else
+        n = c;
     }
   }
-  if (currentText.trim()) {
-    const cleanCurrent = currentText.replace(/<\/?[a-z0-9_-]+>/gi, "").trim();
-    const isEnd = /[.!?]$/.test(cleanCurrent);
-    chunks.push({ text: currentText.trim(), isSentenceEnd: isEnd });
+  if (n.trim()) {
+    const a = n.replace(/<\/?[a-z0-9_-]+>/gi, "").trim(), c = /[.!?]$/.test(a);
+    o.push({ text: n.trim(), isSentenceEnd: c });
   }
-  return chunks.filter((c) => c.text.length > 0);
+  return o.filter((a) => a.text.length > 0);
 }
-function parseTextAndPauses(rawText) {
-  let text = rawText.replace(
+function dt(h) {
+  let e = h.replace(
     /\[pause\s*([0-9.]+)\s*(?:s|sec|seconds)?\]/gi,
-    (fullMatch, secStr) => {
-      const sec = parseFloat(secStr);
-      if (Number.isFinite(sec) && sec <= 1.2) {
-        return "... ";
-      }
-      return fullMatch;
+    (n, a) => {
+      const c = parseFloat(a);
+      return Number.isFinite(c) && c <= 1.2 ? "... " : n;
     }
   );
-  text = text.replace(/\[(whisper|soft|yell|shout|loud|raise|emphasis)\]\s*\[\/\1\]/gi, "");
-  const TOKEN_REGEX = /\[pause\s*([0-9.]+)\s*(?:s|sec|seconds)?\]|\[(whisper|soft|yell|shout|loud|raise|emphasis)\]([\s\S]*?)\[\/\2\]/gi;
-  const segments = [];
-  let lastIndex = 0;
-  let match;
-  while ((match = TOKEN_REGEX.exec(text)) !== null) {
-    const textBefore = text.slice(lastIndex, match.index).trim();
-    if (textBefore) {
-      segments.push({ type: "speech", text: textBefore, tone: "normal" });
-    }
-    if (match[1] !== void 0) {
-      const pauseSec = parseFloat(match[1]);
-      if (Number.isFinite(pauseSec) && pauseSec > 0) {
-        segments.push({ type: "pause", pauseSec: Math.min(pauseSec, 30) });
-      }
-    } else if (match[2] !== void 0) {
-      const toneTag = match[2].toLowerCase();
-      const content = (match[3] || "").trim();
-      if (content) {
-        let tone = "normal";
-        if (toneTag === "whisper" || toneTag === "soft") tone = "whisper";
-        else if (toneTag === "yell" || toneTag === "shout" || toneTag === "loud") tone = "yell";
-        else if (toneTag === "raise" || toneTag === "emphasis") tone = "raise";
-        segments.push({ type: "speech", text: content, tone });
+  e = e.replace(/\[(whisper|soft|yell|shout|loud|raise|emphasis)\]\s*\[\/\1\]/gi, "");
+  const t = /\[pause\s*([0-9.]+)\s*(?:s|sec|seconds)?\]|\[(whisper|soft|yell|shout|loud|raise|emphasis)\]([\s\S]*?)\[\/\2\]/gi, s = [];
+  let i = 0, r;
+  for (; (r = t.exec(e)) !== null; ) {
+    const n = e.slice(i, r.index).trim();
+    if (n && s.push({ type: "speech", text: n, tone: "normal" }), r[1] !== void 0) {
+      const a = parseFloat(r[1]);
+      Number.isFinite(a) && a > 0 && s.push({ type: "pause", pauseSec: Math.min(a, 30) });
+    } else if (r[2] !== void 0) {
+      const a = r[2].toLowerCase(), c = (r[3] || "").trim();
+      if (c) {
+        let l = "normal";
+        a === "whisper" || a === "soft" ? l = "whisper" : a === "yell" || a === "shout" || a === "loud" ? l = "yell" : (a === "raise" || a === "emphasis") && (l = "raise"), s.push({ type: "speech", text: c, tone: l });
       }
     }
-    lastIndex = match.index + match[0].length;
+    i = r.index + r[0].length;
   }
-  const textAfter = text.slice(lastIndex).trim();
-  if (textAfter) {
-    segments.push({ type: "speech", text: textAfter, tone: "normal" });
-  }
-  return segments;
+  const o = e.slice(i).trim();
+  return o && s.push({ type: "speech", text: o, tone: "normal" }), s;
 }
-function prepareReferenceAudioWav(inputPath) {
-  if (!inputPath || typeof inputPath !== "string") return void 0;
-  let resolved = inputPath;
-  if (!fs.existsSync(resolved)) {
-    const pub = path.resolve(process.cwd(), "public", inputPath.replace(/^\//, ""));
-    if (fs.existsSync(pub)) resolved = pub;
+function $e(h) {
+  if (!h || typeof h != "string") return;
+  let e = h;
+  if (!g.existsSync(e)) {
+    const n = y.resolve(process.cwd(), "public", h.replace(/^\//, ""));
+    g.existsSync(n) && (e = n);
   }
-  if (!fs.existsSync(resolved)) {
-    const ws = path.resolve(process.cwd(), inputPath);
-    if (fs.existsSync(ws)) resolved = ws;
+  if (!g.existsSync(e)) {
+    const n = y.resolve(process.cwd(), h);
+    g.existsSync(n) && (e = n);
   }
-  if (!fs.existsSync(resolved)) return void 0;
-  const ext = path.extname(resolved).toLowerCase();
-  if (ext === ".wav") return resolved;
-  const cacheDir = path.join(os.tmpdir(), "echo-voice-cache");
-  fs.mkdirSync(cacheDir, { recursive: true });
-  const stat = fs.statSync(resolved);
-  const outName = `${path.basename(resolved, ext)}_${stat.size}_${Math.floor(stat.mtimeMs)}.wav`;
-  const outPath = path.join(cacheDir, outName);
-  if (fs.existsSync(outPath) && fs.statSync(outPath).size > 1e3) {
-    return outPath;
-  }
+  if (!g.existsSync(e)) return;
+  const t = y.extname(e).toLowerCase();
+  if (t === ".wav") return e;
+  const s = y.join(O.tmpdir(), "echo-voice-cache");
+  g.mkdirSync(s, { recursive: !0 });
+  const i = g.statSync(e), r = `${y.basename(e, t)}_${i.size}_${Math.floor(i.mtimeMs)}.wav`, o = y.join(s, r);
+  if (g.existsSync(o) && g.statSync(o).size > 1e3)
+    return o;
   try {
-    execFileSync("afconvert", ["-f", "WAVE", "-d", "LEI16@24000", "-c", "1", resolved, outPath]);
-    if (fs.existsSync(outPath) && fs.statSync(outPath).size > 1e3) {
-      return outPath;
-    }
-  } catch (err) {
-    console.warn(`[Echo Voice Engine] Audio conversion failed for ${resolved}:`, err);
+    if (Xe("afconvert", ["-f", "WAVE", "-d", "LEI16@24000", "-c", "1", e, o]), g.existsSync(o) && g.statSync(o).size > 1e3)
+      return o;
+  } catch (n) {
+    console.warn(`[Echo Voice Engine] Audio conversion failed for ${e}:`, n);
   }
-  return void 0;
 }
-function getValidReferenceWav(userProvidedSrc) {
-  if (userProvidedSrc) {
-    const converted = prepareReferenceAudioWav(userProvidedSrc);
-    if (converted) return converted;
+function Ce(h) {
+  if (h) {
+    const e = $e(h);
+    if (e) return e;
   }
-  return void 0;
 }
-class VoiceEngineService {
-  constructor(modelsService) {
-    __publicField(this, "modelsService");
-    __publicField(this, "loadedModels", /* @__PURE__ */ new Map());
-    __publicField(this, "activeTtsRequestIds", /* @__PURE__ */ new Map());
-    this.modelsService = modelsService || new ModelsService();
+class ut {
+  constructor(e) {
+    b(this, "modelsService");
+    b(this, "loadedModels", /* @__PURE__ */ new Map());
+    b(this, "activeTtsRequestIds", /* @__PURE__ */ new Map());
+    this.modelsService = e || new Te();
   }
   getModelsService() {
     return this.modelsService;
@@ -1754,231 +1316,200 @@ class VoiceEngineService {
    * Delete all installed models from disk and reset engine state
    */
   async deleteAllModels() {
-    var _a;
-    for (const modelId of this.loadedModels.values()) {
+    var e;
+    for (const t of this.loadedModels.values())
       try {
-        await ((_a = qvacSdk.unloadModel) == null ? void 0 : _a.call(qvacSdk, {
-          modelId
+        await ((e = v.unloadModel) == null ? void 0 : e.call(v, {
+          modelId: t
         }));
       } catch {
       }
-    }
-    this.loadedModels.clear();
-    return this.modelsService.deleteAllModels();
+    return this.loadedModels.clear(), this.modelsService.deleteAllModels();
   }
   /**
    * Get complete status of all voice engine models
    */
-  getStatus(selectedEngine) {
-    return this.modelsService.getStatus(selectedEngine);
+  getStatus(e) {
+    return this.modelsService.getStatus(e);
   }
   /**
    * Download a single model with live progress updates
    */
-  async downloadModel(modelId, onProgress) {
-    return this.modelsService.downloadModel(modelId, onProgress);
+  async downloadModel(e, t) {
+    return this.modelsService.downloadModel(e, t);
   }
   /**
    * Cancel an active model download
    */
-  cancelDownload(modelId) {
-    return this.modelsService.cancelDownload(modelId);
+  cancelDownload(e) {
+    return this.modelsService.cancelDownload(e);
   }
   /**
    * Ensures the requested engine (CosyVoice 3 or Chatterbox T3) is loaded with configuration.
    */
-  async ensureModelLoaded(opts) {
-    var _a, _b, _c, _d, _e;
-    const engine = opts.engine || "cosyvoice3";
-    const lavaSr = opts.lavaSrEnabled !== false && this.modelsService.isModelDownloaded("lavasr-enhancer");
-    const lavasrSrc = qvacSdk.TTS_ENHANCER_LAVASR_FP16;
-    if (engine === "chatterbox") {
-      const isMultilingual = opts.language && opts.language !== "en" && this.modelsService.isModelDownloaded("chatterbox-t3-multilingual-q8_0") && this.modelsService.isModelDownloaded("chatterbox-s3gen-multilingual-q8_0");
-      let t3Descriptor = isMultilingual ? qvacSdk.TTS_T3_MULTILINGUAL_CHATTERBOX_Q8_0 : qvacSdk.TTS_T3_TURBO_EN_CHATTERBOX_Q8_0;
-      let s3genDescriptor = isMultilingual ? qvacSdk.TTS_S3GEN_MULTILINGUAL_CHATTERBOX_Q8_0 : qvacSdk.TTS_S3GEN_EN_CHATTERBOX_Q8_0;
-      const chatterboxModelLabel = isMultilingual ? "Chatterbox T3 Multilingual (Q8_0 GGUF)" : "Chatterbox T3 Turbo EN (Q8_0 GGUF)";
-      if (!t3Descriptor || !s3genDescriptor) {
+  async ensureModelLoaded(e) {
+    var r, o, n, a, c;
+    const t = e.engine || "cosyvoice3", s = e.lavaSrEnabled !== !1 && this.modelsService.isModelDownloaded("lavasr-enhancer"), i = v.TTS_ENHANCER_LAVASR_FP16;
+    if (t === "chatterbox") {
+      const l = e.language && e.language !== "en" && this.modelsService.isModelDownloaded("chatterbox-t3-multilingual-q8_0") && this.modelsService.isModelDownloaded("chatterbox-s3gen-multilingual-q8_0");
+      let d = l ? v.TTS_T3_MULTILINGUAL_CHATTERBOX_Q8_0 : v.TTS_T3_TURBO_EN_CHATTERBOX_Q8_0, u = l ? v.TTS_S3GEN_MULTILINGUAL_CHATTERBOX_Q8_0 : v.TTS_S3GEN_EN_CHATTERBOX_Q8_0;
+      const m = l ? "Chatterbox T3 Multilingual (Q8_0 GGUF)" : "Chatterbox T3 Turbo EN (Q8_0 GGUF)";
+      if (!d || !u)
         throw new Error("QVAC Chatterbox descriptors (T3 and/or S3Gen) missing from SDK");
+      let f = Ce(e.referenceAudioSrc);
+      if (!f) {
+        const _ = y.resolve(process.cwd(), "public", "voices", "samples", "en", "voice_en_male_1.mp3");
+        g.existsSync(_) && (f = $e(_));
       }
-      let refWavPath = getValidReferenceWav(opts.referenceAudioSrc);
-      if (!refWavPath) {
-        const defaultVoice = path.resolve(process.cwd(), "public", "voices", "samples", "en", "voice_en_male_1.mp3");
-        if (fs.existsSync(defaultVoice)) {
-          refWavPath = prepareReferenceAudioWav(defaultVoice);
-        }
-      }
-      const key = [
+      const S = [
         "chatterbox",
-        isMultilingual ? "multilingual" : "en",
-        refWavPath ? path.basename(refWavPath) : "default",
-        lavaSr ? "lavasr48k" : "native24k",
+        l ? "multilingual" : "en",
+        f ? y.basename(f) : "default",
+        s ? "lavasr48k" : "native24k",
         process.arch === "arm64" ? "metal" : "cpu"
-      ].join("|");
-      const cachedModelId = this.loadedModels.get(key);
-      if (cachedModelId) {
-        return { modelId: cachedModelId, engine: "chatterbox" };
-      }
-      (_a = opts.onLog) == null ? void 0 : _a.call(opts, {
-        text: `[Echo Voice Engine] Loading ${chatterboxModelLabel} + S3Gen Vocoder (${lavaSr ? "48kHz LavaSR" : "24kHz native"}${process.arch === "arm64" ? " +Metal GPU" : " +CPU"})...`,
+      ].join("|"), C = this.loadedModels.get(S);
+      if (C)
+        return { modelId: C, engine: "chatterbox" };
+      (r = e.onLog) == null || r.call(e, {
+        text: `[Echo Voice Engine] Loading ${m} + S3Gen Vocoder (${s ? "48kHz LavaSR" : "24kHz native"}${process.arch === "arm64" ? " +Metal GPU" : " +CPU"})...`,
         stream: "stdout"
       });
-      const baseConfig = {
+      const L = {
         ttsEngine: "chatterbox",
-        language: opts.language || "en",
-        s3genModelSrc: (s3genDescriptor == null ? void 0 : s3genDescriptor.src) || s3genDescriptor,
+        language: e.language || "en",
+        s3genModelSrc: (u == null ? void 0 : u.src) || u,
         streamChunkTokens: 25,
         streamFirstChunkTokens: 10,
         cfmSteps: 1,
         threads: 8,
         useGPU: process.arch === "arm64",
         seed: 42,
-        ...refWavPath ? { referenceAudioSrc: refWavPath } : {},
-        ...lavaSr && lavasrSrc ? { lavasrEnhancerModelSrc: lavasrSrc } : {}
-      };
-      const modelId = await qvacSdk.loadModel({
-        modelSrc: t3Descriptor,
+        ...f ? { referenceAudioSrc: f } : {},
+        ...s && i ? { lavasrEnhancerModelSrc: i } : {}
+      }, N = await v.loadModel({
+        modelSrc: d,
         modelType: "tts",
-        modelConfig: baseConfig,
-        onProgress: (p) => {
-          var _a2;
-          const pct = Math.round((p == null ? void 0 : p.percentage) ?? 0);
-          (_a2 = opts.onProgress) == null ? void 0 : _a2.call(opts, {
-            taskId: opts.taskId,
-            progress: Math.min(40, Math.round(pct * 0.4)),
-            message: `Loading ${chatterboxModelLabel} weights ${pct}%...`,
+        modelConfig: L,
+        onProgress: (_) => {
+          var T;
+          const D = Math.round((_ == null ? void 0 : _.percentage) ?? 0);
+          (T = e.onProgress) == null || T.call(e, {
+            taskId: e.taskId,
+            progress: Math.min(40, Math.round(D * 0.4)),
+            message: `Loading ${m} weights ${D}%...`,
             phase: "loading"
           });
         }
       });
       if (this.loadedModels.size >= 4) {
-        const oldestKey = this.loadedModels.keys().next().value;
-        if (oldestKey) {
-          const oldId = this.loadedModels.get(oldestKey);
-          if (oldId) {
+        const _ = this.loadedModels.keys().next().value;
+        if (_) {
+          const D = this.loadedModels.get(_);
+          if (D)
             try {
-              await ((_b = qvacSdk.unloadModel) == null ? void 0 : _b.call(qvacSdk, { modelId: oldId }));
+              await ((o = v.unloadModel) == null ? void 0 : o.call(v, { modelId: D }));
             } catch {
             }
-          }
-          this.loadedModels.delete(oldestKey);
+          this.loadedModels.delete(_);
         }
       }
-      this.loadedModels.set(key, modelId);
-      return { modelId, engine: "chatterbox" };
+      return this.loadedModels.set(S, N), { modelId: N, engine: "chatterbox" };
     } else {
-      const cosyvoiceDescriptor = qvacSdk.TTS_COSYVOICE3_LLM_COSYVOICE_Q8_0 || qvacSdk.TTS_COSYVOICE3_LLM_COSYVOICE_Q4_0;
-      if (!cosyvoiceDescriptor) {
+      const l = v.TTS_COSYVOICE3_LLM_COSYVOICE_Q8_0 || v.TTS_COSYVOICE3_LLM_COSYVOICE_Q4_0;
+      if (!l)
         throw new Error("QVAC CosyVoice 3 descriptor missing from SDK");
-      }
-      const rawEmotion = ((_c = opts.emotion) == null ? void 0 : _c.toLowerCase()) || "";
-      const validEmotions = ["anger", "happy", "neutral", "sad"];
-      const emotion = validEmotions.includes(rawEmotion) ? rawEmotion : void 0;
-      const refWavPath = getValidReferenceWav(opts.referenceAudioSrc);
-      const hasCloningModels = (this.modelsService.isModelDownloaded("cosyvoice3-s3tok-fp16") || this.modelsService.isModelDownloaded("cosyvoice3-s3tok")) && (this.modelsService.isModelDownloaded("cosyvoice3-campplus-fp32") || this.modelsService.isModelDownloaded("cosyvoice3-campplus"));
+      const d = ((n = e.emotion) == null ? void 0 : n.toLowerCase()) || "", m = ["anger", "happy", "neutral", "sad"].includes(d) ? d : void 0, f = Ce(e.referenceAudioSrc), S = (this.modelsService.isModelDownloaded("cosyvoice3-s3tok-fp16") || this.modelsService.isModelDownloaded("cosyvoice3-s3tok")) && (this.modelsService.isModelDownloaded("cosyvoice3-campplus-fp32") || this.modelsService.isModelDownloaded("cosyvoice3-campplus"));
       console.log(
-        `[Echo Voice Engine] CosyVoice 3 setup: refWavPath=${refWavPath}, hasCloningModels=${hasCloningModels}`
+        `[Echo Voice Engine] CosyVoice 3 setup: refWavPath=${f}, hasCloningModels=${S}`
       );
-      const key = [
+      const C = [
         "cosyvoice3",
-        refWavPath || "native",
-        emotion || "none",
-        lavaSr ? "lavasr48k" : "native24k"
-      ].join("|");
-      const cachedModelId = this.loadedModels.get(key);
-      if (cachedModelId) {
-        return { modelId: cachedModelId, engine: "cosyvoice3" };
-      }
-      const voiceDesc = refWavPath ? ` voice="${path.basename(refWavPath)}"` : " (native studio voice)";
-      const emotionDesc = emotion ? ` emotion="${emotion}"` : "";
-      (_d = opts.onLog) == null ? void 0 : _d.call(opts, {
-        text: `[Echo Voice Engine] Loading CosyVoice 3 Engine (0.5B Q8_0 [FP32 Flow Matching]${lavaSr ? " +LavaSR 48kHz" : ""}${voiceDesc}${emotionDesc})...`,
+        f || "native",
+        m || "none",
+        s ? "lavasr48k" : "native24k"
+      ].join("|"), L = this.loadedModels.get(C);
+      if (L)
+        return { modelId: L, engine: "cosyvoice3" };
+      const N = f ? ` voice="${y.basename(f)}"` : " (native studio voice)", _ = m ? ` emotion="${m}"` : "";
+      (a = e.onLog) == null || a.call(e, {
+        text: `[Echo Voice Engine] Loading CosyVoice 3 Engine (0.5B Q8_0 [FP32 Flow Matching]${s ? " +LavaSR 48kHz" : ""}${N}${_})...`,
         stream: "stdout"
       });
-      const baseConfig = {
+      const D = {
         ttsEngine: "cosyvoice3",
-        useGPU: true,
+        useGPU: !0,
         seed: 42,
-        ...refWavPath && hasCloningModels ? {
-          cosyvoice3S3tokModelSrc: qvacSdk.TTS_COSYVOICE3_S3TOK_COSYVOICE_FP16,
-          cosyvoice3CampplusModelSrc: qvacSdk.TTS_COSYVOICE3_CAMPPLUS_COSYVOICE_FP32,
-          referenceAudioSrc: refWavPath
+        ...f && S ? {
+          cosyvoice3S3tokModelSrc: v.TTS_COSYVOICE3_S3TOK_COSYVOICE_FP16,
+          cosyvoice3CampplusModelSrc: v.TTS_COSYVOICE3_CAMPPLUS_COSYVOICE_FP32,
+          referenceAudioSrc: f
         } : {},
-        ...lavaSr && lavasrSrc ? { lavasrEnhancerModelSrc: lavasrSrc } : {},
-        ...emotion ? { emotion } : {}
-      };
-      const modelId = await qvacSdk.loadModel({
-        modelSrc: cosyvoiceDescriptor,
+        ...s && i ? { lavasrEnhancerModelSrc: i } : {},
+        ...m ? { emotion: m } : {}
+      }, T = await v.loadModel({
+        modelSrc: l,
         modelType: "tts",
-        modelConfig: baseConfig,
-        onProgress: (p) => {
-          var _a2;
-          const pct = Math.round((p == null ? void 0 : p.percentage) ?? 0);
-          (_a2 = opts.onProgress) == null ? void 0 : _a2.call(opts, {
-            taskId: opts.taskId,
-            progress: Math.min(40, Math.round(pct * 0.4)),
-            message: `Loading CosyVoice 3 weights ${pct}%...`,
+        modelConfig: D,
+        onProgress: (x) => {
+          var E;
+          const M = Math.round((x == null ? void 0 : x.percentage) ?? 0);
+          (E = e.onProgress) == null || E.call(e, {
+            taskId: e.taskId,
+            progress: Math.min(40, Math.round(M * 0.4)),
+            message: `Loading CosyVoice 3 weights ${M}%...`,
             phase: "loading"
           });
         }
       });
       if (this.loadedModels.size >= 4) {
-        const oldestKey = this.loadedModels.keys().next().value;
-        if (oldestKey) {
-          const oldId = this.loadedModels.get(oldestKey);
-          if (oldId) {
+        const x = this.loadedModels.keys().next().value;
+        if (x) {
+          const M = this.loadedModels.get(x);
+          if (M)
             try {
-              await ((_e = qvacSdk.unloadModel) == null ? void 0 : _e.call(qvacSdk, { modelId: oldId }));
+              await ((c = v.unloadModel) == null ? void 0 : c.call(v, { modelId: M }));
             } catch {
             }
-          }
-          this.loadedModels.delete(oldestKey);
+          this.loadedModels.delete(x);
         }
       }
-      this.loadedModels.set(key, modelId);
-      return { modelId, engine: "cosyvoice3" };
+      return this.loadedModels.set(C, T), { modelId: T, engine: "cosyvoice3" };
     }
   }
-  cancelSynthesis(taskId) {
-    var _a;
-    const reqId = this.activeTtsRequestIds.get(taskId);
-    if (reqId) {
+  cancelSynthesis(e) {
+    var s;
+    const t = this.activeTtsRequestIds.get(e);
+    if (t) {
       try {
-        void ((_a = qvacSdk.cancel) == null ? void 0 : _a.call(qvacSdk, { requestId: reqId }));
+        (s = v.cancel) == null || s.call(v, { requestId: t });
       } catch {
       }
-      this.activeTtsRequestIds.delete(taskId);
+      this.activeTtsRequestIds.delete(e);
     }
   }
   /**
    * High-fidelity speech synthesis pipeline with dynamic engine selection (CosyVoice 3 / Chatterbox T3)
    * and optional Lava-SR 48kHz neural enhancement.
    */
-  async synthesize(options, onProgress, onLog, isCancelled) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _i;
-    const { taskId, rounds } = options;
-    const activeEngine = options.engine || "cosyvoice3";
-    const activeRounds = rounds.filter((r) => r.text.trim().length > 0);
-    if (activeRounds.length === 0) {
-      return { success: false, error: "No active speech rounds to synthesize" };
-    }
-    const firstRound = activeRounds[0];
-    const speakerName = options.speakerName || "Selected Speaker";
-    onLog == null ? void 0 : onLog({
-      text: `[Echo Voice Engine] Synthesis task ${taskId} engine="${activeEngine}" voice="${speakerName}" turns=${activeRounds.length}...`,
+  async synthesize(e, t, s, i) {
+    var d, u, m, f, S, C, L, N, _;
+    const { taskId: r, rounds: o } = e, n = e.engine || "cosyvoice3", a = o.filter((D) => D.text.trim().length > 0);
+    if (a.length === 0)
+      return { success: !1, error: "No active speech rounds to synthesize" };
+    const c = a[0], l = e.speakerName || "Selected Speaker";
+    s == null || s({
+      text: `[Echo Voice Engine] Synthesis task ${r} engine="${n}" voice="${l}" turns=${a.length}...`,
       stream: "system"
     });
     try {
-      if (isCancelled == null ? void 0 : isCancelled()) return { success: false, error: "Cancelled" };
-      onProgress == null ? void 0 : onProgress({
-        taskId,
+      if (i != null && i()) return { success: !1, error: "Cancelled" };
+      t == null || t({
+        taskId: r,
         progress: 8,
-        message: `Loading ${activeEngine === "chatterbox" ? "Chatterbox T3" : "CosyVoice 3"} Engine...`,
+        message: `Loading ${n === "chatterbox" ? "Chatterbox T3" : "CosyVoice 3"} Engine...`,
         phase: "loading"
       });
-      const lavaSrEnabled = options.lavaSrEnabled !== false && this.modelsService.isModelDownloaded("lavasr-enhancer");
-      const voicePrompt = options.voicePrompt || options.prompt || options.description || firstRound.prompt || firstRound.description;
-      const rawEmotion = ((_a = firstRound.emotion) == null ? void 0 : _a.toLowerCase()) || "";
-      const validEmotions = [
+      const D = e.lavaSrEnabled !== !1 && this.modelsService.isModelDownloaded("lavasr-enhancer"), T = e.voicePrompt || e.prompt || e.description || c.prompt || c.description, x = ((d = c.emotion) == null ? void 0 : d.toLowerCase()) || "", M = [
         "command",
         "anger",
         "narration",
@@ -1991,238 +1522,190 @@ class VoiceEngineService {
         "news",
         "sad",
         "surprise"
-      ];
-      const detectedEmotion = validEmotions.includes(rawEmotion) ? rawEmotion : void 0;
-      const firstRoundRefAudio = firstRound.referenceAudioSrc || options.referenceAudioSrc;
-      const { engine } = await this.ensureModelLoaded({
-        engine: activeEngine,
-        language: options.language || "en",
-        lavaSrEnabled,
-        instruct: voicePrompt || void 0,
-        emotion: detectedEmotion,
-        pace: (_b = firstRound.pace) == null ? void 0 : _b.toLowerCase(),
-        referenceAudioSrc: firstRoundRefAudio,
-        taskId,
-        onProgress,
-        onLog
+      ], E = M.includes(x) ? x : void 0, p = c.referenceAudioSrc || e.referenceAudioSrc, { engine: $ } = await this.ensureModelLoaded({
+        engine: n,
+        language: e.language || "en",
+        lavaSrEnabled: D,
+        instruct: T || void 0,
+        emotion: E,
+        pace: (u = c.pace) == null ? void 0 : u.toLowerCase(),
+        referenceAudioSrc: p,
+        taskId: r,
+        onProgress: t,
+        onLog: s
       });
-      if (isCancelled == null ? void 0 : isCancelled()) return { success: false, error: "Cancelled" };
-      const allSamples = [];
-      let sampleRate = lavaSrEnabled ? 48e3 : 24e3;
-      for (let i = 0; i < activeRounds.length; i++) {
-        if (isCancelled == null ? void 0 : isCancelled()) {
-          const reqId = this.activeTtsRequestIds.get(taskId);
-          if (reqId) {
+      if (i != null && i()) return { success: !1, error: "Cancelled" };
+      const I = [];
+      let k = D ? 48e3 : 24e3;
+      for (let V = 0; V < a.length; V++) {
+        if (i != null && i()) {
+          const q = this.activeTtsRequestIds.get(r);
+          if (q)
             try {
-              await ((_c = qvacSdk.cancel) == null ? void 0 : _c.call(qvacSdk, { requestId: reqId }));
+              await ((m = v.cancel) == null ? void 0 : m.call(v, { requestId: q }));
             } catch {
             }
-          }
-          return { success: false, error: "Cancelled" };
+          return { success: !1, error: "Cancelled" };
         }
-        const round = activeRounds[i];
-        const roundRefAudio = round.referenceAudioSrc || options.referenceAudioSrc;
-        const roundRawEmotion = ((_d = round.emotion) == null ? void 0 : _d.toLowerCase()) || "";
-        const roundEmotion = validEmotions.includes(roundRawEmotion) ? roundRawEmotion : detectedEmotion;
-        const { modelId: roundModelId } = await this.ensureModelLoaded({
-          engine: activeEngine,
-          language: options.language || "en",
-          lavaSrEnabled,
-          instruct: round.prompt || round.description || voicePrompt || void 0,
-          emotion: roundEmotion,
-          pace: (_e = round.pace) == null ? void 0 : _e.toLowerCase(),
-          referenceAudioSrc: roundRefAudio,
-          taskId,
-          onProgress,
-          onLog
+        const B = a[V], Pe = B.referenceAudioSrc || e.referenceAudioSrc, Me = ((f = B.emotion) == null ? void 0 : f.toLowerCase()) || "", Ve = M.includes(Me) ? Me : E, { modelId: Be } = await this.ensureModelLoaded({
+          engine: n,
+          language: e.language || "en",
+          lavaSrEnabled: D,
+          instruct: B.prompt || B.description || T || void 0,
+          emotion: Ve,
+          pace: (S = B.pace) == null ? void 0 : S.toLowerCase(),
+          referenceAudioSrc: Pe,
+          taskId: r,
+          onProgress: t,
+          onLog: s
         });
-        onProgress == null ? void 0 : onProgress({
-          taskId,
-          progress: 40 + Math.round(i / activeRounds.length * 50),
-          message: `Synthesizing turn ${i + 1}/${activeRounds.length}${round.speakerName ? ` (${round.speakerName})` : ""}...`,
+        if (t == null || t({
+          taskId: r,
+          progress: 40 + Math.round(V / a.length * 50),
+          message: `Synthesizing turn ${V + 1}/${a.length}${B.speakerName ? ` (${B.speakerName})` : ""}...`,
           phase: "synthesis"
-        });
-        if (i > 0 && allSamples.length > 0) {
-          const interTurnSamples = generateAcousticRoomPause(0.2, sampleRate);
-          crossfadeAppend(allSamples, interTurnSamples, sampleRate, 14);
+        }), V > 0 && I.length > 0) {
+          const q = ve(0.2, k);
+          le(I, q, k, 14);
         }
-        const segments = parseTextAndPauses(round.text);
-        let speechSegCount = 0;
-        for (let sIdx = 0; sIdx < segments.length; sIdx++) {
-          const seg = segments[sIdx];
-          if (isCancelled == null ? void 0 : isCancelled()) {
-            const reqId = this.activeTtsRequestIds.get(taskId);
-            if (reqId) {
+        const Ie = dt(B.text);
+        let Ge = 0;
+        for (let q = 0; q < Ie.length; q++) {
+          const Q = Ie[q];
+          if (i != null && i()) {
+            const Y = this.activeTtsRequestIds.get(r);
+            if (Y)
               try {
-                await ((_f = qvacSdk.cancel) == null ? void 0 : _f.call(qvacSdk, { requestId: reqId }));
+                await ((C = v.cancel) == null ? void 0 : C.call(v, { requestId: Y }));
               } catch {
               }
-            }
-            return { success: false, error: "Cancelled" };
+            return { success: !1, error: "Cancelled" };
           }
-          if (seg.type === "pause" && seg.pauseSec) {
-            const pauseSamples = generateAcousticRoomPause(seg.pauseSec, sampleRate);
-            crossfadeAppend(allSamples, pauseSamples, sampleRate, 14);
+          if (Q.type === "pause" && Q.pauseSec) {
+            const Y = ve(Q.pauseSec, k);
+            le(I, Y, k, 14);
             continue;
           }
-          if (seg.type === "speech" && seg.text) {
-            const { cleanedText, detectedCues, tone: segTone } = processConversationalCues(seg.text, engine, seg.tone);
-            if (!cleanedText) continue;
-            const sentenceChunks = splitSpeechIntoSentences(cleanedText, 36);
-            for (let cIdx = 0; cIdx < sentenceChunks.length; cIdx++) {
-              const chunkObj = sentenceChunks[cIdx];
-              const chunkText = chunkObj.text;
-              if (!chunkText) continue;
-              if (isCancelled == null ? void 0 : isCancelled()) {
-                const reqId = this.activeTtsRequestIds.get(taskId);
-                if (reqId) {
+          if (Q.type === "speech" && Q.text) {
+            const { cleanedText: Y, detectedCues: ne, tone: me } = ct(Q.text, $, Q.tone);
+            if (!Y) continue;
+            const ce = lt(Y, 36);
+            for (let j = 0; j < ce.length; j++) {
+              const ge = ce[j].text;
+              if (!ge) continue;
+              if (i != null && i()) {
+                const R = this.activeTtsRequestIds.get(r);
+                if (R)
                   try {
-                    await ((_g = qvacSdk.cancel) == null ? void 0 : _g.call(qvacSdk, { requestId: reqId }));
+                    await ((L = v.cancel) == null ? void 0 : L.call(v, { requestId: R }));
                   } catch {
                   }
-                }
-                return { success: false, error: "Cancelled" };
+                return { success: !1, error: "Cancelled" };
               }
-              if (allSamples.length > 0) {
-                const isMidSentence = cIdx > 0 && !sentenceChunks[cIdx - 1].isSentenceEnd;
-                const pauseDuration = isMidSentence ? 0.035 : cIdx > 0 ? 0.09 : 0.08;
-                const interPause = generateAcousticRoomPause(pauseDuration, sampleRate);
-                crossfadeAppend(allSamples, interPause, sampleRate, 10);
+              if (I.length > 0) {
+                const K = j > 0 && !ce[j - 1].isSentenceEnd ? 0.035 : j > 0 ? 0.09 : 0.08, P = ve(K, k);
+                le(I, P, k, 10);
               }
-              speechSegCount++;
-              const ttsPayload = {
-                modelId: roundModelId,
-                text: chunkText,
+              Ge++;
+              const H = {
+                modelId: Be,
+                text: ge,
                 inputType: "text",
-                stream: false
+                stream: !1
               };
-              if (engine === "cosyvoice3") {
-                const roundEmotion2 = (((_h = round.emotion) == null ? void 0 : _h.toLowerCase()) || detectedEmotion || "").trim();
-                const validCosyEmotions = ["anger", "happy", "neutral", "sad"];
-                if (segTone === "whisper" || detectedCues.includes("whisper")) {
-                  ttsPayload.volume = "soft";
-                  ttsPayload.pace = "slow";
-                } else if (segTone === "yell" || detectedCues.includes("yell")) {
-                  ttsPayload.volume = "loud";
-                  ttsPayload.emotion = "anger";
-                } else if (segTone === "raise" || detectedCues.includes("raise")) {
-                  ttsPayload.volume = "loud";
-                } else {
-                  let cosyEmotion = validCosyEmotions.includes(roundEmotion2) ? roundEmotion2 : void 0;
-                  if ((detectedCues.includes("sigh") || detectedCues.includes("breath")) && !cosyEmotion) {
-                    cosyEmotion = "sad";
-                  }
-                  if (cosyEmotion && cosyEmotion !== "neutral") {
-                    ttsPayload.emotion = cosyEmotion;
-                  } else {
-                    const roundPace = (((_i = round.pace) == null ? void 0 : _i.toLowerCase()) || "").trim();
-                    const validPaces = ["slow", "moderate", "fast"];
-                    if (validPaces.includes(roundPace) && roundPace !== "moderate") {
-                      ttsPayload.pace = roundPace;
-                    }
+              if ($ === "cosyvoice3") {
+                const R = (((N = B.emotion) == null ? void 0 : N.toLowerCase()) || E || "").trim(), K = ["anger", "happy", "neutral", "sad"];
+                if (me === "whisper" || ne.includes("whisper"))
+                  H.volume = "soft", H.pace = "slow";
+                else if (me === "yell" || ne.includes("yell"))
+                  H.volume = "loud", H.emotion = "anger";
+                else if (me === "raise" || ne.includes("raise"))
+                  H.volume = "loud";
+                else {
+                  let P = K.includes(R) ? R : void 0;
+                  if ((ne.includes("sigh") || ne.includes("breath")) && !P && (P = "sad"), P && P !== "neutral")
+                    H.emotion = P;
+                  else {
+                    const ae = (((_ = B.pace) == null ? void 0 : _.toLowerCase()) || "").trim();
+                    ["slow", "moderate", "fast"].includes(ae) && ae !== "moderate" && (H.pace = ae);
                   }
                 }
               }
-              const result = qvacSdk.textToSpeech(ttsPayload);
-              if (result == null ? void 0 : result.requestId)
-                this.activeTtsRequestIds.set(taskId, result.requestId);
-              const pcm = await result.buffer ?? [];
-              const done = await result.done;
-              const srValue = await result.sampleRate;
-              const sr = typeof srValue === "number" && srValue > 0 ? srValue : lavaSrEnabled ? 48e3 : 24e3;
-              sampleRate = sr;
-              this.activeTtsRequestIds.delete(taskId);
-              if (pcm.length > 0) {
-                let maxAbs = 0;
-                let minVal = Infinity;
-                let maxVal = -Infinity;
-                for (const sample of pcm) {
-                  const value = Number.isFinite(sample) ? sample : 0;
-                  maxAbs = Math.max(maxAbs, Math.abs(value));
-                  minVal = Math.min(minVal, value);
-                  maxVal = Math.max(maxVal, value);
+              const X = v.textToSpeech(H);
+              X != null && X.requestId && this.activeTtsRequestIds.set(r, X.requestId);
+              const F = await X.buffer ?? [], ze = await X.done, fe = await X.sampleRate, oe = typeof fe == "number" && fe > 0 ? fe : D ? 48e3 : 24e3;
+              if (k = oe, this.activeTtsRequestIds.delete(r), F.length > 0) {
+                let R = 0, K = 1 / 0, P = -1 / 0;
+                for (const se of F) {
+                  const ye = Number.isFinite(se) ? se : 0;
+                  R = Math.max(R, Math.abs(ye)), K = Math.min(K, ye), P = Math.max(P, ye);
                 }
-                const allZero = pcm.every((s) => s === 0);
-                const allSame = pcm.every((s) => s === pcm[0]);
+                const ae = F.every((se) => se === 0), be = F.every((se) => se === F[0]);
                 console.log(
-                  `[TTS Debug] Turn ${i + 1} Chunk ${cIdx + 1}/${sentenceChunks.length}: PCM length=${pcm.length}, maxAbs=${maxAbs.toFixed(4)}, min=${minVal.toFixed(4)}, max=${maxVal.toFixed(4)}, allZero=${allZero}, allSame=${allSame}, sampleRate=${sr}`
+                  `[TTS Debug] Turn ${V + 1} Chunk ${j + 1}/${ce.length}: PCM length=${F.length}, maxAbs=${R.toFixed(4)}, min=${K.toFixed(4)}, max=${P.toFixed(4)}, allZero=${ae}, allSame=${be}, sampleRate=${oe}`
                 );
               }
-              if (pcm.length > 0) {
-                const safeLabel = chunkText.replace(/[^a-z0-9]/gi, "_").slice(0, 30) || `round-${i}-chunk-${cIdx}`;
-                savePcmAsWavFile(pcm, sr, `segment-${i}-${safeLabel}`);
+              if (F.length > 0) {
+                const R = ge.replace(/[^a-z0-9]/gi, "_").slice(0, 30) || `round-${V}-chunk-${j}`;
+                Ae(F, oe, `segment-${V}-${R}`);
               }
-              if (!done || !pcm || pcm.length === 0) {
+              if (!ze || !F || F.length === 0)
                 throw new Error(
-                  `${engine === "chatterbox" ? "Chatterbox T3" : "CosyVoice 3"} returned no audio for turn ${i + 1}`
+                  `${$ === "chatterbox" ? "Chatterbox T3" : "CosyVoice 3"} returned no audio for turn ${V + 1}`
                 );
-              }
-              const trimmedPcm = trimPcmSilence(pcm, sr);
-              crossfadeAppend(allSamples, trimmedPcm, sr, 12);
+              const qe = at(F, oe);
+              le(I, qe, oe, 12);
             }
           }
         }
       }
-      if (isCancelled == null ? void 0 : isCancelled()) return { success: false, error: "Cancelled" };
-      onProgress == null ? void 0 : onProgress({
-        taskId,
+      if (i != null && i()) return { success: !1, error: "Cancelled" };
+      t == null || t({
+        taskId: r,
         progress: 95,
-        message: `Finalizing ${sampleRate}Hz WAV & waveform...`,
+        message: `Finalizing ${k}Hz WAV & waveform...`,
         phase: "finalizing"
-      });
-      if (allSamples.length > 0) {
-        savePcmAsWavFile(allSamples, sampleRate, "combined-output");
-      }
-      const audioUrl = pcmToWavDataUri(allSamples, sampleRate);
-      const waveform = computePeaks(allSamples, 38);
-      const duration = Math.round(allSamples.length / sampleRate * 10) / 10;
-      const fullSnippet = activeRounds[0].text.trim();
-      const textSnippet = fullSnippet.length > 55 ? `${fullSnippet.slice(0, 52)}...` : fullSnippet;
-      const output = {
-        id: `gen-${taskId}`,
-        roundIndex: options.historyIndex || 0,
-        title: `Generation ${(options.historyIndex || 0) + 1}`,
-        textSnippet,
-        speakerName: activeRounds.length > 1 ? `${activeRounds.length} Speakers` : options.speakerName || "Sterling Rhodes",
-        speakerColor: activeRounds.length > 1 ? "#10b981" : options.speakerColor || "#38bdf8",
-        speakerAvatarUrl: options.speakerAvatarUrl || "/voices/sterling.jpg",
-        duration,
-        audioUrl,
-        waveform,
+      }), I.length > 0 && Ae(I, k, "combined-output");
+      const z = nt(I, k), re = ot(I, 38), W = Math.round(I.length / k * 10) / 10, he = a[0].text.trim(), Re = he.length > 55 ? `${he.slice(0, 52)}...` : he, Fe = {
+        id: `gen-${r}`,
+        roundIndex: e.historyIndex || 0,
+        title: `Generation ${(e.historyIndex || 0) + 1}`,
+        textSnippet: Re,
+        speakerName: a.length > 1 ? `${a.length} Speakers` : e.speakerName || "Sterling Rhodes",
+        speakerColor: a.length > 1 ? "#10b981" : e.speakerColor || "#38bdf8",
+        speakerAvatarUrl: e.speakerAvatarUrl || "/voices/sterling.jpg",
+        duration: W,
+        audioUrl: z,
+        waveform: re,
         timestamp: "Just now",
-        emotion: firstRound.emotion || "Neutral"
+        emotion: c.emotion || "Neutral"
       };
-      onProgress == null ? void 0 : onProgress({
-        taskId,
+      return t == null || t({
+        taskId: r,
         progress: 100,
-        message: `${engine === "chatterbox" ? "Chatterbox T3" : "CosyVoice 3"} synthesis complete`,
+        message: `${$ === "chatterbox" ? "Chatterbox T3" : "CosyVoice 3"} synthesis complete`,
         phase: "complete"
-      });
-      onLog == null ? void 0 : onLog({
-        text: `[Echo Voice Engine] Synthesis complete (${duration}s @ ${sampleRate}Hz, ${allSamples.length} samples).`,
+      }), s == null || s({
+        text: `[Echo Voice Engine] Synthesis complete (${W}s @ ${k}Hz, ${I.length} samples).`,
         stream: "stdout"
-      });
-      return { success: true, data: output };
-    } catch (err) {
-      this.activeTtsRequestIds.delete(taskId);
-      const msg = (err == null ? void 0 : err.message) ? String(err.message) : String(err);
-      onLog == null ? void 0 : onLog({
-        text: `[Echo Voice Engine] Synthesis failed: ${msg}`,
+      }), { success: !0, data: Fe };
+    } catch (D) {
+      this.activeTtsRequestIds.delete(r);
+      const T = D != null && D.message ? String(D.message) : String(D);
+      return s == null || s({
+        text: `[Echo Voice Engine] Synthesis failed: ${T}`,
         stream: "stderr"
-      });
-      return { success: false, error: msg };
+      }), { success: !1, error: T };
     }
   }
 }
-class TtsService {
-  constructor(modelsService, conversationRepo) {
-    __publicField(this, "activeTasks", /* @__PURE__ */ new Set());
-    __publicField(this, "voiceEngine");
-    __publicField(this, "modelsService");
-    __publicField(this, "conversationRepo");
-    this.modelsService = modelsService || new ModelsService();
-    this.voiceEngine = new VoiceEngineService(this.modelsService);
-    this.conversationRepo = conversationRepo;
+class ht {
+  constructor(e, t) {
+    b(this, "activeTasks", /* @__PURE__ */ new Set());
+    b(this, "voiceEngine");
+    b(this, "modelsService");
+    b(this, "conversationRepo");
+    this.modelsService = e || new Te(), this.voiceEngine = new ut(this.modelsService), this.conversationRepo = t;
   }
   /** Access conversation persistence repository */
   getConversationRepository() {
@@ -2230,31 +1713,19 @@ class TtsService {
   }
   /** Query all persisted conversations from SQLite */
   async listConversations() {
-    if (this.conversationRepo) {
-      return this.conversationRepo.listConversations();
-    }
-    return [];
+    return this.conversationRepo ? this.conversationRepo.listConversations() : [];
   }
   /** Save conversation and dialogue rounds to SQLite */
-  async saveConversation(data) {
-    if (this.conversationRepo) {
-      return this.conversationRepo.saveConversation(data);
-    }
-    return { success: false, error: "Conversation repository unavailable" };
+  async saveConversation(e) {
+    return this.conversationRepo ? this.conversationRepo.saveConversation(e) : { success: !1, error: "Conversation repository unavailable" };
   }
   /** Delete conversation from SQLite */
-  async deleteConversation(id) {
-    if (this.conversationRepo) {
-      return this.conversationRepo.deleteConversation(id);
-    }
-    return { success: false, error: "Conversation repository unavailable" };
+  async deleteConversation(e) {
+    return this.conversationRepo ? this.conversationRepo.deleteConversation(e) : { success: !1, error: "Conversation repository unavailable" };
   }
   /** Clear all conversations from SQLite */
   async clearConversations() {
-    if (this.conversationRepo) {
-      return this.conversationRepo.clearConversations();
-    }
-    return { success: false, error: "Conversation repository unavailable" };
+    return this.conversationRepo ? this.conversationRepo.clearConversations() : { success: !1, error: "Conversation repository unavailable" };
   }
   /** Access the underlying voice engine neural service */
   getVoiceEngine() {
@@ -2265,59 +1736,58 @@ class TtsService {
     return this.modelsService;
   }
   /** Get voice engine models download status */
-  getModelStatus(selectedEngine) {
-    return this.modelsService.getStatus(selectedEngine);
+  getModelStatus(e) {
+    return this.modelsService.getStatus(e);
   }
   /** Download a specific model */
-  async downloadModel(modelId, onProgress) {
-    return this.modelsService.downloadModel(modelId, onProgress);
+  async downloadModel(e, t) {
+    return this.modelsService.downloadModel(e, t);
   }
   /** Cancel an in-flight model download */
-  cancelModelDownload(modelId) {
-    return this.modelsService.cancelDownload(modelId);
+  cancelModelDownload(e) {
+    return this.modelsService.cancelDownload(e);
   }
   /** Delete all installed models from disk and reset engine state */
   async deleteAllModels() {
     return this.voiceEngine.deleteAllModels();
   }
   /** Cancel an active generation task + underlying QVAC request */
-  cancelGeneration(taskId) {
-    var _a, _b;
-    if (this.activeTasks.has(taskId)) {
-      this.activeTasks.delete(taskId);
+  cancelGeneration(e) {
+    var t, s;
+    if (this.activeTasks.has(e)) {
+      this.activeTasks.delete(e);
       try {
-        ;
-        (_b = (_a = this.voiceEngine).cancelSynthesis) == null ? void 0 : _b.call(_a, taskId);
+        (s = (t = this.voiceEngine).cancelSynthesis) == null || s.call(t, e);
       } catch {
       }
-      return true;
+      return !0;
     }
-    return false;
+    return !1;
   }
   /** Check if a task was cancelled */
-  isCancelled(taskId) {
-    return !this.activeTasks.has(taskId);
+  isCancelled(e) {
+    return !this.activeTasks.has(e);
   }
   /** High-fidelity speech synthesis pipeline using Echo Voice Engine prompt-driven voice design */
-  async generateSpeech(options, onProgress, onLog) {
-    const { taskId } = options;
-    this.activeTasks.add(taskId);
+  async generateSpeech(e, t, s) {
+    const { taskId: i } = e;
+    this.activeTasks.add(i);
     try {
       return await this.voiceEngine.synthesize(
-        options,
-        onProgress,
-        onLog,
-        () => this.isCancelled(taskId)
+        e,
+        t,
+        s,
+        () => this.isCancelled(i)
       );
     } finally {
-      this.activeTasks.delete(taskId);
+      this.activeTasks.delete(i);
     }
   }
 }
-class ConversationRepositoryService {
-  constructor(db) {
-    __publicField(this, "db");
-    this.db = db;
+class mt {
+  constructor(e) {
+    b(this, "db");
+    this.db = e;
   }
   /**
    * Query all conversations and dialogue rounds from SQLite
@@ -2325,217 +1795,196 @@ class ConversationRepositoryService {
   async listConversations() {
     await this.db.init();
     try {
-      const records = await this.db.client.conversation.findMany({
+      return (await this.db.client.conversation.findMany({
         include: {
           rounds: {
             orderBy: {
               roundOrder: "asc"
             }
           },
-          activity: true
+          activity: !0
         },
         orderBy: {
           createdAt: "desc"
         }
-      });
-      return records.map((c) => ({
-        id: c.id,
-        text: c.text,
-        previewSnippet: c.previewSnippet || c.text,
-        voiceName: c.voiceName,
-        voiceColor: c.voiceColor,
-        voiceAvatarUrl: c.voiceAvatarUrl || "/voices/sterling.jpg",
-        dateGroup: c.dateGroup,
-        timeAgo: c.timeAgo,
-        timestamp: c.timestamp ? Number(c.timestamp) : c.createdAt.getTime(),
-        model: c.model,
-        engine: c.engine,
-        duration: c.duration,
-        durationSec: c.durationSec || 0,
-        emotion: c.emotion || void 0,
-        audioUrl: c.audioUrl || void 0,
-        waveform: c.waveform ? JSON.parse(c.waveform) : [],
-        voicePrompt: c.voicePrompt || void 0,
-        language: c.language || void 0,
-        speakerCount: c.speakerCount,
-        generationId: c.generationId || void 0,
-        activity: c.activity ? {
-          id: c.activity.id,
-          type: c.activity.type,
-          title: c.activity.title,
-          category: c.activity.category,
-          subCategory: c.activity.subCategory,
-          description: c.activity.description
+      })).map((t) => ({
+        id: t.id,
+        text: t.text,
+        previewSnippet: t.previewSnippet || t.text,
+        voiceName: t.voiceName,
+        voiceColor: t.voiceColor,
+        voiceAvatarUrl: t.voiceAvatarUrl || "/voices/sterling.jpg",
+        dateGroup: t.dateGroup,
+        timeAgo: t.timeAgo,
+        timestamp: t.timestamp ? Number(t.timestamp) : t.createdAt.getTime(),
+        model: t.model,
+        engine: t.engine,
+        duration: t.duration,
+        durationSec: t.durationSec || 0,
+        emotion: t.emotion || void 0,
+        audioUrl: t.audioUrl || void 0,
+        waveform: t.waveform ? JSON.parse(t.waveform) : [],
+        voicePrompt: t.voicePrompt || void 0,
+        language: t.language || void 0,
+        speakerCount: t.speakerCount,
+        generationId: t.generationId || void 0,
+        activity: t.activity ? {
+          id: t.activity.id,
+          type: t.activity.type,
+          title: t.activity.title,
+          category: t.activity.category,
+          subCategory: t.activity.subCategory,
+          description: t.activity.description
         } : void 0,
-        roundsData: c.rounds.map((r) => ({
-          id: r.id,
-          voiceId: r.voiceId,
-          text: r.text,
-          speed: r.speed,
-          emotion: r.emotion || void 0,
-          pace: r.pace || void 0,
-          prompt: r.prompt || void 0,
-          description: r.description || void 0,
-          referenceAudioSrc: r.referenceAudioSrc || void 0,
-          speakerName: r.speakerName || void 0,
-          speakerColor: r.speakerColor || void 0
+        roundsData: t.rounds.map((s) => ({
+          id: s.id,
+          voiceId: s.voiceId,
+          text: s.text,
+          speed: s.speed,
+          emotion: s.emotion || void 0,
+          pace: s.pace || void 0,
+          prompt: s.prompt || void 0,
+          description: s.description || void 0,
+          referenceAudioSrc: s.referenceAudioSrc || void 0,
+          speakerName: s.speakerName || void 0,
+          speakerColor: s.speakerColor || void 0
         }))
       }));
-    } catch (err) {
-      console.error("[ConversationRepositoryService] Failed to query conversations:", err);
-      return [];
+    } catch (e) {
+      return console.error("[ConversationRepositoryService] Failed to query conversations:", e), [];
     }
   }
   /**
    * Save or update a conversation with all dialogue rounds in SQLite
    */
-  async saveConversation(data) {
+  async saveConversation(e) {
     await this.db.init();
     try {
-      const waveformJson = data.waveform ? JSON.stringify(data.waveform) : "[]";
-      const timestampBigInt = data.timestamp ? BigInt(Math.floor(data.timestamp)) : BigInt(Date.now());
-      await this.db.client.$transaction(async (tx) => {
-        await tx.conversation.upsert({
-          where: { id: data.id },
+      const t = e.waveform ? JSON.stringify(e.waveform) : "[]", s = e.timestamp ? BigInt(Math.floor(e.timestamp)) : BigInt(Date.now());
+      return await this.db.client.$transaction(async (i) => {
+        if (await i.conversation.upsert({
+          where: { id: e.id },
           update: {
-            text: data.text,
-            previewSnippet: data.previewSnippet || data.text,
-            voiceName: data.voiceName,
-            voiceColor: data.voiceColor,
-            voiceAvatarUrl: data.voiceAvatarUrl,
-            dateGroup: data.dateGroup,
-            timeAgo: data.timeAgo,
-            timestamp: timestampBigInt,
-            model: data.model,
-            engine: data.engine || "cosyvoice3",
-            duration: data.duration,
-            durationSec: data.durationSec,
-            emotion: data.emotion,
-            audioUrl: data.audioUrl,
-            waveform: waveformJson,
-            voicePrompt: data.voicePrompt,
-            language: data.language,
-            speakerCount: data.speakerCount || 1,
-            generationId: data.generationId
+            text: e.text,
+            previewSnippet: e.previewSnippet || e.text,
+            voiceName: e.voiceName,
+            voiceColor: e.voiceColor,
+            voiceAvatarUrl: e.voiceAvatarUrl,
+            dateGroup: e.dateGroup,
+            timeAgo: e.timeAgo,
+            timestamp: s,
+            model: e.model,
+            engine: e.engine || "cosyvoice3",
+            duration: e.duration,
+            durationSec: e.durationSec,
+            emotion: e.emotion,
+            audioUrl: e.audioUrl,
+            waveform: t,
+            voicePrompt: e.voicePrompt,
+            language: e.language,
+            speakerCount: e.speakerCount || 1,
+            generationId: e.generationId
           },
           create: {
-            id: data.id,
-            text: data.text,
-            previewSnippet: data.previewSnippet || data.text,
-            voiceName: data.voiceName,
-            voiceColor: data.voiceColor,
-            voiceAvatarUrl: data.voiceAvatarUrl,
-            dateGroup: data.dateGroup,
-            timeAgo: data.timeAgo,
-            timestamp: timestampBigInt,
-            model: data.model,
-            engine: data.engine || "cosyvoice3",
-            duration: data.duration,
-            durationSec: data.durationSec,
-            emotion: data.emotion,
-            audioUrl: data.audioUrl,
-            waveform: waveformJson,
-            voicePrompt: data.voicePrompt,
-            language: data.language,
-            speakerCount: data.speakerCount || 1,
-            generationId: data.generationId
+            id: e.id,
+            text: e.text,
+            previewSnippet: e.previewSnippet || e.text,
+            voiceName: e.voiceName,
+            voiceColor: e.voiceColor,
+            voiceAvatarUrl: e.voiceAvatarUrl,
+            dateGroup: e.dateGroup,
+            timeAgo: e.timeAgo,
+            timestamp: s,
+            model: e.model,
+            engine: e.engine || "cosyvoice3",
+            duration: e.duration,
+            durationSec: e.durationSec,
+            emotion: e.emotion,
+            audioUrl: e.audioUrl,
+            waveform: t,
+            voicePrompt: e.voicePrompt,
+            language: e.language,
+            speakerCount: e.speakerCount || 1,
+            generationId: e.generationId
           }
-        });
-        await tx.speechRound.deleteMany({
-          where: { conversationId: data.id }
-        });
-        if (data.roundsData && Array.isArray(data.roundsData) && data.roundsData.length > 0) {
-          const roundsToCreate = data.roundsData.map((r, idx) => ({
-            id: r.id || `${data.id}-round-${idx}`,
-            conversationId: data.id,
-            roundOrder: idx,
-            voiceId: r.voiceId || "voice-en-male-1",
-            text: r.text || "",
-            speed: typeof r.speed === "number" ? r.speed : 1,
-            emotion: r.emotion || null,
-            pace: r.pace || null,
-            prompt: r.prompt || null,
-            description: r.description || null,
-            referenceAudioSrc: r.referenceAudioSrc || null,
-            speakerName: r.speakerName || null,
-            speakerColor: r.speakerColor || null
+        }), await i.speechRound.deleteMany({
+          where: { conversationId: e.id }
+        }), e.roundsData && Array.isArray(e.roundsData) && e.roundsData.length > 0) {
+          const u = e.roundsData.map((m, f) => ({
+            id: m.id || `${e.id}-round-${f}`,
+            conversationId: e.id,
+            roundOrder: f,
+            voiceId: m.voiceId || "voice-en-male-1",
+            text: m.text || "",
+            speed: typeof m.speed == "number" ? m.speed : 1,
+            emotion: m.emotion || null,
+            pace: m.pace || null,
+            prompt: m.prompt || null,
+            description: m.description || null,
+            referenceAudioSrc: m.referenceAudioSrc || null,
+            speakerName: m.speakerName || null,
+            speakerColor: m.speakerColor || null
           }));
-          for (const round of roundsToCreate) {
-            await tx.speechRound.create({ data: round });
-          }
+          for (const m of u)
+            await i.speechRound.create({ data: m });
         }
-        const rawSnippet = data.previewSnippet || data.text || "";
-        const cleanSnippet = rawSnippet.replace(/\s+/g, " ").trim();
-        const baseTitle = cleanSnippet ? cleanSnippet.length > 55 ? `${cleanSnippet.slice(0, 52)}...` : cleanSnippet : `${data.voiceName || "Speech Synthesis"} Turn`;
-        const existingActivity = await tx.activity.findUnique({
-          where: { conversationId: data.id }
+        const o = (e.previewSnippet || e.text || "").replace(/\s+/g, " ").trim(), n = o ? o.length > 55 ? `${o.slice(0, 52)}...` : o : `${e.voiceName || "Speech Synthesis"} Turn`, a = await i.activity.findUnique({
+          where: { conversationId: e.id }
+        }), c = "Text to Speech", l = e.speakerCount && e.speakerCount > 1 ? `${e.speakerCount} Speakers Diarized` : e.voiceName || "Single Speaker", d = JSON.stringify({
+          model: e.model,
+          engine: e.engine || "cosyvoice3",
+          duration: e.duration,
+          durationSec: e.durationSec,
+          emotion: e.emotion,
+          audioUrl: e.audioUrl,
+          waveform: e.waveform || [],
+          speakerCount: e.speakerCount || 1
         });
-        const activityCategory = "Text to Speech";
-        const activitySubCategory = data.speakerCount && data.speakerCount > 1 ? `${data.speakerCount} Speakers Diarized` : data.voiceName || "Single Speaker";
-        const activityMetadata = JSON.stringify({
-          model: data.model,
-          engine: data.engine || "cosyvoice3",
-          duration: data.duration,
-          durationSec: data.durationSec,
-          emotion: data.emotion,
-          audioUrl: data.audioUrl,
-          waveform: data.waveform || [],
-          speakerCount: data.speakerCount || 1
-        });
-        if (!existingActivity) {
-          let uniqueTitle = baseTitle;
-          let counter = 1;
-          while (await tx.activity.findUnique({ where: { title: uniqueTitle } })) {
-            counter++;
-            uniqueTitle = `${baseTitle} #${counter}`;
-          }
-          await tx.activity.create({
+        if (a)
+          await i.activity.update({
+            where: { conversationId: e.id },
             data: {
-              id: `act-${data.id}`,
+              category: c,
+              subCategory: l,
+              description: o ? o.slice(0, 160) : null,
+              metadata: d
+            }
+          });
+        else {
+          let u = n, m = 1;
+          for (; await i.activity.findUnique({ where: { title: u } }); )
+            m++, u = `${n} #${m}`;
+          await i.activity.create({
+            data: {
+              id: `act-${e.id}`,
               type: "tts",
-              title: uniqueTitle,
-              category: activityCategory,
-              subCategory: activitySubCategory,
-              description: cleanSnippet ? cleanSnippet.slice(0, 160) : null,
-              originId: data.id,
+              title: u,
+              category: c,
+              subCategory: l,
+              description: o ? o.slice(0, 160) : null,
+              originId: e.id,
               originType: "conversation",
-              conversationId: data.id,
-              metadata: activityMetadata
-            }
-          });
-        } else {
-          await tx.activity.update({
-            where: { conversationId: data.id },
-            data: {
-              category: activityCategory,
-              subCategory: activitySubCategory,
-              description: cleanSnippet ? cleanSnippet.slice(0, 160) : null,
-              metadata: activityMetadata
+              conversationId: e.id,
+              metadata: d
             }
           });
         }
-      });
-      return { success: true };
-    } catch (err) {
-      console.error("[ConversationRepositoryService] Failed to save conversation:", err);
-      const message = err instanceof Error ? err.message : String(err);
-      return { success: false, error: message };
+      }), { success: !0 };
+    } catch (t) {
+      return console.error("[ConversationRepositoryService] Failed to save conversation:", t), { success: !1, error: t instanceof Error ? t.message : String(t) };
     }
   }
   /**
    * Delete a conversation from SQLite
    */
-  async deleteConversation(id) {
+  async deleteConversation(e) {
     await this.db.init();
     try {
-      await this.db.client.conversation.delete({
-        where: { id }
-      });
-      return { success: true };
-    } catch (err) {
-      console.error("[ConversationRepositoryService] Failed to delete conversation:", err);
-      const message = err instanceof Error ? err.message : String(err);
-      return { success: false, error: message };
+      return await this.db.client.conversation.delete({
+        where: { id: e }
+      }), { success: !0 };
+    } catch (t) {
+      return console.error("[ConversationRepositoryService] Failed to delete conversation:", t), { success: !1, error: t instanceof Error ? t.message : String(t) };
     }
   }
   /**
@@ -2544,337 +1993,257 @@ class ConversationRepositoryService {
   async clearConversations() {
     await this.db.init();
     try {
-      await this.db.client.conversation.deleteMany({});
-      return { success: true };
-    } catch (err) {
-      console.error("[ConversationRepositoryService] Failed to clear conversations:", err);
-      const message = err instanceof Error ? err.message : String(err);
-      return { success: false, error: message };
+      return await this.db.client.conversation.deleteMany({}), { success: !0 };
+    } catch (e) {
+      return console.error("[ConversationRepositoryService] Failed to clear conversations:", e), { success: !1, error: e instanceof Error ? e.message : String(e) };
     }
   }
 }
-class TtsController extends BaseController {
-  constructor(ttsService) {
-    super();
-    this.ttsService = ttsService;
+class gt extends ie {
+  constructor(e) {
+    super(), this.ttsService = e;
   }
   init() {
-    ipcMain.handle(
-      IPC_CHANNELS.TTS_GENERATE,
-      async (event, options) => {
-        const targetEngine = options.engine || "cosyvoice3";
-        const status = this.ttsService.getModelStatus(targetEngine);
-        const requiredNotReady = status.models.filter((m) => m.required && !m.downloaded);
-        if (requiredNotReady.length > 0) {
+    A.handle(
+      w.TTS_GENERATE,
+      async (e, t) => {
+        const s = t.engine || "cosyvoice3", r = this.ttsService.getModelStatus(s).models.filter((c) => c.required && !c.downloaded);
+        if (r.length > 0)
           return {
-            success: false,
-            error: `Required voice engine models not downloaded: ${requiredNotReady.map((m) => m.name).join(", ")}`
+            success: !1,
+            error: `Required voice engine models not downloaded: ${r.map((c) => c.name).join(", ")}`
           };
-        }
-        const sendProgress = (data) => {
+        const o = (c) => {
           try {
-            if (!event.sender.isDestroyed()) {
-              event.sender.send(IPC_CHANNELS.TTS_PROGRESS, data);
-            }
-          } catch (err) {
-            console.warn("[TtsController] Failed to send progress event:", err);
+            e.sender.isDestroyed() || e.sender.send(w.TTS_PROGRESS, c);
+          } catch (l) {
+            console.warn("[TtsController] Failed to send progress event:", l);
           }
-        };
-        const sendLog = (log) => {
+        }, n = (c) => {
           try {
-            if (!event.sender.isDestroyed()) {
-              event.sender.send(IPC_CHANNELS.TERMINAL_LOG, {
-                projectId: "echo-ai",
-                text: log.text,
-                stream: log.stream,
-                timestamp: (/* @__PURE__ */ new Date()).toISOString()
-              });
-            }
-          } catch (err) {
-            console.warn("[TtsController] Failed to send log event:", err);
+            e.sender.isDestroyed() || e.sender.send(w.TERMINAL_LOG, {
+              projectId: "echo-ai",
+              text: c.text,
+              stream: c.stream,
+              timestamp: (/* @__PURE__ */ new Date()).toISOString()
+            });
+          } catch (l) {
+            console.warn("[TtsController] Failed to send log event:", l);
           }
-        };
-        const result = await this.ttsService.generateSpeech(options, sendProgress, sendLog);
-        if (result.success && result.data) {
+        }, a = await this.ttsService.generateSpeech(t, o, n);
+        if (a.success && a.data)
           try {
-            if (!event.sender.isDestroyed()) {
-              event.sender.send(IPC_CHANNELS.TTS_COMPLETE, {
-                taskId: options.taskId,
-                generation: result.data
-              });
-            }
-          } catch (err) {
-            console.warn("[TtsController] Failed to send complete event:", err);
+            e.sender.isDestroyed() || e.sender.send(w.TTS_COMPLETE, {
+              taskId: t.taskId,
+              generation: a.data
+            });
+          } catch (c) {
+            console.warn("[TtsController] Failed to send complete event:", c);
           }
-        } else if (!result.success) {
+        else if (!a.success)
           try {
-            if (!event.sender.isDestroyed()) {
-              event.sender.send(IPC_CHANNELS.TTS_ERROR, {
-                taskId: options.taskId,
-                error: result.error || "Generation failed"
-              });
-            }
-          } catch (err) {
-            console.warn("[TtsController] Failed to send error event:", err);
+            e.sender.isDestroyed() || e.sender.send(w.TTS_ERROR, {
+              taskId: t.taskId,
+              error: a.error || "Generation failed"
+            });
+          } catch (c) {
+            console.warn("[TtsController] Failed to send error event:", c);
           }
-        }
-        return result;
+        return a;
       }
-    );
-    ipcMain.handle(
-      IPC_CHANNELS.TTS_CANCEL,
-      async (_, { taskId }) => {
-        const cancelled = this.ttsService.cancelGeneration(taskId);
-        return { success: cancelled, taskId };
-      }
-    );
-    ipcMain.handle(IPC_CHANNELS.TTS_HISTORY_LIST, async () => {
+    ), A.handle(
+      w.TTS_CANCEL,
+      async (e, { taskId: t }) => ({ success: this.ttsService.cancelGeneration(t), taskId: t })
+    ), A.handle(w.TTS_HISTORY_LIST, async () => {
       try {
-        const list = await this.ttsService.listConversations();
-        return { success: true, data: list };
-      } catch (err) {
-        return { success: false, error: (err == null ? void 0 : err.message) || String(err) };
+        return { success: !0, data: await this.ttsService.listConversations() };
+      } catch (e) {
+        return { success: !1, error: (e == null ? void 0 : e.message) || String(e) };
       }
-    });
-    ipcMain.handle(IPC_CHANNELS.TTS_HISTORY_SAVE, async (_event, data) => {
+    }), A.handle(w.TTS_HISTORY_SAVE, async (e, t) => {
       try {
-        const res = await this.ttsService.saveConversation(data);
-        return res;
-      } catch (err) {
-        return { success: false, error: (err == null ? void 0 : err.message) || String(err) };
+        return await this.ttsService.saveConversation(t);
+      } catch (s) {
+        return { success: !1, error: (s == null ? void 0 : s.message) || String(s) };
       }
-    });
-    ipcMain.handle(IPC_CHANNELS.TTS_HISTORY_DELETE, async (_event, payload) => {
+    }), A.handle(w.TTS_HISTORY_DELETE, async (e, t) => {
       try {
-        const id = typeof payload === "string" ? payload : payload.id;
-        const res = await this.ttsService.deleteConversation(id);
-        return res;
-      } catch (err) {
-        return { success: false, error: (err == null ? void 0 : err.message) || String(err) };
+        const s = typeof t == "string" ? t : t.id;
+        return await this.ttsService.deleteConversation(s);
+      } catch (s) {
+        return { success: !1, error: (s == null ? void 0 : s.message) || String(s) };
       }
-    });
-    ipcMain.handle(IPC_CHANNELS.TTS_HISTORY_CLEAR, async () => {
+    }), A.handle(w.TTS_HISTORY_CLEAR, async () => {
       try {
-        const res = await this.ttsService.clearConversations();
-        return res;
-      } catch (err) {
-        return { success: false, error: (err == null ? void 0 : err.message) || String(err) };
+        return await this.ttsService.clearConversations();
+      } catch (e) {
+        return { success: !1, error: (e == null ? void 0 : e.message) || String(e) };
       }
     });
   }
 }
-const _MusicLoggerService = class _MusicLoggerService {
+const J = class J {
   constructor() {
-    __publicField(this, "primaryLogPath");
-    __publicField(this, "mirrorLogPath");
-    var _a;
-    let userDataDir;
+    b(this, "primaryLogPath");
+    b(this, "mirrorLogPath");
+    var i;
+    let e;
     try {
-      userDataDir = ((_a = app) == null ? void 0 : _a.getPath) ? app.getPath("userData") : process.cwd();
+      e = (i = U) != null && i.getPath ? U.getPath("userData") : process.cwd();
     } catch {
-      userDataDir = process.cwd();
+      e = process.cwd();
     }
-    const primaryLogsDir = path.join(userDataDir, "logs");
-    if (!fs.existsSync(primaryLogsDir)) {
+    const t = y.join(e, "logs");
+    if (!g.existsSync(t))
       try {
-        fs.mkdirSync(primaryLogsDir, { recursive: true });
+        g.mkdirSync(t, { recursive: !0 });
       } catch {
       }
-    }
-    this.primaryLogPath = path.join(primaryLogsDir, "music-generation.log");
-    const mirrorLogsDir = path.join(process.cwd(), "logs");
-    if (!fs.existsSync(mirrorLogsDir)) {
+    this.primaryLogPath = y.join(t, "music-generation.log");
+    const s = y.join(process.cwd(), "logs");
+    if (!g.existsSync(s))
       try {
-        fs.mkdirSync(mirrorLogsDir, { recursive: true });
+        g.mkdirSync(s, { recursive: !0 });
       } catch {
       }
-    }
-    this.mirrorLogPath = path.join(mirrorLogsDir, "music-generation.log");
-    this.rotateIfNecessary(this.primaryLogPath);
-    this.rotateIfNecessary(this.mirrorLogPath);
-    this.writeRaw(`
+    this.mirrorLogPath = y.join(s, "music-generation.log"), this.rotateIfNecessary(this.primaryLogPath), this.rotateIfNecessary(this.mirrorLogPath), this.writeRaw(`
 === Music Logger Initialized [${(/* @__PURE__ */ new Date()).toISOString()}] ===
 Primary Log: ${this.primaryLogPath}
 Mirror Log: ${this.mirrorLogPath}
 `);
   }
   static getInstance() {
-    if (!_MusicLoggerService.instance) {
-      _MusicLoggerService.instance = new _MusicLoggerService();
-    }
-    return _MusicLoggerService.instance;
+    return J.instance || (J.instance = new J()), J.instance;
   }
-  rotateIfNecessary(filePath) {
+  rotateIfNecessary(e) {
     try {
-      if (fs.existsSync(filePath)) {
-        const stat = fs.statSync(filePath);
-        if (stat.size > 15 * 1024 * 1024) {
-          const backup = `${filePath}.${Date.now()}.bak`;
-          fs.renameSync(filePath, backup);
-        }
+      if (g.existsSync(e) && g.statSync(e).size > 15 * 1024 * 1024) {
+        const s = `${e}.${Date.now()}.bak`;
+        g.renameSync(e, s);
       }
     } catch {
     }
   }
-  writeRaw(content) {
+  writeRaw(e) {
     try {
-      fs.appendFileSync(this.primaryLogPath, content, "utf-8");
-    } catch (e) {
-      console.warn("[MusicLogger] Failed to write primary log:", e);
+      g.appendFileSync(this.primaryLogPath, e, "utf-8");
+    } catch (t) {
+      console.warn("[MusicLogger] Failed to write primary log:", t);
     }
-    if (this.mirrorLogPath !== this.primaryLogPath) {
+    if (this.mirrorLogPath !== this.primaryLogPath)
       try {
-        fs.appendFileSync(this.mirrorLogPath, content, "utf-8");
+        g.appendFileSync(this.mirrorLogPath, e, "utf-8");
       } catch {
       }
-    }
   }
-  logInfo(message, meta) {
-    const timestamp = (/* @__PURE__ */ new Date()).toISOString();
-    let text = `[${timestamp}] [INFO] ${message}`;
-    if (meta) {
-      text += `
-  Metadata: ${JSON.stringify(meta, null, 2)}`;
-    }
-    text += "\n";
-    this.writeRaw(text);
-    console.log(`[MusicLogger] ${message}`);
+  logInfo(e, t) {
+    let i = `[${(/* @__PURE__ */ new Date()).toISOString()}] [INFO] ${e}`;
+    t && (i += `
+  Metadata: ${JSON.stringify(t, null, 2)}`), i += `
+`, this.writeRaw(i), console.log(`[MusicLogger] ${e}`);
   }
-  logSessionStart(options) {
-    const timestamp = (/* @__PURE__ */ new Date()).toISOString();
-    const divider = "=".repeat(80);
-    const log = `
-${divider}
-[${timestamp}] ▸ STARTING MUSIC GENERATION
-TaskId:         ${options.taskId}
-Engine:         ${options.engine}
-Caption:        "${options.caption}"
-Lyrics:         ${options.lyrics ? `"${options.lyrics.slice(0, 100)}${options.lyrics.length > 100 ? "..." : ""}"` : "(none)"}
-Instrumental:   ${Boolean(options.isInstrumental)}
-Duration:       ${options.duration || 30}s
-DiT Variant:    ${options.ditVariant || "n/a"}
-Seed:           ${options.seed ?? -1}
-${divider}
+  logSessionStart(e) {
+    const t = (/* @__PURE__ */ new Date()).toISOString(), s = "=".repeat(80), i = `
+${s}
+[${t}] ▸ STARTING MUSIC GENERATION
+TaskId:         ${e.taskId}
+Engine:         ${e.engine}
+Caption:        "${e.caption}"
+Lyrics:         ${e.lyrics ? `"${e.lyrics.slice(0, 100)}${e.lyrics.length > 100 ? "..." : ""}"` : "(none)"}
+Instrumental:   ${!!e.isInstrumental}
+Duration:       ${e.duration || 30}s
+DiT Variant:    ${e.ditVariant || "n/a"}
+Seed:           ${e.seed ?? -1}
+${s}
 `;
-    this.writeRaw(log);
-    console.log(`[MusicLogger] ▸ Generation Started for task: ${options.taskId} (Engine: ${options.engine})`);
+    this.writeRaw(i), console.log(`[MusicLogger] ▸ Generation Started for task: ${e.taskId} (Engine: ${e.engine})`);
   }
-  logMilestone(taskId, stage, detail) {
-    const timestamp = (/* @__PURE__ */ new Date()).toISOString();
-    const line = `[${timestamp}] [${taskId}] [${stage}] ${detail || ""}
+  logMilestone(e, t, s) {
+    const r = `[${(/* @__PURE__ */ new Date()).toISOString()}] [${e}] [${t}] ${s || ""}
 `;
-    this.writeRaw(line);
-    console.log(`[MusicLogger] [${taskId}] [${stage}] ${detail || ""}`);
+    this.writeRaw(r), console.log(`[MusicLogger] [${e}] [${t}] ${s || ""}`);
   }
-  logProgress(taskId, stage, step, total, pct) {
-    const timestamp = (/* @__PURE__ */ new Date()).toISOString();
-    const line = `[${timestamp}] [${taskId}] [PROGRESS] ${stage}: ${pct}% (${step}/${total})
+  logProgress(e, t, s, i, r) {
+    const n = `[${(/* @__PURE__ */ new Date()).toISOString()}] [${e}] [PROGRESS] ${t}: ${r}% (${s}/${i})
 `;
-    this.writeRaw(line);
+    this.writeRaw(n);
   }
-  logSuccess(taskId, output) {
-    const timestamp = (/* @__PURE__ */ new Date()).toISOString();
-    const divider = "-".repeat(80);
-    const log = `
-${divider}
-[${timestamp}] ✓ MUSIC GENERATION SUCCEEDED
-TaskId:         ${taskId}
-Duration:       ${(output.durationMs / 1e3).toFixed(2)}s
-Format:         ${output.sampleRate} Hz, ${output.channels} ch
-Output WAV:     ${output.wavFilePath}
-${divider}
+  logSuccess(e, t) {
+    const s = (/* @__PURE__ */ new Date()).toISOString(), i = "-".repeat(80), r = `
+${i}
+[${s}] ✓ MUSIC GENERATION SUCCEEDED
+TaskId:         ${e}
+Duration:       ${(t.durationMs / 1e3).toFixed(2)}s
+Format:         ${t.sampleRate} Hz, ${t.channels} ch
+Output WAV:     ${t.wavFilePath}
+${i}
 `;
-    this.writeRaw(log);
-    console.log(`[MusicLogger] ✓ Generation Succeeded: ${taskId} -> ${output.wavFilePath}`);
+    this.writeRaw(r), console.log(`[MusicLogger] ✓ Generation Succeeded: ${e} -> ${t.wavFilePath}`);
   }
-  logFailure(ctx) {
-    const timestamp = (/* @__PURE__ */ new Date()).toISOString();
-    const divider = "#".repeat(80);
-    const err = ctx.error;
-    const errorMessage = (err == null ? void 0 : err.message) || String(err);
-    const errorCode = (err == null ? void 0 : err.code) || (err == null ? void 0 : err.errCode) || "UNKNOWN";
-    const errorStack = (err == null ? void 0 : err.stack) || "(No stack trace available)";
-    const errorCause = (err == null ? void 0 : err.cause) ? JSON.stringify(err.cause, null, 2) : void 0;
-    const errorAdds = err == null ? void 0 : err.adds;
-    let cacheFilesSnapshot = [];
-    const cacheDir = path.join(os.homedir(), ".qvac", "models");
+  logFailure(e) {
+    const t = (/* @__PURE__ */ new Date()).toISOString(), s = "#".repeat(80), i = e.error, r = (i == null ? void 0 : i.message) || String(i), o = (i == null ? void 0 : i.code) || (i == null ? void 0 : i.errCode) || "UNKNOWN", n = (i == null ? void 0 : i.stack) || "(No stack trace available)", a = i != null && i.cause ? JSON.stringify(i.cause, null, 2) : void 0, c = i == null ? void 0 : i.adds;
+    let l = [];
+    const d = y.join(O.homedir(), ".qvac", "models");
     try {
-      if (fs.existsSync(cacheDir)) {
-        cacheFilesSnapshot = fs.readdirSync(cacheDir).map((f) => {
-          try {
-            const st = fs.statSync(path.join(cacheDir, f));
-            const mb = (st.size / (1024 * 1024)).toFixed(1);
-            return `${f} (${mb} MB)`;
-          } catch {
-            return f;
-          }
-        });
-      }
+      g.existsSync(d) && (l = g.readdirSync(d).map((S) => {
+        try {
+          const L = (g.statSync(y.join(d, S)).size / (1024 * 1024)).toFixed(1);
+          return `${S} (${L} MB)`;
+        } catch {
+          return S;
+        }
+      }));
     } catch {
     }
-    const freeMemMb = Math.round(os.freemem() / (1024 * 1024));
-    const totalMemMb = Math.round(os.totalmem() / (1024 * 1024));
-    const log = `
-${divider}
-[${timestamp}] ✖ MUSIC GENERATION FAILED
-TaskId:           ${ctx.taskId}
-Engine:           ${ctx.engine}
-Failure Stage:    ${ctx.stage}
-Error Code:       ${errorCode}
-Error Message:    ${errorMessage}
-${errorAdds ? `Error Adds:       ${errorAdds}
-` : ""}${errorCause ? `Error Cause:      ${errorCause}
+    const u = Math.round(O.freemem() / (1024 * 1024)), m = Math.round(O.totalmem() / (1024 * 1024)), f = `
+${s}
+[${t}] ✖ MUSIC GENERATION FAILED
+TaskId:           ${e.taskId}
+Engine:           ${e.engine}
+Failure Stage:    ${e.stage}
+Error Code:       ${o}
+Error Message:    ${r}
+${c ? `Error Adds:       ${c}
+` : ""}${a ? `Error Cause:      ${a}
 ` : ""}
 Stack Trace:
-${errorStack}
+${n}
 
 Options Provided:
-${JSON.stringify(ctx.options || {}, null, 2)}
+${JSON.stringify(e.options || {}, null, 2)}
 
 Resolved Model Paths:
-${JSON.stringify(ctx.resolvedPaths || {}, null, 2)}
+${JSON.stringify(e.resolvedPaths || {}, null, 2)}
 
-Models Cache Directory (${cacheDir}):
-${cacheFilesSnapshot.length > 0 ? cacheFilesSnapshot.map((f) => `  - ${f}`).join("\n") : "  (Directory empty or inaccessible)"}
+Models Cache Directory (${d}):
+${l.length > 0 ? l.map((S) => `  - ${S}`).join(`
+`) : "  (Directory empty or inaccessible)"}
 
 System Resources:
-  Platform:       ${os.platform()}-${os.arch()}
-  Free Memory:    ${freeMemMb} MB / ${totalMemMb} MB (${Math.round(freeMemMb / totalMemMb * 100)}% free)
+  Platform:       ${O.platform()}-${O.arch()}
+  Free Memory:    ${u} MB / ${m} MB (${Math.round(u / m * 100)}% free)
   Node Version:   ${process.version}
-${divider}
+${s}
 `;
-    this.writeRaw(log);
-    console.error(`[MusicLogger] ✖ Generation Failed for ${ctx.taskId} (Engine: ${ctx.engine}, Stage: ${ctx.stage}): ${errorMessage}`);
-    {
-      console.error(errorStack);
-    }
+    this.writeRaw(f), console.error(`[MusicLogger] ✖ Generation Failed for ${e.taskId} (Engine: ${e.engine}, Stage: ${e.stage}): ${r}`), console.error(n);
   }
-  getRecentLogs(limitLines = 200) {
+  getRecentLogs(e = 200) {
     try {
-      if (!fs.existsSync(this.primaryLogPath)) {
+      if (!g.existsSync(this.primaryLogPath))
         return "No music generation logs recorded yet.";
-      }
-      const raw = fs.readFileSync(this.primaryLogPath, "utf-8");
-      const lines = raw.split("\n");
-      if (lines.length <= limitLines) {
-        return raw;
-      }
-      return lines.slice(lines.length - limitLines).join("\n");
-    } catch (err) {
-      return `Failed to read logs: ${(err == null ? void 0 : err.message) || String(err)}`;
+      const t = g.readFileSync(this.primaryLogPath, "utf-8"), s = t.split(`
+`);
+      return s.length <= e ? t : s.slice(s.length - e).join(`
+`);
+    } catch (t) {
+      return `Failed to read logs: ${(t == null ? void 0 : t.message) || String(t)}`;
     }
   }
   clearLogs() {
     try {
-      if (fs.existsSync(this.primaryLogPath)) {
-        fs.writeFileSync(this.primaryLogPath, "", "utf-8");
-      }
-      if (fs.existsSync(this.mirrorLogPath) && this.mirrorLogPath !== this.primaryLogPath) {
-        fs.writeFileSync(this.mirrorLogPath, "", "utf-8");
-      }
-      return true;
+      return g.existsSync(this.primaryLogPath) && g.writeFileSync(this.primaryLogPath, "", "utf-8"), g.existsSync(this.mirrorLogPath) && this.mirrorLogPath !== this.primaryLogPath && g.writeFileSync(this.mirrorLogPath, "", "utf-8"), !0;
     } catch {
-      return false;
+      return !1;
     }
   }
   getLogFilePaths() {
@@ -2884,77 +2253,30 @@ ${divider}
     };
   }
 };
-__publicField(_MusicLoggerService, "instance");
-let MusicLoggerService = _MusicLoggerService;
-const _MusicSanitizerService = class _MusicSanitizerService {
+b(J, "instance");
+let Se = J;
+const Z = class Z {
   static getInstance() {
-    if (!_MusicSanitizerService.instance) {
-      _MusicSanitizerService.instance = new _MusicSanitizerService();
-    }
-    return _MusicSanitizerService.instance;
+    return Z.instance || (Z.instance = new Z()), Z.instance;
   }
   /**
    * Sanitizes prompt, lyrics, and arrangements incorporating all selected UI options
    * (vocalMode, BPM, keyscale, time signature, duration, vocal language, etc.).
    */
-  sanitize(options) {
-    var _a;
-    const rawCaption = options.caption || "";
-    const engine = options.engine || "acestep";
-    const duration = options.duration && options.duration > 0 ? options.duration : 30;
-    const captionRequestsInstrumental = /\b(instrumental|no vocals?|no singing|without vocals?|backing track|karaoke|pure instrumental|solo piano|solo guitar|acoustic instrumental)\b/i.test(rawCaption);
-    const isInstrumental = Boolean(
-      options.vocalMode === "instrumental" || options.isInstrumental || ((_a = options.lyrics) == null ? void 0 : _a.trim()) === "[Instrumental]" || captionRequestsInstrumental
-    );
-    let sanitizedCaption = this.stripConversationalMeta(rawCaption);
-    let vocalHintInjected;
-    let sanitizedLyrics;
-    if (isInstrumental) {
-      sanitizedCaption = sanitizedCaption.replace(/\b(?:with\s+)?(?:clear\s+melodic\s+)?(?:singing\s+vocals?|singing|lead\s+vocals?|vocalist|singer|soprano|baritone|tenor|choir|voice)\b/gi, "").replace(/\b(?:with\s+lyrics?|lyrics?)\b/gi, "").replace(/\s*,\s*,+/g, ",").trim();
-      if (!/\b(instrumental|backing track|no vocals)\b/i.test(sanitizedCaption)) {
-        sanitizedCaption = `${sanitizedCaption}, instrumental backing track, no vocals, rich melodic instruments`;
-      } else if (!/\bno vocals\b/i.test(sanitizedCaption)) {
-        sanitizedCaption = `${sanitizedCaption}, no vocals`;
-      }
-      sanitizedLyrics = "[Instrumental]";
-      vocalHintInjected = void 0;
-    } else {
-      sanitizedCaption = sanitizedCaption.replace(/\b(?:pure\s+)?instrumental(?:\s+track|\s+version)?\b/gi, "").replace(/\b(?:without|no)\s+vocals?\b/gi, "").replace(/\s*,\s*,+/g, ",").trim();
-      const hasVocalDescriptor = /(vocal|singer|voice|singing|choir|soprano|baritone|tenor|lead vocals|vocalist|harmony)/i.test(sanitizedCaption);
-      if (!hasVocalDescriptor) {
-        vocalHintInjected = this.inferVocalTimbre(sanitizedCaption, options.vocalLanguage);
-        sanitizedCaption = `${sanitizedCaption}, ${vocalHintInjected}`;
-      }
-      if (options.vocalMode === "manual" && options.lyrics && options.lyrics.trim() && options.lyrics.trim() !== "[Instrumental]") {
-        sanitizedLyrics = this.formatLyricsForDuration(options.lyrics, sanitizedCaption, duration);
-      } else if (engine === "acestep" && !options.lyrics) {
-        sanitizedLyrics = "";
-      } else {
-        sanitizedLyrics = this.formatLyricsForDuration(options.lyrics, sanitizedCaption, duration);
-      }
+  sanitize(e) {
+    var d;
+    const t = e.caption || "", s = e.engine || "acestep", i = e.duration && e.duration > 0 ? e.duration : 30, r = /\b(instrumental|no vocals?|no singing|without vocals?|backing track|karaoke|pure instrumental|solo piano|solo guitar|acoustic instrumental)\b/i.test(t), o = !!(e.vocalMode === "instrumental" || e.isInstrumental || ((d = e.lyrics) == null ? void 0 : d.trim()) === "[Instrumental]" || r);
+    let n = this.stripConversationalMeta(t), a, c;
+    if (o ? (n = n.replace(/\b(?:with\s+)?(?:clear\s+melodic\s+)?(?:singing\s+vocals?|singing|lead\s+vocals?|vocalist|singer|soprano|baritone|tenor|choir|voice)\b/gi, "").replace(/\b(?:with\s+lyrics?|lyrics?)\b/gi, "").replace(/\s*,\s*,+/g, ",").trim(), /\b(instrumental|backing track|no vocals)\b/i.test(n) ? /\bno vocals\b/i.test(n) || (n = `${n}, no vocals`) : n = `${n}, instrumental backing track, no vocals, rich melodic instruments`, c = "[Instrumental]", a = void 0) : (n = n.replace(/\b(?:pure\s+)?instrumental(?:\s+track|\s+version)?\b/gi, "").replace(/\b(?:without|no)\s+vocals?\b/gi, "").replace(/\s*,\s*,+/g, ",").trim(), /(vocal|singer|voice|singing|choir|soprano|baritone|tenor|lead vocals|vocalist|harmony)/i.test(n) || (a = this.inferVocalTimbre(n, e.vocalLanguage), n = `${n}, ${a}`), e.vocalMode === "manual" && e.lyrics && e.lyrics.trim() && e.lyrics.trim() !== "[Instrumental]" ? c = this.formatLyricsForDuration(e.lyrics, n, i) : s === "acestep" && !e.lyrics ? c = "" : c = this.formatLyricsForDuration(e.lyrics, n, i)), e.bpm && e.bpm > 0 && (/\b\d+\s*(?:bpm|beats\s+per\s+minute)\b/i.test(n) || (n = `${n}, ${e.bpm} BPM`)), e.keyscale && e.keyscale.trim() && e.keyscale.toLowerCase() !== "none") {
+      const u = e.keyscale.trim(), m = u.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      new RegExp(`\\b${m}\\b`, "i").test(n) || /\b(?:in\s+key\s+of|key\s+of)\b/i.test(n) || (n = `${n}, in ${u}`);
     }
-    if (options.bpm && options.bpm > 0) {
-      const hasBpm = /\b\d+\s*(?:bpm|beats\s+per\s+minute)\b/i.test(sanitizedCaption);
-      if (!hasBpm) {
-        sanitizedCaption = `${sanitizedCaption}, ${options.bpm} BPM`;
-      }
+    if (e.timesignature && e.timesignature.trim() && e.timesignature !== "4/4") {
+      const u = e.timesignature.trim();
+      n.includes(u) || (n = `${n}, ${u} time signature`);
     }
-    if (options.keyscale && options.keyscale.trim() && options.keyscale.toLowerCase() !== "none") {
-      const keyClean = options.keyscale.trim();
-      const escapedKey = keyClean.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      const hasKey = new RegExp(`\\b${escapedKey}\\b`, "i").test(sanitizedCaption) || /\b(?:in\s+key\s+of|key\s+of)\b/i.test(sanitizedCaption);
-      if (!hasKey) {
-        sanitizedCaption = `${sanitizedCaption}, in ${keyClean}`;
-      }
-    }
-    if (options.timesignature && options.timesignature.trim() && options.timesignature !== "4/4") {
-      const timeClean = options.timesignature.trim();
-      if (!sanitizedCaption.includes(timeClean)) {
-        sanitizedCaption = `${sanitizedCaption}, ${timeClean} time signature`;
-      }
-    }
-    if (!isInstrumental && options.vocalLanguage && options.vocalLanguage !== "en") {
-      const langMap = {
+    if (!o && e.vocalLanguage && e.vocalLanguage !== "en") {
+      const m = {
         es: "Spanish",
         zh: "Chinese",
         ja: "Japanese",
@@ -2964,59 +2286,41 @@ const _MusicSanitizerService = class _MusicSanitizerService {
         it: "Italian",
         pt: "Portuguese",
         ru: "Russian"
-      };
-      const langName = langMap[options.vocalLanguage.toLowerCase()];
-      if (langName && !new RegExp(`\\b${langName}\\b`, "i").test(sanitizedCaption)) {
-        sanitizedCaption = `${sanitizedCaption}, ${langName} vocals`;
-      }
+      }[e.vocalLanguage.toLowerCase()];
+      m && !new RegExp(`\\b${m}\\b`, "i").test(n) && (n = `${n}, ${m} vocals`);
     }
-    if (duration >= 120) {
-      if (!/(extended|full-length|progression|arrangement|complete song)/i.test(sanitizedCaption)) {
-        sanitizedCaption = `${sanitizedCaption}, full-length structured arrangement with progression`;
-      }
-    } else if (duration >= 60) {
-      if (!/(progression|arrangement|structured)/i.test(sanitizedCaption)) {
-        sanitizedCaption = `${sanitizedCaption}, structured track progression`;
-      }
-    }
-    sanitizedCaption = sanitizedCaption.replace(/\s*,\s*,+/g, ",").replace(/,\s*$/g, "").replace(/\s{2,}/g, " ").trim();
-    const maxFrames = engine === "minimax" ? Math.max(750, Math.round(duration * 25)) : void 0;
+    i >= 120 ? /(extended|full-length|progression|arrangement|complete song)/i.test(n) || (n = `${n}, full-length structured arrangement with progression`) : i >= 60 && (/(progression|arrangement|structured)/i.test(n) || (n = `${n}, structured track progression`)), n = n.replace(/\s*,\s*,+/g, ",").replace(/,\s*$/g, "").replace(/\s{2,}/g, " ").trim();
+    const l = s === "minimax" ? Math.max(750, Math.round(i * 25)) : void 0;
     return {
-      caption: sanitizedCaption.trim(),
-      lyrics: sanitizedLyrics.trim(),
-      duration,
-      maxFrames,
-      vocalHintInjected,
-      isInstrumental
+      caption: n.trim(),
+      lyrics: c.trim(),
+      duration: i,
+      maxFrames: l,
+      vocalHintInjected: a,
+      isInstrumental: o
     };
   }
   /**
    * Strips conversational filler like "generate a...", "make a song about..."
    */
-  stripConversationalMeta(text) {
-    let clean = text.trim();
-    const conversationalPrefixes = [
+  stripConversationalMeta(e) {
+    let t = e.trim();
+    const s = [
       /^(?:can\s+you\s+)?(?:please\s+)?(?:generate|create|make|write|compose|produce)\s+(?:me\s+)?(?:a|an|the|some)?\s+/i,
       /^(?:i\s+(?:want|need|would\s+like)\s+(?:to\s+have\s+)?(?:a|an|the|some)?\s+)/i,
       /^(?:give\s+me\s+(?:a|an|the)?\s+)/i,
       /^(?:song\s+about\s+)/i,
       /^(?:track\s+about\s+)/i
     ];
-    for (const prefix of conversationalPrefixes) {
-      clean = clean.replace(prefix, "");
-    }
-    if (clean.length > 0) {
-      clean = clean.charAt(0).toUpperCase() + clean.slice(1);
-    }
-    clean = clean.replace(/\s*,\s*,+/g, ",").replace(/\s{2,}/g, " ");
-    return clean;
+    for (const i of s)
+      t = t.replace(i, "");
+    return t.length > 0 && (t = t.charAt(0).toUpperCase() + t.slice(1)), t = t.replace(/\s*,\s*,+/g, ",").replace(/\s{2,}/g, " "), t;
   }
   /**
    * Infers the best vocal timbre matching the musical genre/theme and optional language
    */
-  inferVocalTimbre(caption, vocalLanguage) {
-    const lower = caption.toLowerCase();
-    const langMap = {
+  inferVocalTimbre(e, t) {
+    const s = e.toLowerCase(), i = {
       es: "Spanish",
       zh: "Chinese",
       ja: "Japanese",
@@ -3026,96 +2330,61 @@ const _MusicSanitizerService = class _MusicSanitizerService {
       it: "Italian",
       pt: "Portuguese",
       ru: "Russian"
-    };
-    const langPrefix = vocalLanguage && vocalLanguage !== "en" && langMap[vocalLanguage.toLowerCase()] ? `${langMap[vocalLanguage.toLowerCase()]} ` : "";
-    if (/(medieval|celtic|harp|fantasy|bard|tavern|folk|ancient|kingdom)/.test(lower)) {
-      return `${langPrefix}haunting bard vocals, clear close-mic singing, natural human vibrato, acoustic studio production`;
-    }
-    if (/(synthwave|retrowave|cyberpunk|80s|neon|electro)/.test(lower)) {
-      return `${langPrefix}crisp 80s gated reverb male vocals, polished lead vocal, punchy melodic synth hook`;
-    }
-    if (/(lo-fi|lofi|chillhop|coffee|relax|bedroom)/.test(lower)) {
-      return `${langPrefix}soft breathy female vocals, intimate close-mic acoustic presence, clear pronunciation`;
-    }
-    if (/(rock|metal|punk|grunge|electric guitar|heavy)/.test(lower)) {
-      return `${langPrefix}raw energetic rock vocals, powerful singing voice, clear vocal consonants`;
-    }
-    if (/(cinematic|epic|orchestral|orchestra|trailer|hero)/.test(lower)) {
-      return `${langPrefix}soaring dramatic vocals, rich choral harmonies, expansive dynamic range`;
-    }
-    if (/(ballad|piano|sad|emotional|heartbreak|acoustic|love|romance|romantic)/.test(lower)) {
-      return `${langPrefix}heartfelt emotional solo vocals, warm studio acoustic presence, intimate vocal nuance, close-mic singing`;
-    }
-    if (/(pop|dance|disco|summer|happy|party)/.test(lower)) {
-      return `${langPrefix}bright modern pop vocals, crisp high-end clarity, infectious melodic chorus`;
-    }
-    if (/(r&b|soul|jazz|blues)/.test(lower)) {
-      return `${langPrefix}smooth soulful vocals, rich vocal harmonics, clear diction`;
-    }
-    return `${langPrefix}expressive lead singing vocals, crisp close-mic presence, natural human vibrato, studio vocal clarity`;
+    }, r = t && t !== "en" && i[t.toLowerCase()] ? `${i[t.toLowerCase()]} ` : "";
+    return /(medieval|celtic|harp|fantasy|bard|tavern|folk|ancient|kingdom)/.test(s) ? `${r}haunting bard vocals, clear close-mic singing, natural human vibrato, acoustic studio production` : /(synthwave|retrowave|cyberpunk|80s|neon|electro)/.test(s) ? `${r}crisp 80s gated reverb male vocals, polished lead vocal, punchy melodic synth hook` : /(lo-fi|lofi|chillhop|coffee|relax|bedroom)/.test(s) ? `${r}soft breathy female vocals, intimate close-mic acoustic presence, clear pronunciation` : /(rock|metal|punk|grunge|electric guitar|heavy)/.test(s) ? `${r}raw energetic rock vocals, powerful singing voice, clear vocal consonants` : /(cinematic|epic|orchestral|orchestra|trailer|hero)/.test(s) ? `${r}soaring dramatic vocals, rich choral harmonies, expansive dynamic range` : /(ballad|piano|sad|emotional|heartbreak|acoustic|love|romance|romantic)/.test(s) ? `${r}heartfelt emotional solo vocals, warm studio acoustic presence, intimate vocal nuance, close-mic singing` : /(pop|dance|disco|summer|happy|party)/.test(s) ? `${r}bright modern pop vocals, crisp high-end clarity, infectious melodic chorus` : /(r&b|soul|jazz|blues)/.test(s) ? `${r}smooth soulful vocals, rich vocal harmonics, clear diction` : `${r}expressive lead singing vocals, crisp close-mic presence, natural human vibrato, studio vocal clarity`;
   }
   /**
    * Formats, tags, and extends lyrics according to duration so the model
    * doesn't stop prematurely at ~20 seconds.
    */
-  formatLyricsForDuration(rawLyrics, caption, duration) {
-    let clean = (rawLyrics || "").trim();
-    if (!clean) {
-      return this.generateDefaultLyricsForTheme(caption, duration);
-    }
-    clean = clean.replace(/\[?(?:verse\s*\d*|\(verse\s*\d*\)|verse\s*\d*:)\]?/gi, "[verse]");
-    clean = clean.replace(/\[?(?:chorus|\(chorus\)|chorus:)\]?/gi, "[chorus]");
-    clean = clean.replace(/\[?(?:bridge|\(bridge\)|bridge:)\]?/gi, "[bridge]");
-    clean = clean.replace(/\[?(?:outro|\(outro\)|outro:)\]?/gi, "[outro]");
-    clean = clean.replace(/\[?(?:intro|\(intro\)|intro:)\]?/gi, "[intro]");
-    clean = clean.replace(/\*\*(.*?)\*\*/g, "$1");
-    clean = clean.replace(/#{1,6}\s*/g, "");
-    if (!clean.startsWith("[")) {
-      clean = `[verse]
-${clean}`;
-    }
-    const tagMatches = clean.match(/\[(verse|chorus|bridge|outro|intro)\]/gi) || [];
-    if (duration >= 120 && tagMatches.length < 3) {
-      const lines = clean.split("\n").filter((l) => l.trim() && !l.startsWith("["));
-      if (lines.length > 0) {
-        const verseLines = lines.slice(0, Math.min(4, lines.length)).join("\n");
-        const chorusLines = lines.length > 4 ? lines.slice(4).join("\n") : verseLines;
-        clean = [
+  formatLyricsForDuration(e, t, s) {
+    let i = (e || "").trim();
+    if (!i)
+      return this.generateDefaultLyricsForTheme(t, s);
+    i = i.replace(/\[?(?:verse\s*\d*|\(verse\s*\d*\)|verse\s*\d*:)\]?/gi, "[verse]"), i = i.replace(/\[?(?:chorus|\(chorus\)|chorus:)\]?/gi, "[chorus]"), i = i.replace(/\[?(?:bridge|\(bridge\)|bridge:)\]?/gi, "[bridge]"), i = i.replace(/\[?(?:outro|\(outro\)|outro:)\]?/gi, "[outro]"), i = i.replace(/\[?(?:intro|\(intro\)|intro:)\]?/gi, "[intro]"), i = i.replace(/\*\*(.*?)\*\*/g, "$1"), i = i.replace(/#{1,6}\s*/g, ""), i.startsWith("[") || (i = `[verse]
+${i}`);
+    const r = i.match(/\[(verse|chorus|bridge|outro|intro)\]/gi) || [];
+    if (s >= 120 && r.length < 3) {
+      const o = i.split(`
+`).filter((n) => n.trim() && !n.startsWith("["));
+      if (o.length > 0) {
+        const n = o.slice(0, Math.min(4, o.length)).join(`
+`), a = o.length > 4 ? o.slice(4).join(`
+`) : n;
+        i = [
           `[verse]
-${verseLines}`,
+${n}`,
           `[chorus]
-${chorusLines}`,
+${a}`,
           `[verse]
-${verseLines}`,
+${n}`,
           `[chorus]
-${chorusLines}`,
+${a}`,
           `[bridge]
 Carried on the melody, through the passing time...`,
           `[chorus]
-${chorusLines}`,
+${a}`,
           `[outro]
 Fading softly into the end...`
-        ].join("\n\n");
+        ].join(`
+
+`);
       }
-    } else if (duration >= 60 && tagMatches.length < 2) {
-      clean = `${clean}
+    } else s >= 60 && r.length < 2 && (i = `${i}
 
 [chorus]
-${clean.replace(/\[verse\]/g, "").trim()}
+${i.replace(/\[verse\]/g, "").trim()}
 
 [outro]
-Fading with the music...`;
-    }
-    return clean;
+Fading with the music...`);
+    return i;
   }
   /**
    * Generates a complete, multi-section lyric sheet tailored to the duration.
    */
-  generateDefaultLyricsForTheme(caption, duration) {
-    const lower = caption.toLowerCase();
-    if (/(medieval|war|harp|battle|castle)/.test(lower)) {
-      if (duration >= 120) {
-        return `[verse]
+  generateDefaultLyricsForTheme(e, t) {
+    const s = e.toLowerCase();
+    return /(medieval|war|harp|battle|castle)/.test(s) ? t >= 120 ? `[verse]
 The banners fall beneath the crimson dawn,
 A bitter wind blows through the broken shield,
 The kings are buried and the armies gone,
@@ -3153,9 +2422,7 @@ Where sorrow tore the brotherhood apart.
 
 [outro]
 Harp strings tremble in the twilight air,
-Peace to the fallen, beyond despair...`;
-      }
-      return `[verse]
+Peace to the fallen, beyond despair...` : `[verse]
 The banners fall beneath the crimson dawn,
 A bitter wind blows through the broken shield,
 The kings are buried and the armies gone,
@@ -3169,9 +2436,7 @@ Where sorrow tore the brotherhood apart.
 
 [outro]
 Harp strings tremble in the twilight air,
-Peace to the fallen, beyond despair...`;
-    }
-    return `[verse]
+Peace to the fallen, beyond despair...` : `[verse]
 Whispers moving through the midnight air,
 Chasing shadows on the quiet street,
 Finding a melody that we can share,
@@ -3187,258 +2452,165 @@ Echoing the feelings of the heart.
 Soft chords fading into the night...`;
   }
 };
-__publicField(_MusicSanitizerService, "instance");
-let MusicSanitizerService = _MusicSanitizerService;
-const _MusicDspService = class _MusicDspService {
+b(Z, "instance");
+let pe = Z;
+const ee = class ee {
   static getInstance() {
-    if (!_MusicDspService.instance) {
-      _MusicDspService.instance = new _MusicDspService();
-    }
-    return _MusicDspService.instance;
+    return ee.instance || (ee.instance = new ee()), ee.instance;
   }
   /**
    * Post-processes raw interleaved PCM audio buffer into studio-mastered audio.
    * Returns a new Uint8Array with the mastered PCM samples.
    */
-  masterPcm(pcm, sampleRate, channels, bitsPerSample, options = {}) {
-    if (!pcm || pcm.byteLength === 0 || channels <= 0 || sampleRate <= 0) {
-      return { masteredPcm: pcm, peakBeforeDb: -99, peakAfterDb: -99, details: "empty pcm" };
-    }
+  masterPcm(e, t, s, i, r = {}) {
+    if (!e || e.byteLength === 0 || s <= 0 || t <= 0)
+      return { masteredPcm: e, peakBeforeDb: -99, peakAfterDb: -99, details: "empty pcm" };
     const {
-      enableHighPass = true,
-      highPassHz = 32,
-      enableAirShelf = true,
-      airShelfHz = 9500,
-      airShelfGainDb = 2.2,
-      enableNormalize = true,
-      targetPeakDb = -0.5,
-      enableSoftLimiter = true
-    } = options;
-    const numSamples = bitsPerSample === 16 ? Math.floor(pcm.byteLength / 2) : Math.floor(pcm.byteLength / 4);
-    const floatSamples = new Float32Array(numSamples);
-    if (bitsPerSample === 16) {
-      const int16View = new Int16Array(pcm.buffer, pcm.byteOffset, numSamples);
-      for (let i = 0; i < numSamples; i++) {
-        floatSamples[i] = int16View[i] / 32768;
-      }
-    } else if (bitsPerSample === 32) {
-      const float32View = new Float32Array(pcm.buffer, pcm.byteOffset, numSamples);
-      floatSamples.set(float32View);
-    } else {
-      return { masteredPcm: pcm, peakBeforeDb: 0, peakAfterDb: 0, details: "unsupported bit depth" };
+      enableHighPass: o = !0,
+      highPassHz: n = 32,
+      enableAirShelf: a = !0,
+      airShelfHz: c = 9500,
+      airShelfGainDb: l = 2.2,
+      enableNormalize: d = !0,
+      targetPeakDb: u = -0.5,
+      enableSoftLimiter: m = !0
+    } = r, f = Math.floor(i === 16 ? e.byteLength / 2 : e.byteLength / 4), S = new Float32Array(f);
+    if (i === 16) {
+      const M = new Int16Array(e.buffer, e.byteOffset, f);
+      for (let E = 0; E < f; E++)
+        S[E] = M[E] / 32768;
+    } else if (i === 32) {
+      const M = new Float32Array(e.buffer, e.byteOffset, f);
+      S.set(M);
+    } else
+      return { masteredPcm: e, peakBeforeDb: 0, peakAfterDb: 0, details: "unsupported bit depth" };
+    let C = 1e-5;
+    for (let M = 0; M < f; M++) {
+      const E = Math.abs(S[M]);
+      E > C && (C = E);
     }
-    let maxInitial = 1e-5;
-    for (let i = 0; i < numSamples; i++) {
-      const abs = Math.abs(floatSamples[i]);
-      if (abs > maxInitial) maxInitial = abs;
+    const L = 20 * Math.log10(C);
+    o && n > 0 && n < t / 2 && this.applyHighPassFilter(S, t, s, n), a && l !== 0 && c < t / 2 && this.applyHighShelfFilter(S, t, s, c, l);
+    let N = 1e-5;
+    for (let M = 0; M < f; M++) {
+      const E = Math.abs(S[M]);
+      E > N && (N = E);
     }
-    const peakBeforeDb = 20 * Math.log10(maxInitial);
-    if (enableHighPass && highPassHz > 0 && highPassHz < sampleRate / 2) {
-      this.applyHighPassFilter(floatSamples, sampleRate, channels, highPassHz);
+    if (d && N > 1e-4) {
+      const E = Math.pow(10, u / 20) / N;
+      for (let p = 0; p < f; p++)
+        S[p] *= E;
     }
-    if (enableAirShelf && airShelfGainDb !== 0 && airShelfHz < sampleRate / 2) {
-      this.applyHighShelfFilter(floatSamples, sampleRate, channels, airShelfHz, airShelfGainDb);
-    }
-    let maxFiltered = 1e-5;
-    for (let i = 0; i < numSamples; i++) {
-      const abs = Math.abs(floatSamples[i]);
-      if (abs > maxFiltered) maxFiltered = abs;
-    }
-    if (enableNormalize && maxFiltered > 1e-4) {
-      const targetLinear = Math.pow(10, targetPeakDb / 20);
-      const gain = targetLinear / maxFiltered;
-      for (let i = 0; i < numSamples; i++) {
-        floatSamples[i] *= gain;
+    if (m) {
+      const E = 0.06000000000000005;
+      for (let p = 0; p < f; p++) {
+        const $ = S[p];
+        $ > 0.94 ? S[p] = 0.94 + E * Math.tanh(($ - 0.94) / E) : $ < -0.94 && (S[p] = -0.94 + E * Math.tanh(($ + 0.94) / E));
       }
     }
-    if (enableSoftLimiter) {
-      const threshold = 0.94;
-      const margin = 1 - threshold;
-      for (let i = 0; i < numSamples; i++) {
-        const x = floatSamples[i];
-        if (x > threshold) {
-          floatSamples[i] = threshold + margin * Math.tanh((x - threshold) / margin);
-        } else if (x < -threshold) {
-          floatSamples[i] = -threshold + margin * Math.tanh((x + threshold) / margin);
-        }
+    let _ = 1e-5;
+    for (let M = 0; M < f; M++) {
+      const E = Math.abs(S[M]);
+      E > _ && (_ = E);
+    }
+    const D = 20 * Math.log10(_), T = new Uint8Array(e.byteLength);
+    if (i === 16) {
+      const M = new Int16Array(T.buffer, T.byteOffset, f);
+      for (let E = 0; E < f; E++) {
+        const p = Math.max(-1, Math.min(1, S[E]));
+        M[E] = p < 0 ? Math.round(p * 32768) : Math.round(p * 32767);
       }
-    }
-    let maxFinal = 1e-5;
-    for (let i = 0; i < numSamples; i++) {
-      const abs = Math.abs(floatSamples[i]);
-      if (abs > maxFinal) maxFinal = abs;
-    }
-    const peakAfterDb = 20 * Math.log10(maxFinal);
-    const masteredPcm = new Uint8Array(pcm.byteLength);
-    if (bitsPerSample === 16) {
-      const outView = new Int16Array(masteredPcm.buffer, masteredPcm.byteOffset, numSamples);
-      for (let i = 0; i < numSamples; i++) {
-        const val = Math.max(-1, Math.min(1, floatSamples[i]));
-        outView[i] = val < 0 ? Math.round(val * 32768) : Math.round(val * 32767);
-      }
-    } else if (bitsPerSample === 32) {
-      const outView = new Float32Array(masteredPcm.buffer, masteredPcm.byteOffset, numSamples);
-      outView.set(floatSamples);
-    }
-    const details = `HighPass: ${highPassHz}Hz | AirShelf: +${airShelfGainDb}dB @ ${airShelfHz}Hz | Peak: ${peakBeforeDb.toFixed(1)}dBFS -> ${peakAfterDb.toFixed(1)}dBFS`;
-    return { masteredPcm, peakBeforeDb, peakAfterDb, details };
+    } else i === 32 && new Float32Array(T.buffer, T.byteOffset, f).set(S);
+    const x = `HighPass: ${n}Hz | AirShelf: +${l}dB @ ${c}Hz | Peak: ${L.toFixed(1)}dBFS -> ${D.toFixed(1)}dBFS`;
+    return { masteredPcm: T, peakBeforeDb: L, peakAfterDb: D, details: x };
   }
   /**
    * Applies a 2nd-order Butterworth High-Pass Biquad Filter per channel
    */
-  applyHighPassFilter(samples, sampleRate, channels, cutoffHz) {
-    const w0 = 2 * Math.PI * cutoffHz / sampleRate;
-    const cosW0 = Math.cos(w0);
-    const sinW0 = Math.sin(w0);
-    const Q = 0.70710678;
-    const alpha = sinW0 / (2 * Q);
-    const b0 = (1 + cosW0) / 2;
-    const b1 = -(1 + cosW0);
-    const b2 = (1 + cosW0) / 2;
-    const a0 = 1 + alpha;
-    const a1 = -2 * cosW0;
-    const a2 = 1 - alpha;
-    const nb0 = b0 / a0;
-    const nb1 = b1 / a0;
-    const nb2 = b2 / a0;
-    const na1 = a1 / a0;
-    const na2 = a2 / a0;
-    for (let ch = 0; ch < channels; ch++) {
-      let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
-      for (let i = ch; i < samples.length; i += channels) {
-        const x0 = samples[i];
-        const y0 = nb0 * x0 + nb1 * x1 + nb2 * x2 - na1 * y1 - na2 * y2;
-        x2 = x1;
-        x1 = x0;
-        y2 = y1;
-        y1 = y0;
-        samples[i] = y0;
+  applyHighPassFilter(e, t, s, i) {
+    const r = 2 * Math.PI * i / t, o = Math.cos(r), c = Math.sin(r) / (2 * 0.70710678), l = (1 + o) / 2, d = -(1 + o), u = (1 + o) / 2, m = 1 + c, f = -2 * o, S = 1 - c, C = l / m, L = d / m, N = u / m, _ = f / m, D = S / m;
+    for (let T = 0; T < s; T++) {
+      let x = 0, M = 0, E = 0, p = 0;
+      for (let $ = T; $ < e.length; $ += s) {
+        const I = e[$], k = C * I + L * x + N * M - _ * E - D * p;
+        M = x, x = I, p = E, E = k, e[$] = k;
       }
     }
   }
   /**
    * Applies a High-Shelf Presence / Vocal Air Biquad Filter per channel
    */
-  applyHighShelfFilter(samples, sampleRate, channels, cutoffHz, gainDb) {
-    const A = Math.pow(10, gainDb / 40);
-    const w0 = 2 * Math.PI * cutoffHz / sampleRate;
-    const cosW0 = Math.cos(w0);
-    const sinW0 = Math.sin(w0);
-    const S = 1;
-    const alpha = sinW0 / 2 * Math.sqrt((A + 1 / A) * (1 / S - 1) + 2);
-    const twoSqrtAAlpha = 2 * Math.sqrt(A) * alpha;
-    const b0 = A * (A + 1 + (A - 1) * cosW0 + twoSqrtAAlpha);
-    const b1 = -2 * A * (A - 1 + (A + 1) * cosW0);
-    const b2 = A * (A + 1 + (A - 1) * cosW0 - twoSqrtAAlpha);
-    const a0 = A + 1 - (A - 1) * cosW0 + twoSqrtAAlpha;
-    const a1 = 2 * (A - 1 - (A + 1) * cosW0);
-    const a2 = A + 1 - (A - 1) * cosW0 - twoSqrtAAlpha;
-    const nb0 = b0 / a0;
-    const nb1 = b1 / a0;
-    const nb2 = b2 / a0;
-    const na1 = a1 / a0;
-    const na2 = a2 / a0;
-    for (let ch = 0; ch < channels; ch++) {
-      let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
-      for (let i = ch; i < samples.length; i += channels) {
-        const x0 = samples[i];
-        const y0 = nb0 * x0 + nb1 * x1 + nb2 * x2 - na1 * y1 - na2 * y2;
-        x2 = x1;
-        x1 = x0;
-        y2 = y1;
-        y1 = y0;
-        samples[i] = y0;
+  applyHighShelfFilter(e, t, s, i, r) {
+    const o = Math.pow(10, r / 40), n = 2 * Math.PI * i / t, a = Math.cos(n), d = Math.sin(n) / 2 * Math.sqrt((o + 1 / o) * (1 / 1 - 1) + 2), u = 2 * Math.sqrt(o) * d, m = o * (o + 1 + (o - 1) * a + u), f = -2 * o * (o - 1 + (o + 1) * a), S = o * (o + 1 + (o - 1) * a - u), C = o + 1 - (o - 1) * a + u, L = 2 * (o - 1 - (o + 1) * a), N = o + 1 - (o - 1) * a - u, _ = m / C, D = f / C, T = S / C, x = L / C, M = N / C;
+    for (let E = 0; E < s; E++) {
+      let p = 0, $ = 0, I = 0, k = 0;
+      for (let z = E; z < e.length; z += s) {
+        const re = e[z], W = _ * re + D * p + T * $ - x * I - M * k;
+        $ = p, p = re, k = I, I = W, e[z] = W;
       }
     }
   }
 };
-__publicField(_MusicDspService, "instance");
-let MusicDspService = _MusicDspService;
-function createWav(pcm, sampleRate, channels, bitsPerSample) {
-  const header = new ArrayBuffer(44);
-  const view = new DataView(header);
-  const blockAlign = channels * (bitsPerSample / 8);
-  writeAscii(view, 0, "RIFF");
-  view.setUint32(4, 36 + pcm.byteLength, true);
-  writeAscii(view, 8, "WAVE");
-  writeAscii(view, 12, "fmt ");
-  view.setUint32(16, 16, true);
-  view.setUint16(20, 1, true);
-  view.setUint16(22, channels, true);
-  view.setUint32(24, sampleRate, true);
-  view.setUint32(28, sampleRate * blockAlign, true);
-  view.setUint16(32, blockAlign, true);
-  view.setUint16(34, bitsPerSample, true);
-  writeAscii(view, 36, "data");
-  view.setUint32(40, pcm.byteLength, true);
-  const wav = new Uint8Array(44 + pcm.byteLength);
-  wav.set(new Uint8Array(header));
-  wav.set(pcm, 44);
-  return wav;
+b(ee, "instance");
+let ue = ee;
+function _e(h, e, t, s) {
+  const i = new ArrayBuffer(44), r = new DataView(i), o = t * (s / 8);
+  de(r, 0, "RIFF"), r.setUint32(4, 36 + h.byteLength, !0), de(r, 8, "WAVE"), de(r, 12, "fmt "), r.setUint32(16, 16, !0), r.setUint16(20, 1, !0), r.setUint16(22, t, !0), r.setUint32(24, e, !0), r.setUint32(28, e * o, !0), r.setUint16(32, o, !0), r.setUint16(34, s, !0), de(r, 36, "data"), r.setUint32(40, h.byteLength, !0);
+  const n = new Uint8Array(44 + h.byteLength);
+  return n.set(new Uint8Array(i)), n.set(h, 44), n;
 }
-function writeAscii(view, offset, value) {
-  for (let index = 0; index < value.length; index++) {
-    view.setUint8(offset + index, value.charCodeAt(index));
-  }
+function de(h, e, t) {
+  for (let s = 0; s < t.length; s++)
+    h.setUint8(e + s, t.charCodeAt(s));
 }
-function wavToDataUri(wav) {
-  const base64 = Buffer.from(wav.buffer, wav.byteOffset, wav.byteLength).toString("base64");
-  return `data:audio/wav;base64,${base64}`;
+function De(h) {
+  return `data:audio/wav;base64,${Buffer.from(h.buffer, h.byteOffset, h.byteLength).toString("base64")}`;
 }
-function computeWaveformPeaks(pcm, bitsPerSample, channels, targetPeaks = 64) {
-  if (pcm.length === 0) return Array(targetPeaks).fill(10);
-  const peaks = [];
-  if (bitsPerSample === 16) {
-    const samples = new Int16Array(pcm.buffer, pcm.byteOffset, Math.floor(pcm.byteLength / 2));
-    const step = Math.max(1, Math.floor(samples.length / targetPeaks));
-    for (let i = 0; i < targetPeaks; i++) {
-      let max = 0;
-      const start = i * step;
-      const end = Math.min(samples.length, start + step);
-      for (let j = start; j < end; j += channels) {
-        const a = Math.abs(samples[j]) / 32768;
-        if (a > max) max = a;
+function Le(h, e, t, s = 64) {
+  if (h.length === 0) return Array(s).fill(10);
+  const i = [];
+  if (e === 16) {
+    const r = new Int16Array(h.buffer, h.byteOffset, Math.floor(h.byteLength / 2)), o = Math.max(1, Math.floor(r.length / s));
+    for (let n = 0; n < s; n++) {
+      let a = 0;
+      const c = n * o, l = Math.min(r.length, c + o);
+      for (let d = c; d < l; d += t) {
+        const u = Math.abs(r[d]) / 32768;
+        u > a && (a = u);
       }
-      peaks.push(Math.max(6, Math.min(98, Math.round(max * 100))));
+      i.push(Math.max(6, Math.min(98, Math.round(a * 100))));
     }
-  } else if (bitsPerSample === 32) {
-    const samples = new Float32Array(pcm.buffer, pcm.byteOffset, Math.floor(pcm.byteLength / 4));
-    const step = Math.max(1, Math.floor(samples.length / targetPeaks));
-    for (let i = 0; i < targetPeaks; i++) {
-      let max = 0;
-      const start = i * step;
-      const end = Math.min(samples.length, start + step);
-      for (let j = start; j < end; j += channels) {
-        const a = Math.abs(samples[j]);
-        if (a > max) max = a;
+  } else if (e === 32) {
+    const r = new Float32Array(h.buffer, h.byteOffset, Math.floor(h.byteLength / 4)), o = Math.max(1, Math.floor(r.length / s));
+    for (let n = 0; n < s; n++) {
+      let a = 0;
+      const c = n * o, l = Math.min(r.length, c + o);
+      for (let d = c; d < l; d += t) {
+        const u = Math.abs(r[d]);
+        u > a && (a = u);
       }
-      peaks.push(Math.max(6, Math.min(98, Math.round(max * 100))));
+      i.push(Math.max(6, Math.min(98, Math.round(a * 100))));
     }
-  } else {
-    for (let i = 0; i < targetPeaks; i++) {
-      peaks.push(Math.round(20 + Math.sin(i / 4) * 15));
-    }
-  }
-  return peaks;
+  } else
+    for (let r = 0; r < s; r++)
+      i.push(Math.round(20 + Math.sin(r / 4) * 15));
+  return i;
 }
-class MusicEngineService {
+class ft {
   constructor() {
-    __publicField(this, "activeModelId");
-    __publicField(this, "activeEngine");
-    __publicField(this, "activeDitVariant");
-    __publicField(this, "activeRequestIds", /* @__PURE__ */ new Map());
+    b(this, "activeModelId");
+    b(this, "activeEngine");
+    b(this, "activeDitVariant");
+    b(this, "activeRequestIds", /* @__PURE__ */ new Map());
     // taskId -> requestId
-    __publicField(this, "musicExportsDir");
-    __publicField(this, "logger", MusicLoggerService.getInstance());
-    var _a;
+    b(this, "musicExportsDir");
+    b(this, "logger", Se.getInstance());
+    var e;
     try {
-      const userData = ((_a = app) == null ? void 0 : _a.getPath) ? app.getPath("userData") : process.cwd();
-      this.musicExportsDir = path.join(userData, "music-exports");
-      if (!fs.existsSync(this.musicExportsDir)) {
-        fs.mkdirSync(this.musicExportsDir, { recursive: true });
-      }
+      const t = (e = U) != null && e.getPath ? U.getPath("userData") : process.cwd();
+      this.musicExportsDir = y.join(t, "music-exports"), g.existsSync(this.musicExportsDir) || g.mkdirSync(this.musicExportsDir, { recursive: !0 });
     } catch {
-      this.musicExportsDir = path.join(process.cwd(), "music-exports");
+      this.musicExportsDir = y.join(process.cwd(), "music-exports");
     }
   }
   getActiveModelId() {
@@ -3447,531 +2619,389 @@ class MusicEngineService {
   /**
    * Assess hardware and memory fit for ACE-Step or MiniMax models before loading
    */
-  async assessFit(engine = "acestep", ditVariant = "turbo-q4") {
+  async assessFit(e = "acestep", t = "turbo-q4") {
     try {
-      if (engine === "acestep") {
-        const ditModelSrc = this.resolveDitModelSrc(ditVariant);
-        const result = await qvacSdk.assessModelFit({
+      if (e === "acestep") {
+        const r = this.resolveDitModelSrc(t);
+        return { success: !0, data: await v.assessModelFit({
           models: [
             {
               modelType: "audiogen",
               modelConfig: {
                 engine: "acestep",
-                textEncModelSrc: qvacSdk.AUDIOGEN_QWEN3_EMBEDDING_0_6B_Q8_0,
-                lmModelSrc: qvacSdk.AUDIOGEN_ACESTEP_5HZ_LM_0_6B_Q8_0,
-                ditModelSrc,
-                vaeModelSrc: qvacSdk.AUDIOGEN_VAE_BF16,
-                useGPU: true
+                textEncModelSrc: v.AUDIOGEN_QWEN3_EMBEDDING_0_6B_Q8_0,
+                lmModelSrc: v.AUDIOGEN_ACESTEP_5HZ_LM_0_6B_Q8_0,
+                ditModelSrc: r,
+                vaeModelSrc: v.AUDIOGEN_VAE_BF16,
+                useGPU: !0
               }
             }
           ]
-        });
-        return { success: true, data: result };
+        }) };
       }
-      const { lmModelSrc, synthModelSrc } = this.resolveMiniMaxModelPaths();
-      if (lmModelSrc && synthModelSrc) {
-        const result = await qvacSdk.assessModelFit({
-          models: [
-            {
-              modelType: "audiogen",
-              modelConfig: {
-                engine: "minimax",
-                lmModelSrc,
-                synthModelSrc,
-                useGPU: true
-              }
+      const { lmModelSrc: s, synthModelSrc: i } = this.resolveMiniMaxModelPaths();
+      return s && i ? { success: !0, data: await v.assessModelFit({
+        models: [
+          {
+            modelType: "audiogen",
+            modelConfig: {
+              engine: "minimax",
+              lmModelSrc: s,
+              synthModelSrc: i,
+              useGPU: !0
             }
-          ]
-        });
-        return { success: true, data: result };
-      }
-      return { success: true, message: "MiniMax assessment requires local model paths" };
-    } catch (err) {
-      this.logger.logFailure({
+          }
+        ]
+      }) } : { success: !0, message: "MiniMax assessment requires local model paths" };
+    } catch (s) {
+      return this.logger.logFailure({
         taskId: "assess-fit",
-        engine,
+        engine: e,
         stage: "ASSESS_FIT",
-        error: err,
-        options: { engine, ditVariant }
-      });
-      return { success: false, error: (err == null ? void 0 : err.message) || String(err) };
+        error: s,
+        options: { engine: e, ditVariant: t }
+      }), { success: !1, error: (s == null ? void 0 : s.message) || String(s) };
     }
   }
   /**
    * Discovers downloaded MiniMax-Music3 GGUF model files from disk cache (~/.qvac/models)
    */
-  resolveMiniMaxModelPaths(customLm, customSynth) {
-    let lmModelSrc = customLm;
-    let synthModelSrc = customSynth;
-    const cacheDir = path.join(os.homedir(), ".qvac", "models");
-    if (fs.existsSync(cacheDir)) {
+  resolveMiniMaxModelPaths(e, t) {
+    let s = e, i = t;
+    const r = y.join(O.homedir(), ".qvac", "models");
+    if (g.existsSync(r))
       try {
-        const files = fs.readdirSync(cacheDir);
-        for (const file of files) {
-          const lower = file.toLowerCase();
-          if (lower.endsWith(".download") || lower.endsWith(".tmp") || lower.endsWith(".partial") || lower.endsWith(".crdownload")) {
+        const o = g.readdirSync(r);
+        for (const n of o) {
+          const a = n.toLowerCase();
+          if (a.endsWith(".download") || a.endsWith(".tmp") || a.endsWith(".partial") || a.endsWith(".crdownload"))
             continue;
-          }
-          const fullPath = path.join(cacheDir, file);
+          const c = y.join(r, n);
           try {
-            const st = fs.statSync(fullPath);
-            if (!st.isFile() || st.size < 1024 * 1024) continue;
+            const l = g.statSync(c);
+            if (!l.isFile() || l.size < 1024 * 1024) continue;
           } catch {
             continue;
           }
-          if (!lmModelSrc && (lower.includes("mm3-lm") || lower.includes("minimax") && (lower.includes("lm") || lower.includes("transformer"))) && !lower.includes("vocoder") && !lower.includes("synth")) {
-            if (file.includes("-imat.gguf")) {
-              const canonicalName = file.replace("-imat.gguf", ".gguf");
-              const canonicalPath = path.join(cacheDir, canonicalName);
-              if (!fs.existsSync(canonicalPath)) {
+          if (!s && (a.includes("mm3-lm") || a.includes("minimax") && (a.includes("lm") || a.includes("transformer"))) && !a.includes("vocoder") && !a.includes("synth")) {
+            if (n.includes("-imat.gguf")) {
+              const l = n.replace("-imat.gguf", ".gguf"), d = y.join(r, l);
+              if (!g.existsSync(d))
                 try {
-                  fs.linkSync(fullPath, canonicalPath);
-                  console.log(`[MusicEngineService] Created quant-matched hardlink: ${canonicalName} -> ${file}`);
+                  g.linkSync(c, d), console.log(`[MusicEngineService] Created quant-matched hardlink: ${l} -> ${n}`);
                 } catch {
                   try {
-                    fs.symlinkSync(fullPath, canonicalPath);
+                    g.symlinkSync(c, d);
                   } catch {
                   }
                 }
-              }
-              if (fs.existsSync(canonicalPath)) {
-                lmModelSrc = canonicalPath;
+              if (g.existsSync(d)) {
+                s = d;
                 continue;
               }
             }
-            lmModelSrc = fullPath;
+            s = c;
           }
-          if (!synthModelSrc && (lower.includes("mm3-synth") || lower.includes("minimax") && (lower.includes("synth") || lower.includes("vocoder"))) && !lower.includes("transformer") && !lower.includes("lm")) {
-            synthModelSrc = fullPath;
-          }
+          !i && (a.includes("mm3-synth") || a.includes("minimax") && (a.includes("synth") || a.includes("vocoder"))) && !a.includes("transformer") && !a.includes("lm") && (i = c);
         }
-      } catch (err) {
-        console.warn("[MusicEngineService] Error resolving MiniMax model paths:", err);
+      } catch (o) {
+        console.warn("[MusicEngineService] Error resolving MiniMax model paths:", o);
       }
-    }
-    return { lmModelSrc, synthModelSrc };
+    return { lmModelSrc: s, synthModelSrc: i };
   }
   /**
    * Resolves the DiT model source constant based on user variant selection
    */
-  resolveDitModelSrc(ditVariant) {
-    switch (ditVariant) {
+  resolveDitModelSrc(e) {
+    switch (e) {
       case "turbo-q8":
-        return qvacSdk.AUDIOGEN_ACESTEP_V15_TURBO_Q8_0;
+        return v.AUDIOGEN_ACESTEP_V15_TURBO_Q8_0;
       case "sft-q8":
-        return qvacSdk.AUDIOGEN_ACESTEP_V15_SFT_Q8_0;
+        return v.AUDIOGEN_ACESTEP_V15_SFT_Q8_0;
       case "base-q4":
-        return qvacSdk.AUDIOGEN_ACESTEP_V15_BASE_Q4_K_M || qvacSdk.AUDIOGEN_ACESTEP_V15_TURBO_Q4_K_M;
+        return v.AUDIOGEN_ACESTEP_V15_BASE_Q4_K_M || v.AUDIOGEN_ACESTEP_V15_TURBO_Q4_K_M;
       case "turbo-q4":
       default:
-        return qvacSdk.AUDIOGEN_ACESTEP_V15_TURBO_Q4_K_M;
+        return v.AUDIOGEN_ACESTEP_V15_TURBO_Q4_K_M;
     }
   }
   /**
    * Ensures the appropriate AudioGen model is loaded in QVAC runtime
    */
-  async ensureModelLoaded(options, onProgress) {
-    const targetEngine = options.engine || "acestep";
-    const targetDit = options.ditVariant || "turbo-q4";
-    if (this.activeModelId && this.activeEngine === targetEngine && (targetEngine === "minimax" || this.activeDitVariant === targetDit)) {
+  async ensureModelLoaded(e, t) {
+    const s = e.engine || "acestep", i = e.ditVariant || "turbo-q4";
+    if (this.activeModelId && this.activeEngine === s && (s === "minimax" || this.activeDitVariant === i))
       return this.activeModelId;
-    }
     if (this.activeModelId) {
       try {
-        await qvacSdk.unloadModel({ modelId: this.activeModelId });
-      } catch (e) {
-        console.warn("[MusicEngineService] Warning unloading prior model:", e);
+        await v.unloadModel({ modelId: this.activeModelId });
+      } catch (r) {
+        console.warn("[MusicEngineService] Warning unloading prior model:", r);
       }
       this.activeModelId = void 0;
     }
-    if (targetEngine === "acestep") {
-      const ditModelSrc = this.resolveDitModelSrc(targetDit);
-      onProgress == null ? void 0 : onProgress({
+    if (s === "acestep") {
+      const r = this.resolveDitModelSrc(i);
+      t == null || t({
         taskId: "model-load",
         stage: "Loading Models",
         step: 0,
         total: 100,
         percentage: 0,
         message: "Preparing ACE-Step AudioGen models..."
-      });
-      this.logger.logMilestone("model-load", "LOAD_START", `Loading ACE-Step (${targetDit}) into QVAC runtime`);
+      }), this.logger.logMilestone("model-load", "LOAD_START", `Loading ACE-Step (${i}) into QVAC runtime`);
       try {
-        const modelId = await qvacSdk.loadModel({
+        const o = await v.loadModel({
           modelType: "audiogen",
           modelConfig: {
             engine: "acestep",
-            textEncModelSrc: qvacSdk.AUDIOGEN_QWEN3_EMBEDDING_0_6B_Q8_0,
-            lmModelSrc: qvacSdk.AUDIOGEN_ACESTEP_5HZ_LM_0_6B_Q8_0,
-            ditModelSrc,
-            vaeModelSrc: qvacSdk.AUDIOGEN_VAE_BF16,
-            useGPU: options.useGPU !== false,
-            inferenceSteps: options.inferenceSteps || 8
+            textEncModelSrc: v.AUDIOGEN_QWEN3_EMBEDDING_0_6B_Q8_0,
+            lmModelSrc: v.AUDIOGEN_ACESTEP_5HZ_LM_0_6B_Q8_0,
+            ditModelSrc: r,
+            vaeModelSrc: v.AUDIOGEN_VAE_BF16,
+            useGPU: e.useGPU !== !1,
+            inferenceSteps: e.inferenceSteps || 8
           },
-          onProgress: (p) => {
-            var _a;
-            const mb = (bytes) => (bytes / 1e6).toFixed(1);
-            const filename = ((_a = p.downloadKey) == null ? void 0 : _a.split("/").pop()) || p.downloadKey || "model";
-            onProgress == null ? void 0 : onProgress({
+          onProgress: (n) => {
+            var l;
+            const a = (d) => (d / 1e6).toFixed(1), c = ((l = n.downloadKey) == null ? void 0 : l.split("/").pop()) || n.downloadKey || "model";
+            t == null || t({
               taskId: "model-load",
               stage: "Downloading",
-              step: Math.round(p.downloaded / 1e6),
-              total: Math.round(p.total / 1e6),
-              percentage: p.percentage,
-              message: `Downloading ${filename}: ${p.percentage.toFixed(0)}% (${mb(p.downloaded)}/${mb(p.total)} MB)`
+              step: Math.round(n.downloaded / 1e6),
+              total: Math.round(n.total / 1e6),
+              percentage: n.percentage,
+              message: `Downloading ${c}: ${n.percentage.toFixed(0)}% (${a(n.downloaded)}/${a(n.total)} MB)`
             });
           }
         });
-        this.activeModelId = modelId;
-        this.activeEngine = "acestep";
-        this.activeDitVariant = targetDit;
-        this.logger.logMilestone("model-load", "LOAD_SUCCESS", `ACE-Step model loaded ID: ${modelId}`);
-        return modelId;
-      } catch (loadErr) {
-        this.logger.logFailure({
+        return this.activeModelId = o, this.activeEngine = "acestep", this.activeDitVariant = i, this.logger.logMilestone("model-load", "LOAD_SUCCESS", `ACE-Step model loaded ID: ${o}`), o;
+      } catch (o) {
+        throw this.logger.logFailure({
           taskId: "model-load",
           engine: "acestep",
           stage: "LOAD_ACESTEP_RUNTIME",
-          error: loadErr,
-          options,
-          resolvedPaths: { ditModelSrc }
-        });
-        throw loadErr;
+          error: o,
+          options: e,
+          resolvedPaths: { ditModelSrc: r }
+        }), o;
       }
     } else {
-      const { lmModelSrc, synthModelSrc } = this.resolveMiniMaxModelPaths(options.lmModelSrc, options.synthModelSrc);
-      if (!lmModelSrc || !synthModelSrc) {
-        const errMsg = "MiniMax-Music3 model files are not installed. Please download the MiniMax models first.";
-        this.logger.logFailure({
+      const { lmModelSrc: r, synthModelSrc: o } = this.resolveMiniMaxModelPaths(e.lmModelSrc, e.synthModelSrc);
+      if (!r || !o) {
+        const n = "MiniMax-Music3 model files are not installed. Please download the MiniMax models first.";
+        throw this.logger.logFailure({
           taskId: "model-load",
           engine: "minimax",
           stage: "RESOLVE_MINIMAX_PATHS",
-          error: new Error(errMsg),
-          options,
-          resolvedPaths: { lmModelSrc, synthModelSrc }
-        });
-        console.error(`[MusicEngineService] ✖ MiniMax Model Load Failed: missing model paths`, {
-          lmModelSrc,
-          synthModelSrc,
-          optionsLm: options.lmModelSrc,
-          optionsSynth: options.synthModelSrc
-        });
-        throw new Error(errMsg);
+          error: new Error(n),
+          options: e,
+          resolvedPaths: { lmModelSrc: r, synthModelSrc: o }
+        }), console.error("[MusicEngineService] ✖ MiniMax Model Load Failed: missing model paths", {
+          lmModelSrc: r,
+          synthModelSrc: o,
+          optionsLm: e.lmModelSrc,
+          optionsSynth: e.synthModelSrc
+        }), new Error(n);
       }
-      onProgress == null ? void 0 : onProgress({
+      t == null || t({
         taskId: "model-load",
         stage: "Loading Models",
         step: 0,
         total: 100,
         percentage: 0,
         message: "Loading MiniMax-Music3 local GGUF models..."
-      });
-      this.logger.logMilestone("model-load", "LOAD_START", `Loading MiniMax models into QVAC runtime (LM: ${lmModelSrc}, Synth: ${synthModelSrc})`);
+      }), this.logger.logMilestone("model-load", "LOAD_START", `Loading MiniMax models into QVAC runtime (LM: ${r}, Synth: ${o})`);
       try {
-        const modelId = await qvacSdk.loadModel({
+        const n = await v.loadModel({
           modelType: "audiogen",
           modelConfig: {
             engine: "minimax",
-            lmModelSrc,
-            synthModelSrc,
-            device: options.useGPU === false ? "cpu" : "gpu",
-            ...options.threads !== void 0 && { threads: options.threads }
+            lmModelSrc: r,
+            synthModelSrc: o,
+            device: e.useGPU === !1 ? "cpu" : "gpu",
+            ...e.threads !== void 0 && { threads: e.threads }
           }
         });
-        this.activeModelId = modelId;
-        this.activeEngine = "minimax";
-        this.logger.logMilestone("model-load", "LOAD_SUCCESS", `MiniMax model loaded successfully! ID: ${modelId}`);
-        return modelId;
-      } catch (loadErr) {
-        this.logger.logFailure({
+        return this.activeModelId = n, this.activeEngine = "minimax", this.logger.logMilestone("model-load", "LOAD_SUCCESS", `MiniMax model loaded successfully! ID: ${n}`), n;
+      } catch (n) {
+        throw this.logger.logFailure({
           taskId: "model-load",
           engine: "minimax",
           stage: "LOAD_MINIMAX_RUNTIME",
-          error: loadErr,
-          options,
-          resolvedPaths: { lmModelSrc, synthModelSrc }
-        });
-        console.error(`[MusicEngineService] ✖ Failed to load MiniMax models in QVAC runtime:`, {
-          error: (loadErr == null ? void 0 : loadErr.message) || String(loadErr),
-          code: loadErr == null ? void 0 : loadErr.code,
-          stack: loadErr == null ? void 0 : loadErr.stack,
-          lmModelSrc,
-          synthModelSrc
-        });
-        throw loadErr;
+          error: n,
+          options: e,
+          resolvedPaths: { lmModelSrc: r, synthModelSrc: o }
+        }), console.error("[MusicEngineService] ✖ Failed to load MiniMax models in QVAC runtime:", {
+          error: (n == null ? void 0 : n.message) || String(n),
+          code: n == null ? void 0 : n.code,
+          stack: n == null ? void 0 : n.stack,
+          lmModelSrc: r,
+          synthModelSrc: o
+        }), n;
       }
     }
   }
   /**
    * Generates music track based on prompt, lyrics, and musical controls
    */
-  async generate(options, onProgress, onLog, isCancelled) {
-    const { taskId, caption } = options;
-    if (!caption || !caption.trim()) {
-      return { success: false, error: "Caption is required and cannot be empty." };
-    }
+  async generate(e, t, s, i) {
+    const { taskId: r, caption: o } = e;
+    if (!o || !o.trim())
+      return { success: !1, error: "Caption is required and cannot be empty." };
     this.logger.logSessionStart({
-      taskId,
-      engine: options.engine || "acestep",
-      caption,
-      lyrics: options.lyrics,
-      isInstrumental: options.isInstrumental,
-      duration: options.duration,
-      ditVariant: options.ditVariant,
-      seed: options.seed
+      taskId: r,
+      engine: e.engine || "acestep",
+      caption: o,
+      lyrics: e.lyrics,
+      isInstrumental: e.isInstrumental,
+      duration: e.duration,
+      ditVariant: e.ditVariant,
+      seed: e.seed
     });
     try {
-      onLog == null ? void 0 : onLog({ text: `▸ Initializing Music Generation: "${caption}"`, stream: "system" });
-      const modelId = await this.ensureModelLoaded(options, onProgress);
-      if (isCancelled == null ? void 0 : isCancelled()) {
-        this.logger.logMilestone(taskId, "CANCELLED", "Cancelled by user before synthesis started");
-        return { success: false, error: "Cancelled by user before synthesis started." };
-      }
-      this.logger.logMilestone(taskId, "MODEL_READY", `Model ID: ${modelId} (${options.engine || "acestep"})`);
-      onLog == null ? void 0 : onLog({ text: `▸ Model loaded successfully: ${modelId} (Engine: ${options.engine || "acestep"})`, stream: "system" });
-      const engine = options.engine || "acestep";
-      const sanitized = MusicSanitizerService.getInstance().sanitize({
-        caption: options.caption,
-        lyrics: options.lyrics,
-        isInstrumental: options.isInstrumental,
-        vocalMode: options.vocalMode,
-        duration: options.duration,
-        engine,
-        bpm: options.bpm,
-        keyscale: options.keyscale,
-        timesignature: options.timesignature,
-        vocalLanguage: options.vocalLanguage,
-        ditVariant: options.ditVariant,
-        simpleMode: options.simpleMode,
-        taskType: options.taskType
+      s == null || s({ text: `▸ Initializing Music Generation: "${o}"`, stream: "system" });
+      const n = await this.ensureModelLoaded(e, t);
+      if (i != null && i())
+        return this.logger.logMilestone(r, "CANCELLED", "Cancelled by user before synthesis started"), { success: !1, error: "Cancelled by user before synthesis started." };
+      this.logger.logMilestone(r, "MODEL_READY", `Model ID: ${n} (${e.engine || "acestep"})`), s == null || s({ text: `▸ Model loaded successfully: ${n} (Engine: ${e.engine || "acestep"})`, stream: "system" });
+      const a = e.engine || "acestep", c = pe.getInstance().sanitize({
+        caption: e.caption,
+        lyrics: e.lyrics,
+        isInstrumental: e.isInstrumental,
+        vocalMode: e.vocalMode,
+        duration: e.duration,
+        engine: a,
+        bpm: e.bpm,
+        keyscale: e.keyscale,
+        timesignature: e.timesignature,
+        vocalLanguage: e.vocalLanguage,
+        ditVariant: e.ditVariant,
+        simpleMode: e.simpleMode,
+        taskType: e.taskType
       });
       this.logger.logMilestone(
-        taskId,
+        r,
         "SANITIZED",
-        `Cleaned Caption: "${sanitized.caption.slice(0, 80)}..." | Target Duration: ${sanitized.duration}s | LyricsLength: ${sanitized.lyrics.length} | Mode: ${sanitized.isInstrumental ? "INSTRUMENTAL" : "VOCAL"}${sanitized.vocalHintInjected ? ` | VocalInjected: "${sanitized.vocalHintInjected}"` : ""}`
-      );
-      onLog == null ? void 0 : onLog({
-        text: `▸ Request Sanitized: "${sanitized.caption.slice(0, 60)}..." (Mode: ${sanitized.isInstrumental ? "Instrumental" : "Vocal"}, Duration: ${sanitized.duration}s)`,
+        `Cleaned Caption: "${c.caption.slice(0, 80)}..." | Target Duration: ${c.duration}s | LyricsLength: ${c.lyrics.length} | Mode: ${c.isInstrumental ? "INSTRUMENTAL" : "VOCAL"}${c.vocalHintInjected ? ` | VocalInjected: "${c.vocalHintInjected}"` : ""}`
+      ), s == null || s({
+        text: `▸ Request Sanitized: "${c.caption.slice(0, 60)}..." (Mode: ${c.isInstrumental ? "Instrumental" : "Vocal"}, Duration: ${c.duration}s)`,
         stream: "system"
       });
-      let runParams = {
-        modelId,
-        caption: sanitized.caption,
-        lyrics: sanitized.lyrics,
-        duration: sanitized.duration
+      let l = {
+        modelId: n,
+        caption: c.caption,
+        lyrics: c.lyrics,
+        duration: c.duration
       };
-      if (options.seed !== void 0) {
-        runParams.seed = options.seed;
-      }
-      if (engine === "acestep") {
-        if (options.simpleMode !== false && !sanitized.isInstrumental && !options.lyrics) {
-          runParams.simpleMode = true;
-          delete runParams.lyrics;
-        } else if (sanitized.isInstrumental) {
-          runParams.simpleMode = false;
-          runParams.lyrics = "[Instrumental]";
-        }
-        if (!options.vocalLanguage && !sanitized.isInstrumental) {
-          runParams.vocalLanguage = "en";
-        }
-      }
-      if (engine === "acestep") {
-        if (options.bpm !== void 0) runParams.bpm = options.bpm;
-        if (options.keyscale) runParams.keyscale = options.keyscale;
-        if (options.timesignature) runParams.timesignature = options.timesignature;
-        if (options.vocalLanguage) runParams.vocalLanguage = options.vocalLanguage;
-        if (options.augmentCaptionWithMetadata) runParams.augmentCaptionWithMetadata = true;
-        if (runParams.simpleMode || options.simpleMode) {
-          runParams.simpleMode = true;
-        } else if (options.rewriteQuery) {
-          runParams.rewriteQuery = true;
-        }
-        if (options.generateLrc) runParams.generateLrc = true;
-        if (options.computeQualityScore) runParams.computeQualityScore = true;
-        if (options.normalizeLoudness !== void 0) {
-          runParams.normalizeLoudness = options.normalizeLoudness;
-        }
-        if (options.guidanceScale !== void 0) {
-          runParams.guidanceScale = options.guidanceScale;
-        }
-        if (options.dcwEnabled !== void 0) {
-          runParams.dcwEnabled = options.dcwEnabled;
-        }
-        if (options.dcwScaler !== void 0) {
-          runParams.dcwScaler = options.dcwScaler;
-        }
-        if (options.dcwHighScaler !== void 0) {
-          runParams.dcwHighScaler = options.dcwHighScaler;
-        }
-        if (options.inferenceSteps !== void 0) {
-          runParams.inferenceSteps = options.inferenceSteps;
-        }
-        if (options.shift !== void 0) {
-          runParams.shift = options.shift;
-        }
-        if (options.referenceAudio) {
-          runParams.referenceAudio = options.referenceAudio;
-        }
-        if (options.taskType && options.taskType !== "text2music") {
-          runParams.taskType = options.taskType;
-          if (options.sourceAudio) {
-            runParams.sourceAudio = options.sourceAudio;
-          }
-          if (options.taskType === "cover-nofsq") {
-            runParams.audioCoverStrength = 1;
-            runParams.coverNoiseStrength = options.coverNoiseStrength ?? 0.75;
-          } else if (options.taskType === "lego") {
-            if (options.track) {
-              runParams.track = options.track;
-            }
-          }
-        }
-      } else {
-        runParams.cfgScale = options.cfgScale !== void 0 ? options.cfgScale : 1.8;
-        if (options.maxFrames !== void 0) {
-          runParams.maxFrames = options.maxFrames;
-          delete runParams.duration;
-        }
-        if (options.inferenceSteps && options.inferenceSteps >= 16) {
-          runParams.inferenceSteps = options.inferenceSteps;
-        } else {
-          runParams.inferenceSteps = 22;
-        }
-      }
-      onLog == null ? void 0 : onLog({ text: `▸ Starting QVAC audioGen inference run...`, stream: "system" });
-      const run = qvacSdk.audioGen(runParams);
-      this.activeRequestIds.set(taskId, run.requestId);
-      onLog == null ? void 0 : onLog({ text: `▸ Assigned requestId: ${run.requestId}`, stream: "system" });
-      (async () => {
+      e.seed !== void 0 && (l.seed = e.seed), a === "acestep" && (e.simpleMode !== !1 && !c.isInstrumental && !e.lyrics ? (l.simpleMode = !0, delete l.lyrics) : c.isInstrumental && (l.simpleMode = !1, l.lyrics = "[Instrumental]"), !e.vocalLanguage && !c.isInstrumental && (l.vocalLanguage = "en")), a === "acestep" ? (e.bpm !== void 0 && (l.bpm = e.bpm), e.keyscale && (l.keyscale = e.keyscale), e.timesignature && (l.timesignature = e.timesignature), e.vocalLanguage && (l.vocalLanguage = e.vocalLanguage), e.augmentCaptionWithMetadata && (l.augmentCaptionWithMetadata = !0), l.simpleMode || e.simpleMode ? l.simpleMode = !0 : e.rewriteQuery && (l.rewriteQuery = !0), e.generateLrc && (l.generateLrc = !0), e.computeQualityScore && (l.computeQualityScore = !0), e.normalizeLoudness !== void 0 && (l.normalizeLoudness = e.normalizeLoudness), e.guidanceScale !== void 0 && (l.guidanceScale = e.guidanceScale), e.dcwEnabled !== void 0 && (l.dcwEnabled = e.dcwEnabled), e.dcwScaler !== void 0 && (l.dcwScaler = e.dcwScaler), e.dcwHighScaler !== void 0 && (l.dcwHighScaler = e.dcwHighScaler), e.inferenceSteps !== void 0 && (l.inferenceSteps = e.inferenceSteps), e.shift !== void 0 && (l.shift = e.shift), e.referenceAudio && (l.referenceAudio = e.referenceAudio), e.taskType && e.taskType !== "text2music" && (l.taskType = e.taskType, e.sourceAudio && (l.sourceAudio = e.sourceAudio), e.taskType === "cover-nofsq" ? (l.audioCoverStrength = 1, l.coverNoiseStrength = e.coverNoiseStrength ?? 0.75) : e.taskType === "lego" && e.track && (l.track = e.track))) : (l.cfgScale = e.cfgScale !== void 0 ? e.cfgScale : 1.8, e.maxFrames !== void 0 && (l.maxFrames = e.maxFrames, delete l.duration), e.inferenceSteps && e.inferenceSteps >= 16 ? l.inferenceSteps = e.inferenceSteps : l.inferenceSteps = 22), s == null || s({ text: "▸ Starting QVAC audioGen inference run...", stream: "system" });
+      const d = v.audioGen(l);
+      this.activeRequestIds.set(r, d.requestId), s == null || s({ text: `▸ Assigned requestId: ${d.requestId}`, stream: "system" }), (async () => {
         try {
-          for await (const progress of run.progressStream) {
-            if (isCancelled == null ? void 0 : isCancelled()) break;
-            const pct = progress.total > 0 ? Math.round(progress.step / progress.total * 100) : 0;
-            const msg = progress.total > 0 ? `${progress.stage}: step ${progress.step}/${progress.total}` : `${progress.stage}: step ${progress.step}`;
-            onProgress == null ? void 0 : onProgress({
-              taskId,
-              stage: progress.stage,
-              step: progress.step,
-              total: progress.total,
-              percentage: pct,
-              message: msg
-            });
-            onLog == null ? void 0 : onLog({ text: `▸ [${progress.stage}] ${progress.step}/${progress.total || "?"}`, stream: "stdout" });
+          for await (const I of d.progressStream) {
+            if (i != null && i()) break;
+            const k = I.total > 0 ? Math.round(I.step / I.total * 100) : 0, z = I.total > 0 ? `${I.stage}: step ${I.step}/${I.total}` : `${I.stage}: step ${I.step}`;
+            t == null || t({
+              taskId: r,
+              stage: I.stage,
+              step: I.step,
+              total: I.total,
+              percentage: k,
+              message: z
+            }), s == null || s({ text: `▸ [${I.stage}] ${I.step}/${I.total || "?"}`, stream: "stdout" });
           }
-        } catch (streamErr) {
+        } catch {
         }
       })();
-      const [audio, stats] = await Promise.all([run.audio, run.stats]);
-      this.activeRequestIds.delete(taskId);
-      const backendId = stats == null ? void 0 : stats.backendId;
-      const backendName = backendId === 1 ? "Metal (Apple GPU)" : backendId === 2 ? "CUDA (GPU)" : backendId === 0 ? "CPU" : backendId !== void 0 ? `Backend #${backendId}` : "Metal (Apple GPU)";
-      const fallbackReason = stats == null ? void 0 : stats.gpuFallbackReason;
+      const [u, m] = await Promise.all([d.audio, d.stats]);
+      this.activeRequestIds.delete(r);
+      const f = m == null ? void 0 : m.backendId, S = f === 1 ? "Metal (Apple GPU)" : f === 2 ? "CUDA (GPU)" : f === 0 ? "CPU" : f !== void 0 ? `Backend #${f}` : "Metal (Apple GPU)", C = m == null ? void 0 : m.gpuFallbackReason;
       this.logger.logMilestone(
-        taskId,
+        r,
         "BACKEND_STATS",
-        `Compute Backend: ${backendName}${fallbackReason && fallbackReason !== 0 ? ` (Fallback Reason: ${fallbackReason})` : ""}`
-      );
-      onLog == null ? void 0 : onLog({
-        text: `▸ Compute Backend: ${backendName}`,
+        `Compute Backend: ${S}${C && C !== 0 ? ` (Fallback Reason: ${C})` : ""}`
+      ), s == null || s({
+        text: `▸ Compute Backend: ${S}`,
         stream: "system"
-      });
-      onLog == null ? void 0 : onLog({ text: `▸ Synthesis completed! Mastering ${audio.pcm.byteLength} raw PCM bytes...`, stream: "system" });
-      const { masteredPcm, details: dspDetails } = MusicDspService.getInstance().masterPcm(
-        audio.pcm,
-        audio.sampleRate,
-        audio.channels,
-        audio.bitsPerSample
+      }), s == null || s({ text: `▸ Synthesis completed! Mastering ${u.pcm.byteLength} raw PCM bytes...`, stream: "system" });
+      const { masteredPcm: L, details: N } = ue.getInstance().masterPcm(
+        u.pcm,
+        u.sampleRate,
+        u.channels,
+        u.bitsPerSample
       );
-      this.logger.logMilestone(taskId, "DSP_MASTERED", dspDetails);
-      onLog == null ? void 0 : onLog({ text: `▸ Audio Mastered: ${dspDetails}`, stream: "system" });
-      const wav = createWav(masteredPcm, audio.sampleRate, audio.channels, audio.bitsPerSample);
-      const filename = `music-${Date.now()}-${taskId.slice(0, 8)}.wav`;
-      const wavFilePath = path.join(this.musicExportsDir, filename);
-      let audioUrl = "";
+      this.logger.logMilestone(r, "DSP_MASTERED", N), s == null || s({ text: `▸ Audio Mastered: ${N}`, stream: "system" });
+      const _ = _e(L, u.sampleRate, u.channels, u.bitsPerSample), D = `music-${Date.now()}-${r.slice(0, 8)}.wav`, T = y.join(this.musicExportsDir, D);
+      let x = "";
       try {
-        fs.writeFileSync(wavFilePath, Buffer.from(wav.buffer, wav.byteOffset, wav.byteLength));
-        audioUrl = `echo-media://${wavFilePath}`;
-        onLog == null ? void 0 : onLog({ text: `▸ Exported WAV saved to: ${wavFilePath}`, stream: "system" });
-      } catch (writeErr) {
-        console.warn("[MusicEngineService] Could not write export file, falling back to data URI:", writeErr);
-        audioUrl = wavToDataUri(wav);
+        g.writeFileSync(T, Buffer.from(_.buffer, _.byteOffset, _.byteLength)), x = `echo-media://${T}`, s == null || s({ text: `▸ Exported WAV saved to: ${T}`, stream: "system" });
+      } catch (I) {
+        console.warn("[MusicEngineService] Could not write export file, falling back to data URI:", I), x = De(_);
       }
-      const waveform = computeWaveformPeaks(audio.pcm, audio.bitsPerSample, audio.channels, 64);
-      const durationMs = (stats == null ? void 0 : stats.audioDurationMs) || Math.round(audio.pcm.byteLength / (audio.bitsPerSample / 8) / audio.channels / audio.sampleRate * 1e3);
-      const renderedMetadata = stats == null ? void 0 : stats.metadata;
-      const output = {
+      const M = Le(u.pcm, u.bitsPerSample, u.channels, 64), E = (m == null ? void 0 : m.audioDurationMs) || Math.round(u.pcm.byteLength / (u.bitsPerSample / 8) / u.channels / u.sampleRate * 1e3), p = m == null ? void 0 : m.metadata, $ = {
         id: `music_gen_${Date.now()}`,
-        taskId,
-        caption: (renderedMetadata == null ? void 0 : renderedMetadata.caption) || caption,
-        lyrics: (renderedMetadata == null ? void 0 : renderedMetadata.lyrics) || options.lyrics,
-        audioUrl,
-        wavFilePath,
-        durationMs,
-        sampleRate: audio.sampleRate,
-        channels: audio.channels,
-        bitsPerSample: audio.bitsPerSample,
-        waveform,
-        bpm: (renderedMetadata == null ? void 0 : renderedMetadata.bpm) ?? options.bpm,
-        keyscale: (renderedMetadata == null ? void 0 : renderedMetadata.keyscale) ?? options.keyscale,
-        timesignature: (renderedMetadata == null ? void 0 : renderedMetadata.beatsPerBar) ? `${renderedMetadata.beatsPerBar}/4` : options.timesignature,
-        vocalLanguage: (renderedMetadata == null ? void 0 : renderedMetadata.vocalLanguage) ?? options.vocalLanguage,
-        isInstrumental: options.isInstrumental ?? runParams.lyrics === "[Instrumental]",
-        seed: (renderedMetadata == null ? void 0 : renderedMetadata.seed) ?? options.seed,
-        taskType: options.taskType || "text2music",
-        lrc: stats == null ? void 0 : stats.lrc,
-        lyricsScore: stats == null ? void 0 : stats.lyricsScore,
-        qualityScore: stats == null ? void 0 : stats.qualityScore,
-        qualityReport: renderedMetadata == null ? void 0 : renderedMetadata.qualityReport,
-        stats,
-        metadata: renderedMetadata,
+        taskId: r,
+        caption: (p == null ? void 0 : p.caption) || o,
+        lyrics: (p == null ? void 0 : p.lyrics) || e.lyrics,
+        audioUrl: x,
+        wavFilePath: T,
+        durationMs: E,
+        sampleRate: u.sampleRate,
+        channels: u.channels,
+        bitsPerSample: u.bitsPerSample,
+        waveform: M,
+        bpm: (p == null ? void 0 : p.bpm) ?? e.bpm,
+        keyscale: (p == null ? void 0 : p.keyscale) ?? e.keyscale,
+        timesignature: p != null && p.beatsPerBar ? `${p.beatsPerBar}/4` : e.timesignature,
+        vocalLanguage: (p == null ? void 0 : p.vocalLanguage) ?? e.vocalLanguage,
+        isInstrumental: e.isInstrumental ?? l.lyrics === "[Instrumental]",
+        seed: (p == null ? void 0 : p.seed) ?? e.seed,
+        taskType: e.taskType || "text2music",
+        lrc: m == null ? void 0 : m.lrc,
+        lyricsScore: m == null ? void 0 : m.lyricsScore,
+        qualityScore: m == null ? void 0 : m.qualityScore,
+        qualityReport: p == null ? void 0 : p.qualityReport,
+        stats: m,
+        metadata: p,
         createdAt: (/* @__PURE__ */ new Date()).toISOString()
       };
-      this.logger.logSuccess(taskId, output);
-      onLog == null ? void 0 : onLog({ text: `▸ Music generation finished successfully (${(durationMs / 1e3).toFixed(1)}s)`, stream: "system" });
-      return { success: true, data: output };
-    } catch (err) {
-      this.activeRequestIds.delete(taskId);
-      if (err instanceof qvacSdk.InferenceCancelledError || (isCancelled == null ? void 0 : isCancelled())) {
-        console.warn(`[MusicEngineService] Generation cancelled for task ${taskId}`);
-        this.logger.logMilestone(taskId, "CANCELLED", "Generation was cancelled by user");
-        onLog == null ? void 0 : onLog({ text: `▸ Music generation cancelled.`, stream: "stderr" });
-        return { success: false, error: "Generation was cancelled." };
-      }
-      const paths = options.engine === "minimax" ? this.resolveMiniMaxModelPaths(options.lmModelSrc, options.synthModelSrc) : { ditModelSrc: this.resolveDitModelSrc(options.ditVariant) };
-      this.logger.logFailure({
-        taskId,
-        engine: options.engine || "acestep",
+      return this.logger.logSuccess(r, $), s == null || s({ text: `▸ Music generation finished successfully (${(E / 1e3).toFixed(1)}s)`, stream: "system" }), { success: !0, data: $ };
+    } catch (n) {
+      if (this.activeRequestIds.delete(r), n instanceof v.InferenceCancelledError || i != null && i())
+        return console.warn(`[MusicEngineService] Generation cancelled for task ${r}`), this.logger.logMilestone(r, "CANCELLED", "Generation was cancelled by user"), s == null || s({ text: "▸ Music generation cancelled.", stream: "stderr" }), { success: !1, error: "Generation was cancelled." };
+      const a = e.engine === "minimax" ? this.resolveMiniMaxModelPaths(e.lmModelSrc, e.synthModelSrc) : { ditModelSrc: this.resolveDitModelSrc(e.ditVariant) };
+      return this.logger.logFailure({
+        taskId: r,
+        engine: e.engine || "acestep",
         stage: "INFERENCE_RUN",
-        error: err,
-        options,
-        resolvedPaths: paths
-      });
-      console.error(`[MusicEngineService] ✖ Music Generation FAILED for task ${taskId}:`, {
-        error: (err == null ? void 0 : err.message) || String(err),
-        code: err == null ? void 0 : err.code,
-        stack: err == null ? void 0 : err.stack,
-        cause: err == null ? void 0 : err.cause,
+        error: n,
+        options: e,
+        resolvedPaths: a
+      }), console.error(`[MusicEngineService] ✖ Music Generation FAILED for task ${r}:`, {
+        error: (n == null ? void 0 : n.message) || String(n),
+        code: n == null ? void 0 : n.code,
+        stack: n == null ? void 0 : n.stack,
+        cause: n == null ? void 0 : n.cause,
         options: {
-          engine: options.engine || "acestep",
-          caption: options.caption,
-          lyrics: options.lyrics ? `${options.lyrics.slice(0, 80)}...` : void 0,
-          duration: options.duration,
-          ditVariant: options.ditVariant
+          engine: e.engine || "acestep",
+          caption: e.caption,
+          lyrics: e.lyrics ? `${e.lyrics.slice(0, 80)}...` : void 0,
+          duration: e.duration,
+          ditVariant: e.ditVariant
         }
-      });
-      onLog == null ? void 0 : onLog({
-        text: `✖ Generation Failed: ${(err == null ? void 0 : err.message) || String(err)}${(err == null ? void 0 : err.stack) ? `
-${err.stack}` : ""}`,
+      }), s == null || s({
+        text: `✖ Generation Failed: ${(n == null ? void 0 : n.message) || String(n)}${n != null && n.stack ? `
+${n.stack}` : ""}`,
         stream: "stderr"
-      });
-      return {
-        success: false,
-        error: (err == null ? void 0 : err.message) || "Music generation failed.",
+      }), {
+        success: !1,
+        error: (n == null ? void 0 : n.message) || "Music generation failed.",
         errorDetails: {
-          code: err == null ? void 0 : err.code,
+          code: n == null ? void 0 : n.code,
           stage: "INFERENCE_RUN",
-          engine: options.engine || "acestep",
-          stack: err == null ? void 0 : err.stack,
-          cause: err == null ? void 0 : err.cause
+          engine: e.engine || "acestep",
+          stack: n == null ? void 0 : n.stack,
+          cause: n == null ? void 0 : n.cause
         }
       };
     }
@@ -3979,176 +3009,151 @@ ${err.stack}` : ""}`,
   /**
    * Edits an existing recording using ACE-Step Flow-Edit or Repaint operations
    */
-  async edit(options, onProgress, onLog, isCancelled) {
-    const { taskId, sourceAudio, operations } = options;
-    if (!sourceAudio) {
-      return { success: false, error: "sourceAudio is required for editing." };
-    }
-    if (!operations || operations.length === 0) {
-      return { success: false, error: "At least one edit operation is required." };
-    }
+  async edit(e, t, s, i) {
+    const { taskId: r, sourceAudio: o, operations: n } = e;
+    if (!o)
+      return { success: !1, error: "sourceAudio is required for editing." };
+    if (!n || n.length === 0)
+      return { success: !1, error: "At least one edit operation is required." };
     try {
-      onLog == null ? void 0 : onLog({ text: `▸ Starting Audio Edit with ${operations.length} operation(s)...`, stream: "system" });
-      const modelId = await this.ensureModelLoaded({ engine: "acestep", ditVariant: "turbo-q4", useGPU: options.useGPU }, onProgress);
-      const runParams = {
-        modelId,
-        sourceAudio,
-        operations,
-        ...options.seed !== void 0 && { seed: options.seed },
-        ...options.referenceAudio && { referenceAudio: options.referenceAudio },
-        ...options.vocalLanguage && { vocalLanguage: options.vocalLanguage },
-        ...options.bpm !== void 0 && { bpm: options.bpm },
-        ...options.keyscale && { keyscale: options.keyscale },
-        ...options.timesignature && { timesignature: options.timesignature },
-        ...options.augmentCaptionWithMetadata && { augmentCaptionWithMetadata: true },
-        ...options.dcwEnabled !== void 0 && { dcwEnabled: options.dcwEnabled },
-        ...options.dcwScaler !== void 0 && { dcwScaler: options.dcwScaler },
-        ...options.dcwHighScaler !== void 0 && { dcwHighScaler: options.dcwHighScaler },
-        ...options.inferenceSteps !== void 0 && { inferenceSteps: options.inferenceSteps },
-        ...options.shift !== void 0 && { shift: options.shift }
-      };
-      const run = qvacSdk.audioEdit(runParams);
-      this.activeRequestIds.set(taskId, run.requestId);
-      (async () => {
+      s == null || s({ text: `▸ Starting Audio Edit with ${n.length} operation(s)...`, stream: "system" });
+      const c = {
+        modelId: await this.ensureModelLoaded({ engine: "acestep", ditVariant: "turbo-q4", useGPU: e.useGPU }, t),
+        sourceAudio: o,
+        operations: n,
+        ...e.seed !== void 0 && { seed: e.seed },
+        ...e.referenceAudio && { referenceAudio: e.referenceAudio },
+        ...e.vocalLanguage && { vocalLanguage: e.vocalLanguage },
+        ...e.bpm !== void 0 && { bpm: e.bpm },
+        ...e.keyscale && { keyscale: e.keyscale },
+        ...e.timesignature && { timesignature: e.timesignature },
+        ...e.augmentCaptionWithMetadata && { augmentCaptionWithMetadata: !0 },
+        ...e.dcwEnabled !== void 0 && { dcwEnabled: e.dcwEnabled },
+        ...e.dcwScaler !== void 0 && { dcwScaler: e.dcwScaler },
+        ...e.dcwHighScaler !== void 0 && { dcwHighScaler: e.dcwHighScaler },
+        ...e.inferenceSteps !== void 0 && { inferenceSteps: e.inferenceSteps },
+        ...e.shift !== void 0 && { shift: e.shift }
+      }, l = v.audioEdit(c);
+      this.activeRequestIds.set(r, l.requestId), (async () => {
         try {
-          for await (const progress of run.progressStream) {
-            if (isCancelled == null ? void 0 : isCancelled()) break;
-            const pct = progress.total > 0 ? Math.round(progress.step / progress.total * 100) : 0;
-            onProgress == null ? void 0 : onProgress({
-              taskId,
-              stage: progress.stage,
-              step: progress.step,
-              total: progress.total,
-              percentage: pct,
-              message: `${progress.stage}: ${progress.step}/${progress.total}`
+          for await (const T of l.progressStream) {
+            if (i != null && i()) break;
+            const x = T.total > 0 ? Math.round(T.step / T.total * 100) : 0;
+            t == null || t({
+              taskId: r,
+              stage: T.stage,
+              step: T.step,
+              total: T.total,
+              percentage: x,
+              message: `${T.stage}: ${T.step}/${T.total}`
             });
           }
         } catch {
         }
       })();
-      const [audio, stats] = await Promise.all([run.audio, run.stats]);
-      this.activeRequestIds.delete(taskId);
-      const { masteredPcm } = MusicDspService.getInstance().masterPcm(
-        audio.pcm,
-        audio.sampleRate,
-        audio.channels,
-        audio.bitsPerSample
-      );
-      const wav = createWav(masteredPcm, audio.sampleRate, audio.channels, audio.bitsPerSample);
-      const filename = `music-edit-${Date.now()}-${taskId.slice(0, 8)}.wav`;
-      const wavFilePath = path.join(this.musicExportsDir, filename);
-      let audioUrl = "";
+      const [d, u] = await Promise.all([l.audio, l.stats]);
+      this.activeRequestIds.delete(r);
+      const { masteredPcm: m } = ue.getInstance().masterPcm(
+        d.pcm,
+        d.sampleRate,
+        d.channels,
+        d.bitsPerSample
+      ), f = _e(m, d.sampleRate, d.channels, d.bitsPerSample), S = `music-edit-${Date.now()}-${r.slice(0, 8)}.wav`, C = y.join(this.musicExportsDir, S);
+      let L = "";
       try {
-        fs.writeFileSync(wavFilePath, Buffer.from(wav.buffer, wav.byteOffset, wav.byteLength));
-        audioUrl = `echo-media://${wavFilePath}`;
+        g.writeFileSync(C, Buffer.from(f.buffer, f.byteOffset, f.byteLength)), L = `echo-media://${C}`;
       } catch {
-        audioUrl = wavToDataUri(wav);
+        L = De(f);
       }
-      const waveform = computeWaveformPeaks(audio.pcm, audio.bitsPerSample, audio.channels, 64);
-      const durationMs = (stats == null ? void 0 : stats.audioDurationMs) || Math.round(audio.pcm.byteLength / (audio.bitsPerSample / 8) / audio.channels / audio.sampleRate * 1e3);
-      const output = {
+      const N = Le(d.pcm, d.bitsPerSample, d.channels, 64), _ = (u == null ? void 0 : u.audioDurationMs) || Math.round(d.pcm.byteLength / (d.bitsPerSample / 8) / d.channels / d.sampleRate * 1e3);
+      return { success: !0, data: {
         id: `music_edit_${Date.now()}`,
-        taskId,
-        caption: `Edit (${operations.map((op) => op.type).join(" + ")})`,
-        audioUrl,
-        wavFilePath,
-        durationMs,
-        sampleRate: audio.sampleRate,
-        channels: audio.channels,
-        bitsPerSample: audio.bitsPerSample,
-        waveform,
-        stats,
+        taskId: r,
+        caption: `Edit (${n.map((T) => T.type).join(" + ")})`,
+        audioUrl: L,
+        wavFilePath: C,
+        durationMs: _,
+        sampleRate: d.sampleRate,
+        channels: d.channels,
+        bitsPerSample: d.bitsPerSample,
+        waveform: N,
+        stats: u,
         createdAt: (/* @__PURE__ */ new Date()).toISOString()
-      };
-      return { success: true, data: output };
-    } catch (err) {
-      this.activeRequestIds.delete(taskId);
-      if (err instanceof qvacSdk.InferenceCancelledError || (isCancelled == null ? void 0 : isCancelled())) {
-        return { success: false, error: "Edit was cancelled." };
-      }
-      return { success: false, error: (err == null ? void 0 : err.message) || "Audio edit failed." };
+      } };
+    } catch (a) {
+      return this.activeRequestIds.delete(r), a instanceof v.InferenceCancelledError || i != null && i() ? { success: !1, error: "Edit was cancelled." } : { success: !1, error: (a == null ? void 0 : a.message) || "Audio edit failed." };
     }
   }
   /**
    * Describes an existing recording using ACE-Step reverse analysis pipeline
    */
-  async understand(options, onProgress, onLog) {
-    const { taskId, sourceAudio, vocalLanguage, seed } = options;
-    if (!sourceAudio) {
-      return { success: false, error: "sourceAudio is required for audio understand." };
-    }
+  async understand(e, t, s) {
+    const { taskId: i, sourceAudio: r, vocalLanguage: o, seed: n } = e;
+    if (!r)
+      return { success: !1, error: "sourceAudio is required for audio understand." };
     try {
-      onLog == null ? void 0 : onLog({ text: `▸ Analyzing audio recording with ACE-Step AudioUnderstand...`, stream: "system" });
-      const modelId = await this.ensureModelLoaded({ engine: "acestep", ditVariant: "turbo-q4" }, onProgress);
-      const runParams = {
-        modelId,
-        sourceAudio,
-        ...vocalLanguage && { vocalLanguage },
-        ...seed !== void 0 && { seed },
-        ...options.lmTemperature !== void 0 && { lmTemperature: options.lmTemperature },
-        ...options.lmTopP !== void 0 && { lmTopP: options.lmTopP },
-        ...options.lmTopK !== void 0 && { lmTopK: options.lmTopK }
-      };
-      const run = qvacSdk.audioUnderstand(runParams);
-      this.activeRequestIds.set(taskId, run.requestId);
-      (async () => {
+      s == null || s({ text: "▸ Analyzing audio recording with ACE-Step AudioUnderstand...", stream: "system" });
+      const c = {
+        modelId: await this.ensureModelLoaded({ engine: "acestep", ditVariant: "turbo-q4" }, t),
+        sourceAudio: r,
+        ...o && { vocalLanguage: o },
+        ...n !== void 0 && { seed: n },
+        ...e.lmTemperature !== void 0 && { lmTemperature: e.lmTemperature },
+        ...e.lmTopP !== void 0 && { lmTopP: e.lmTopP },
+        ...e.lmTopK !== void 0 && { lmTopK: e.lmTopK }
+      }, l = v.audioUnderstand(c);
+      this.activeRequestIds.set(i, l.requestId), (async () => {
         try {
-          for await (const progress of run.progressStream) {
-            const pct = progress.total > 0 ? Math.round(progress.step / progress.total * 100) : 0;
-            onProgress == null ? void 0 : onProgress({
-              taskId,
-              stage: progress.stage,
-              step: progress.step,
-              total: progress.total,
-              percentage: pct,
-              message: `${progress.stage}: ${progress.step}/${progress.total}`
+          for await (const u of l.progressStream) {
+            const m = u.total > 0 ? Math.round(u.step / u.total * 100) : 0;
+            t == null || t({
+              taskId: i,
+              stage: u.stage,
+              step: u.step,
+              total: u.total,
+              percentage: m,
+              message: `${u.stage}: ${u.step}/${u.total}`
             });
           }
         } catch {
         }
       })();
-      const description = await run.description;
-      this.activeRequestIds.delete(taskId);
-      onLog == null ? void 0 : onLog({ text: `▸ Analysis complete! Detected: ${description.bpm} BPM, ${description.keyscale}, ${description.timesignature}`, stream: "system" });
-      return {
-        success: true,
+      const d = await l.description;
+      return this.activeRequestIds.delete(i), s == null || s({ text: `▸ Analysis complete! Detected: ${d.bpm} BPM, ${d.keyscale}, ${d.timesignature}`, stream: "system" }), {
+        success: !0,
         data: {
-          caption: description.caption,
-          bpm: description.bpm,
-          keyscale: description.keyscale,
-          timesignature: description.timesignature,
-          vocalLanguage: description.vocalLanguage,
-          duration: description.duration,
-          audioCodes: Array.from(description.audioCodes || []),
-          seed: description.seed
+          caption: d.caption,
+          bpm: d.bpm,
+          keyscale: d.keyscale,
+          timesignature: d.timesignature,
+          vocalLanguage: d.vocalLanguage,
+          duration: d.duration,
+          audioCodes: Array.from(d.audioCodes || []),
+          seed: d.seed
         }
       };
-    } catch (err) {
-      this.activeRequestIds.delete(taskId);
-      return { success: false, error: (err == null ? void 0 : err.message) || "Audio analysis failed." };
+    } catch (a) {
+      return this.activeRequestIds.delete(i), { success: !1, error: (a == null ? void 0 : a.message) || "Audio analysis failed." };
     }
   }
   /**
    * Hard-cancels an in-flight QVAC generation or edit task
    */
-  cancel(taskId) {
-    const requestId = this.activeRequestIds.get(taskId);
-    if (requestId) {
+  cancel(e) {
+    const t = this.activeRequestIds.get(e);
+    if (t)
       try {
-        qvacSdk.cancel({ requestId });
-        this.activeRequestIds.delete(taskId);
-        return true;
-      } catch (e) {
-        console.warn(`[MusicEngineService] Failed to cancel request ${requestId}:`, e);
+        return v.cancel({ requestId: t }), this.activeRequestIds.delete(e), !0;
+      } catch (s) {
+        console.warn(`[MusicEngineService] Failed to cancel request ${t}:`, s);
       }
-    }
-    return false;
+    return !1;
   }
   /**
    * Checks current model download and load status for UI indicators
    */
   getStatus() {
-    const models = [
+    const e = [
       {
         id: "audiogen-qwen3-embedding",
         name: "Qwen3 Embedding Text Encoder (0.6B Q8_0)",
@@ -4156,7 +3161,7 @@ ${err.stack}` : ""}`,
         sizeBytes: 784144960,
         sizeFormatted: "784 MB",
         stage: "text-encoder",
-        downloaded: false,
+        downloaded: !1,
         status: "idle"
       },
       {
@@ -4166,7 +3171,7 @@ ${err.stack}` : ""}`,
         sizeBytes: 709846656,
         sizeFormatted: "710 MB",
         stage: "lm",
-        downloaded: false,
+        downloaded: !1,
         status: "idle"
       },
       {
@@ -4176,7 +3181,7 @@ ${err.stack}` : ""}`,
         sizeBytes: 1445710272,
         sizeFormatted: "1.45 GB",
         stage: "dit",
-        downloaded: false,
+        downloaded: !1,
         status: "idle"
       },
       {
@@ -4186,7 +3191,7 @@ ${err.stack}` : ""}`,
         sizeBytes: 337420928,
         sizeFormatted: "337 MB",
         stage: "vae",
-        downloaded: false,
+        downloaded: !1,
         status: "idle"
       }
     ];
@@ -4194,32 +3199,27 @@ ${err.stack}` : ""}`,
       ready: !!this.activeModelId,
       activeModelId: this.activeModelId,
       engine: this.activeEngine || "acestep",
-      models,
-      gpuAvailable: true
+      models: e,
+      gpuAvailable: !0
     };
   }
   /**
    * Unloads active model to free GPU memory
    */
   async unload() {
-    if (this.activeModelId) {
+    if (this.activeModelId)
       try {
-        await qvacSdk.unloadModel({ modelId: this.activeModelId });
-        this.activeModelId = void 0;
-        this.activeEngine = void 0;
-        this.activeDitVariant = void 0;
-        return true;
-      } catch (err) {
-        console.warn("[MusicEngineService] Error unloading model:", err);
+        return await v.unloadModel({ modelId: this.activeModelId }), this.activeModelId = void 0, this.activeEngine = void 0, this.activeDitVariant = void 0, !0;
+      } catch (e) {
+        console.warn("[MusicEngineService] Error unloading model:", e);
       }
-    }
-    return false;
+    return !1;
   }
   /**
    * Retrieves recent music generation logs
    */
-  getRecentLogs(limitLines) {
-    return this.logger.getRecentLogs(limitLines);
+  getRecentLogs(e) {
+    return this.logger.getRecentLogs(e);
   }
   /**
    * Clears generation log files
@@ -4228,49 +3228,39 @@ ${err.stack}` : ""}`,
     return this.logger.clearLogs();
   }
 }
-class MusicService {
+class yt {
   constructor() {
-    __publicField(this, "activeTasks", /* @__PURE__ */ new Set());
-    __publicField(this, "engineService");
-    __publicField(this, "historyFilePath");
-    __publicField(this, "historyCache", []);
-    var _a;
-    this.engineService = new MusicEngineService();
+    b(this, "activeTasks", /* @__PURE__ */ new Set());
+    b(this, "engineService");
+    b(this, "historyFilePath");
+    b(this, "historyCache", []);
+    var e;
+    this.engineService = new ft();
     try {
-      const userData = ((_a = app) == null ? void 0 : _a.getPath) ? app.getPath("userData") : process.cwd();
-      this.historyFilePath = path.join(userData, "music-history.json");
-      this.loadHistoryFromDisk();
+      const t = (e = U) != null && e.getPath ? U.getPath("userData") : process.cwd();
+      this.historyFilePath = y.join(t, "music-history.json"), this.loadHistoryFromDisk();
     } catch {
-      this.historyFilePath = path.join(process.cwd(), "music-history.json");
+      this.historyFilePath = y.join(process.cwd(), "music-history.json");
     }
   }
-  sanitizeItem(item) {
-    const clean = { ...item };
-    if (clean.wavFilePath && fs.existsSync(clean.wavFilePath)) {
-      clean.audioUrl = `echo-media://${clean.wavFilePath}`;
-    } else if (clean.audioUrl && clean.audioUrl.startsWith("data:") && clean.audioUrl.length > 5e4) {
-      clean.audioUrl = "";
-    }
-    return clean;
+  sanitizeItem(e) {
+    const t = { ...e };
+    return t.wavFilePath && g.existsSync(t.wavFilePath) ? t.audioUrl = `echo-media://${t.wavFilePath}` : t.audioUrl && t.audioUrl.startsWith("data:") && t.audioUrl.length > 5e4 && (t.audioUrl = ""), t;
   }
   loadHistoryFromDisk() {
     try {
-      if (fs.existsSync(this.historyFilePath)) {
-        const raw = fs.readFileSync(this.historyFilePath, "utf-8");
-        const parsed = JSON.parse(raw);
-        if (Array.isArray(parsed)) {
-          this.historyCache = parsed.map((item) => this.sanitizeItem(item));
-        }
+      if (g.existsSync(this.historyFilePath)) {
+        const e = g.readFileSync(this.historyFilePath, "utf-8"), t = JSON.parse(e);
+        Array.isArray(t) && (this.historyCache = t.map((s) => this.sanitizeItem(s)));
       }
     } catch (e) {
-      console.warn("[MusicService] Could not read music history:", e);
-      this.historyCache = [];
+      console.warn("[MusicService] Could not read music history:", e), this.historyCache = [];
     }
   }
   saveHistoryToDisk() {
     try {
-      const sanitized = this.historyCache.slice(0, 100).map((item) => this.sanitizeItem(item));
-      fs.writeFileSync(this.historyFilePath, JSON.stringify(sanitized, null, 2), "utf-8");
+      const e = this.historyCache.slice(0, 100).map((t) => this.sanitizeItem(t));
+      g.writeFileSync(this.historyFilePath, JSON.stringify(e, null, 2), "utf-8");
     } catch (e) {
       console.warn("[MusicService] Could not write music history:", e);
     }
@@ -4278,151 +3268,117 @@ class MusicService {
   getModelStatus() {
     return this.engineService.getStatus();
   }
-  async assessFit(engine, ditVariant) {
-    return this.engineService.assessFit(engine, ditVariant);
+  async assessFit(e, t) {
+    return this.engineService.assessFit(e, t);
   }
   async unloadModel() {
     return this.engineService.unload();
   }
-  cancelGeneration(taskId) {
-    if (this.activeTasks.has(taskId)) {
-      this.activeTasks.delete(taskId);
-      return this.engineService.cancel(taskId);
-    }
-    return false;
+  cancelGeneration(e) {
+    return this.activeTasks.has(e) ? (this.activeTasks.delete(e), this.engineService.cancel(e)) : !1;
   }
-  isCancelled(taskId) {
-    return !this.activeTasks.has(taskId);
+  isCancelled(e) {
+    return !this.activeTasks.has(e);
   }
-  async generateMusic(options, onProgress, onLog) {
-    const { taskId } = options;
-    this.activeTasks.add(taskId);
+  async generateMusic(e, t, s) {
+    const { taskId: i } = e;
+    this.activeTasks.add(i);
     try {
-      const result = await this.engineService.generate(
-        options,
-        onProgress,
-        onLog,
-        () => this.isCancelled(taskId)
+      const r = await this.engineService.generate(
+        e,
+        t,
+        s,
+        () => this.isCancelled(i)
       );
-      if (result.success && result.data) {
-        this.historyCache.unshift(result.data);
-        this.saveHistoryToDisk();
-      }
-      return result;
+      return r.success && r.data && (this.historyCache.unshift(r.data), this.saveHistoryToDisk()), r;
     } finally {
-      this.activeTasks.delete(taskId);
+      this.activeTasks.delete(i);
     }
   }
-  async editMusic(options, onProgress, onLog) {
-    const { taskId } = options;
-    this.activeTasks.add(taskId);
+  async editMusic(e, t, s) {
+    const { taskId: i } = e;
+    this.activeTasks.add(i);
     try {
-      const result = await this.engineService.edit(
-        options,
-        onProgress,
-        onLog,
-        () => this.isCancelled(taskId)
+      const r = await this.engineService.edit(
+        e,
+        t,
+        s,
+        () => this.isCancelled(i)
       );
-      if (result.success && result.data) {
-        this.historyCache.unshift(result.data);
-        this.saveHistoryToDisk();
-      }
-      return result;
+      return r.success && r.data && (this.historyCache.unshift(r.data), this.saveHistoryToDisk()), r;
     } finally {
-      this.activeTasks.delete(taskId);
+      this.activeTasks.delete(i);
     }
   }
-  async understandMusic(options, onProgress, onLog) {
-    return this.engineService.understand(options, onProgress, onLog);
+  async understandMusic(e, t, s) {
+    return this.engineService.understand(e, t, s);
   }
   listHistory() {
     return this.historyCache;
   }
-  getHistoryItem(id) {
-    return this.historyCache.find((h) => h.id === id || h.taskId === id);
+  getHistoryItem(e) {
+    return this.historyCache.find((t) => t.id === e || t.taskId === e);
   }
-  saveHistoryItem(item) {
-    const index = this.historyCache.findIndex((h) => h.id === item.id);
-    if (index >= 0) {
-      this.historyCache[index] = item;
-    } else {
-      this.historyCache.unshift(item);
-    }
-    this.saveHistoryToDisk();
-    return true;
+  saveHistoryItem(e) {
+    const t = this.historyCache.findIndex((s) => s.id === e.id);
+    return t >= 0 ? this.historyCache[t] = e : this.historyCache.unshift(e), this.saveHistoryToDisk(), !0;
   }
-  deleteHistoryItem(id) {
-    const initialLen = this.historyCache.length;
-    this.historyCache = this.historyCache.filter((h) => h.id !== id);
-    if (this.historyCache.length !== initialLen) {
-      this.saveHistoryToDisk();
-      return true;
-    }
-    return false;
+  deleteHistoryItem(e) {
+    const t = this.historyCache.length;
+    return this.historyCache = this.historyCache.filter((s) => s.id !== e), this.historyCache.length !== t ? (this.saveHistoryToDisk(), !0) : !1;
   }
   clearHistory() {
-    this.historyCache = [];
-    this.saveHistoryToDisk();
-    return true;
+    return this.historyCache = [], this.saveHistoryToDisk(), !0;
   }
-  getGenerationLogs(limitLines) {
-    return this.engineService.getRecentLogs(limitLines);
+  getGenerationLogs(e) {
+    return this.engineService.getRecentLogs(e);
   }
   clearGenerationLogs() {
     return this.engineService.clearLogs();
   }
 }
-const _QwenLyricService = class _QwenLyricService {
+const te = class te {
   constructor() {
-    __publicField(this, "activeModelId", null);
-    __publicField(this, "isLoadingModel", false);
+    b(this, "activeModelId", null);
+    b(this, "isLoadingModel", !1);
   }
   static getInstance() {
-    if (!_QwenLyricService.instance) {
-      _QwenLyricService.instance = new _QwenLyricService();
-    }
-    return _QwenLyricService.instance;
+    return te.instance || (te.instance = new te()), te.instance;
   }
   /**
    * Ensures the Qwen3-1.7B Instruct model is loaded into memory on Apple Metal GPU.
    */
-  async ensureModelLoaded(onProgress) {
-    if (this.activeModelId) {
+  async ensureModelLoaded(e) {
+    if (this.activeModelId)
       return this.activeModelId;
-    }
     if (this.isLoadingModel) {
-      while (this.isLoadingModel) {
-        await new Promise((r) => setTimeout(r, 100));
-      }
+      for (; this.isLoadingModel; )
+        await new Promise((t) => setTimeout(t, 100));
       if (this.activeModelId) return this.activeModelId;
     }
-    this.isLoadingModel = true;
+    this.isLoadingModel = !0;
     try {
       console.log("[QwenLyricService] ▸ Loading Qwen3-1.7B Instruct LLM for lyric generation...");
-      const modelId = await qvacSdk.loadModel({
-        modelSrc: qvacSdk.QWEN3_1_7B_INST_Q4,
-        onProgress: (p) => {
-          onProgress == null ? void 0 : onProgress(p);
+      const t = await v.loadModel({
+        modelSrc: v.QWEN3_1_7B_INST_Q4,
+        onProgress: (s) => {
+          e == null || e(s);
         }
       });
-      this.activeModelId = modelId;
-      console.log(`[QwenLyricService] ✓ Qwen3-1.7B loaded successfully with ID: ${modelId}`);
-      return modelId;
-    } catch (err) {
-      console.error("[QwenLyricService] ✖ Failed to load Qwen3-1.7B:", err);
-      throw err;
+      return this.activeModelId = t, console.log(`[QwenLyricService] ✓ Qwen3-1.7B loaded successfully with ID: ${t}`), t;
+    } catch (t) {
+      throw console.error("[QwenLyricService] ✖ Failed to load Qwen3-1.7B:", t), t;
     } finally {
-      this.isLoadingModel = false;
+      this.isLoadingModel = !1;
     }
   }
   /**
    * Generates song lyrics from a description, streaming tokens in real time.
    */
-  async generateLyricsStream(prompt, onToken, onProgress) {
-    const cleanPrompt = (prompt || "").trim() || "A soulful, emotional song about life and hope";
+  async generateLyricsStream(e, t, s) {
+    const i = (e || "").trim() || "A soulful, emotional song about life and hope";
     try {
-      const modelId = await this.ensureModelLoaded(onProgress);
-      const systemPrompt = `You are an elite, Grammy-award winning songwriter.
+      const r = await this.ensureModelLoaded(s), o = `You are an elite, Grammy-award winning songwriter.
 Write complete, poetic, rhyming song lyrics based on the user's musical song description.
 
 Formatting Rules:
@@ -4435,46 +3391,35 @@ Formatting Rules:
 [outro]
 2. Output ONLY the lyrics and section tags. Never output conversational remarks, intros, or commentary.
 3. Use natural rhyming (AABB or ABAB) and musical meter that is easy to sing.
-4. Capture the exact mood, imagery, and style requested in the description.`;
-      const userPrompt = `Write song lyrics for this description: "${cleanPrompt}"`;
-      const run = qvacSdk.completion({
-        modelId,
+4. Capture the exact mood, imagery, and style requested in the description.`, n = `Write song lyrics for this description: "${i}"`, a = v.completion({
+        modelId: r,
         history: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt }
+          { role: "system", content: o },
+          { role: "user", content: n }
         ],
-        captureThinking: true,
-        stream: true
+        captureThinking: !0,
+        stream: !0
       });
-      let fullLyrics = "";
-      for await (const event of run.events) {
-        if (event.type === "contentDelta" && event.text) {
-          fullLyrics += event.text;
-          onToken == null ? void 0 : onToken(event.text);
-        }
-      }
-      const final = await run.final;
-      const resultText = (final.contentText || fullLyrics).trim();
-      const sanitizedResult = resultText.startsWith("[") ? resultText : `[verse]
-${resultText}`;
-      return { lyrics: sanitizedResult, engine: "qwen-1.7b" };
-    } catch (err) {
-      console.warn("[QwenLyricService] Qwen streaming failed, using fallback lyric generator:", err);
-      const fallbackLyrics = this.getFallbackLyrics(cleanPrompt);
-      for (const char of fallbackLyrics) {
-        onToken == null ? void 0 : onToken(char);
-        await new Promise((r) => setTimeout(r, 6));
-      }
-      return { lyrics: fallbackLyrics, engine: "fallback" };
+      let c = "";
+      for await (const m of a.events)
+        m.type === "contentDelta" && m.text && (c += m.text, t == null || t(m.text));
+      const d = ((await a.final).contentText || c).trim();
+      return { lyrics: d.startsWith("[") ? d : `[verse]
+${d}`, engine: "qwen-1.7b" };
+    } catch (r) {
+      console.warn("[QwenLyricService] Qwen streaming failed, using fallback lyric generator:", r);
+      const o = this.getFallbackLyrics(i);
+      for (const n of o)
+        t == null || t(n), await new Promise((a) => setTimeout(a, 6));
+      return { lyrics: o, engine: "fallback" };
     }
   }
   /**
    * Fast rule-based fallback if LLM is unreachable or offline
    */
-  getFallbackLyrics(prompt) {
-    const lower = prompt.toLowerCase();
-    if (/(medieval|celtic|harp|fantasy|bard|tavern|folk)/.test(lower)) {
-      return `[verse]
+  getFallbackLyrics(e) {
+    const t = e.toLowerCase();
+    return /(medieval|celtic|harp|fantasy|bard|tavern|folk)/.test(t) ? `[verse]
 The banners fall beneath the crimson dawn,
 A bitter wind blows through the broken shield,
 The kings are buried and the armies gone,
@@ -4506,10 +3451,7 @@ Watching the weeping of a weary land.
 
 [outro]
 Harp strings tremble in the twilight air,
-Peace to the fallen, beyond despair...`;
-    }
-    if (/(synthwave|retro|neon|cyberpunk|80s)/.test(lower)) {
-      return `[verse]
+Peace to the fallen, beyond despair...` : /(synthwave|retro|neon|cyberpunk|80s)/.test(t) ? `[verse]
 Purple neon reflecting in the rain,
 Speedometer climbing on the open lane,
 Digital echoes through the midnight mist,
@@ -4541,9 +3483,7 @@ Running forever away from the day.
 
 [outro]
 Synth pads fading into the night...
-Driving forever into the light...`;
-    }
-    return `[verse]
+Driving forever into the light...` : `[verse]
 Raindrops running down the window pane,
 Every little memory feels so plain,
 I know that tomorrow the sun will rise,
@@ -4578,405 +3518,315 @@ Piano notes linger soft and slow...
 I loved you enough to let you go...`;
   }
 };
-__publicField(_QwenLyricService, "instance");
-let QwenLyricService = _QwenLyricService;
-class MusicController extends BaseController {
-  constructor(musicService, activityRepo) {
-    super();
-    this.musicService = musicService;
-    this.activityRepo = activityRepo;
+b(te, "instance");
+let we = te;
+class vt extends ie {
+  constructor(e, t) {
+    super(), this.musicService = e, this.activityRepo = t;
   }
   init() {
-    ipcMain.handle(
-      IPC_CHANNELS.MUSIC_GENERATE,
-      async (event, options) => {
-        const sendProgress = (data) => {
+    A.handle(
+      w.MUSIC_GENERATE,
+      async (e, t) => {
+        const s = (o) => {
           try {
-            if (!event.sender.isDestroyed()) {
-              event.sender.send(IPC_CHANNELS.MUSIC_PROGRESS, data);
-            }
-          } catch (err) {
-            console.warn("[MusicController] Failed to send progress event:", err);
+            e.sender.isDestroyed() || e.sender.send(w.MUSIC_PROGRESS, o);
+          } catch (n) {
+            console.warn("[MusicController] Failed to send progress event:", n);
           }
-        };
-        const sendLog = (log) => {
+        }, i = (o) => {
           try {
-            if (!event.sender.isDestroyed()) {
-              event.sender.send(IPC_CHANNELS.TERMINAL_LOG, {
-                projectId: "echo-ai",
-                text: log.text,
-                stream: log.stream,
-                timestamp: (/* @__PURE__ */ new Date()).toISOString()
-              });
-            }
-          } catch (err) {
-            console.warn("[MusicController] Failed to send log event:", err);
+            e.sender.isDestroyed() || e.sender.send(w.TERMINAL_LOG, {
+              projectId: "echo-ai",
+              text: o.text,
+              stream: o.stream,
+              timestamp: (/* @__PURE__ */ new Date()).toISOString()
+            });
+          } catch (n) {
+            console.warn("[MusicController] Failed to send log event:", n);
           }
-        };
-        const result = await this.musicService.generateMusic(options, sendProgress, sendLog);
-        if (result.success && result.data) {
-          this.saveMusicActivity(result.data);
+        }, r = await this.musicService.generateMusic(t, s, i);
+        if (r.success && r.data) {
+          this.saveMusicActivity(r.data);
           try {
-            if (!event.sender.isDestroyed()) {
-              event.sender.send(IPC_CHANNELS.MUSIC_COMPLETE, {
-                taskId: options.taskId,
-                generation: result.data
-              });
-            }
-          } catch (err) {
-            console.warn("[MusicController] Failed to send complete event:", err);
+            e.sender.isDestroyed() || e.sender.send(w.MUSIC_COMPLETE, {
+              taskId: t.taskId,
+              generation: r.data
+            });
+          } catch (o) {
+            console.warn("[MusicController] Failed to send complete event:", o);
           }
-        } else if (!result.success) {
+        } else if (!r.success) {
           console.error(
-            `[MusicController] ✖ Music generation failed for taskId ${options.taskId} (Engine: ${options.engine || "acestep"}):`,
-            result.error
-          );
-          sendLog({
-            text: `✖ Music Generation Failed: ${result.error}`,
+            `[MusicController] ✖ Music generation failed for taskId ${t.taskId} (Engine: ${t.engine || "acestep"}):`,
+            r.error
+          ), i({
+            text: `✖ Music Generation Failed: ${r.error}`,
             stream: "stderr"
           });
           try {
-            if (!event.sender.isDestroyed()) {
-              event.sender.send(IPC_CHANNELS.MUSIC_ERROR, {
-                taskId: options.taskId,
-                error: result.error || "Music generation failed",
-                details: result.errorDetails
-              });
-            }
-          } catch (err) {
-            console.warn("[MusicController] Failed to send error event:", err);
+            e.sender.isDestroyed() || e.sender.send(w.MUSIC_ERROR, {
+              taskId: t.taskId,
+              error: r.error || "Music generation failed",
+              details: r.errorDetails
+            });
+          } catch (o) {
+            console.warn("[MusicController] Failed to send error event:", o);
           }
         }
-        return result;
+        return r;
       }
-    );
-    ipcMain.handle(
-      IPC_CHANNELS.MUSIC_CANCEL,
-      async (_event, { taskId }) => {
-        const cancelled = this.musicService.cancelGeneration(taskId);
-        return { success: cancelled, taskId };
-      }
-    );
-    ipcMain.handle(
-      IPC_CHANNELS.MUSIC_EDIT,
-      async (event, options) => {
-        const sendProgress = (data) => {
+    ), A.handle(
+      w.MUSIC_CANCEL,
+      async (e, { taskId: t }) => ({ success: this.musicService.cancelGeneration(t), taskId: t })
+    ), A.handle(
+      w.MUSIC_EDIT,
+      async (e, t) => {
+        const s = (o) => {
           try {
-            if (!event.sender.isDestroyed()) {
-              event.sender.send(IPC_CHANNELS.MUSIC_PROGRESS, data);
-            }
-          } catch (err) {
-            console.warn("[MusicController] Failed to send progress event:", err);
+            e.sender.isDestroyed() || e.sender.send(w.MUSIC_PROGRESS, o);
+          } catch (n) {
+            console.warn("[MusicController] Failed to send progress event:", n);
+          }
+        }, i = (o) => {
+          try {
+            e.sender.isDestroyed() || e.sender.send(w.TERMINAL_LOG, {
+              projectId: "echo-ai",
+              text: o.text,
+              stream: o.stream,
+              timestamp: (/* @__PURE__ */ new Date()).toISOString()
+            });
+          } catch (n) {
+            console.warn("[MusicController] Failed to send log event:", n);
+          }
+        }, r = await this.musicService.editMusic(t, s, i);
+        return r.success && r.data && this.saveMusicActivity(r.data), r;
+      }
+    ), A.handle(
+      w.MUSIC_UNDERSTAND,
+      async (e, t) => {
+        const s = (o) => {
+          try {
+            e.sender.isDestroyed() || e.sender.send(w.MUSIC_PROGRESS, o);
+          } catch (n) {
+            console.warn("[MusicController] Failed to send progress event:", n);
+          }
+        }, i = (o) => {
+          try {
+            e.sender.isDestroyed() || e.sender.send(w.TERMINAL_LOG, {
+              projectId: "echo-ai",
+              text: o.text,
+              stream: o.stream,
+              timestamp: (/* @__PURE__ */ new Date()).toISOString()
+            });
+          } catch (n) {
+            console.warn("[MusicController] Failed to send log event:", n);
           }
         };
-        const sendLog = (log) => {
+        return await this.musicService.understandMusic(t, s, i);
+      }
+    ), A.handle(w.MUSIC_MODEL_STATUS, async () => ({
+      success: !0,
+      data: this.musicService.getModelStatus()
+    })), A.handle(
+      w.MUSIC_ASSESS_FIT,
+      async (e, t) => this.musicService.assessFit(t == null ? void 0 : t.engine, t == null ? void 0 : t.ditVariant)
+    ), A.handle(w.MUSIC_UNLOAD_MODEL, async () => ({ success: await this.musicService.unloadModel() })), A.handle(w.MUSIC_HISTORY_LIST, async () => ({
+      success: !0,
+      data: this.musicService.listHistory()
+    })), A.handle(
+      w.MUSIC_HISTORY_SAVE,
+      async (e, t) => {
+        const s = this.musicService.saveHistoryItem(t);
+        return s && this.saveMusicActivity(t), { success: s };
+      }
+    ), A.handle(
+      w.MUSIC_HISTORY_DELETE,
+      async (e, { id: t }) => {
+        const s = this.musicService.deleteHistoryItem(t);
+        return this.activityRepo && this.activityRepo.deleteActivity(`act-music-${t}`).catch(console.error), { success: s };
+      }
+    ), A.handle(w.MUSIC_HISTORY_CLEAR, async () => ({ success: this.musicService.clearHistory() })), A.handle(w.MUSIC_GET_LOGS, async (e, t) => ({ success: !0, data: this.musicService.getGenerationLogs(t) })), A.handle(w.MUSIC_CLEAR_LOGS, async () => ({ success: this.musicService.clearGenerationLogs() })), A.handle(
+      w.MUSIC_GENERATE_LYRICS,
+      async (e, t) => {
+        const s = t.taskId || `lyric_task_${Date.now()}`, i = (r) => {
           try {
-            if (!event.sender.isDestroyed()) {
-              event.sender.send(IPC_CHANNELS.TERMINAL_LOG, {
-                projectId: "echo-ai",
-                text: log.text,
-                stream: log.stream,
-                timestamp: (/* @__PURE__ */ new Date()).toISOString()
-              });
-            }
-          } catch (err) {
-            console.warn("[MusicController] Failed to send log event:", err);
-          }
-        };
-        const result = await this.musicService.editMusic(options, sendProgress, sendLog);
-        if (result.success && result.data) {
-          this.saveMusicActivity(result.data);
-        }
-        return result;
-      }
-    );
-    ipcMain.handle(
-      IPC_CHANNELS.MUSIC_UNDERSTAND,
-      async (event, options) => {
-        const sendProgress = (data) => {
-          try {
-            if (!event.sender.isDestroyed()) {
-              event.sender.send(IPC_CHANNELS.MUSIC_PROGRESS, data);
-            }
-          } catch (err) {
-            console.warn("[MusicController] Failed to send progress event:", err);
-          }
-        };
-        const sendLog = (log) => {
-          try {
-            if (!event.sender.isDestroyed()) {
-              event.sender.send(IPC_CHANNELS.TERMINAL_LOG, {
-                projectId: "echo-ai",
-                text: log.text,
-                stream: log.stream,
-                timestamp: (/* @__PURE__ */ new Date()).toISOString()
-              });
-            }
-          } catch (err) {
-            console.warn("[MusicController] Failed to send log event:", err);
-          }
-        };
-        const result = await this.musicService.understandMusic(options, sendProgress, sendLog);
-        return result;
-      }
-    );
-    ipcMain.handle(IPC_CHANNELS.MUSIC_MODEL_STATUS, async () => {
-      return {
-        success: true,
-        data: this.musicService.getModelStatus()
-      };
-    });
-    ipcMain.handle(
-      IPC_CHANNELS.MUSIC_ASSESS_FIT,
-      async (_event, payload) => {
-        return this.musicService.assessFit(payload == null ? void 0 : payload.engine, payload == null ? void 0 : payload.ditVariant);
-      }
-    );
-    ipcMain.handle(IPC_CHANNELS.MUSIC_UNLOAD_MODEL, async () => {
-      const unloaded = await this.musicService.unloadModel();
-      return { success: unloaded };
-    });
-    ipcMain.handle(IPC_CHANNELS.MUSIC_HISTORY_LIST, async () => {
-      return {
-        success: true,
-        data: this.musicService.listHistory()
-      };
-    });
-    ipcMain.handle(
-      IPC_CHANNELS.MUSIC_HISTORY_SAVE,
-      async (_event, item) => {
-        const saved = this.musicService.saveHistoryItem(item);
-        if (saved) {
-          this.saveMusicActivity(item);
-        }
-        return { success: saved };
-      }
-    );
-    ipcMain.handle(
-      IPC_CHANNELS.MUSIC_HISTORY_DELETE,
-      async (_event, { id }) => {
-        const deleted = this.musicService.deleteHistoryItem(id);
-        if (this.activityRepo) {
-          this.activityRepo.deleteActivity(`act-music-${id}`).catch(console.error);
-        }
-        return { success: deleted };
-      }
-    );
-    ipcMain.handle(IPC_CHANNELS.MUSIC_HISTORY_CLEAR, async () => {
-      const cleared = this.musicService.clearHistory();
-      return { success: cleared };
-    });
-    ipcMain.handle(IPC_CHANNELS.MUSIC_GET_LOGS, async (_event, limitLines) => {
-      const logs = this.musicService.getGenerationLogs(limitLines);
-      return { success: true, data: logs };
-    });
-    ipcMain.handle(IPC_CHANNELS.MUSIC_CLEAR_LOGS, async () => {
-      const cleared = this.musicService.clearGenerationLogs();
-      return { success: cleared };
-    });
-    ipcMain.handle(
-      IPC_CHANNELS.MUSIC_GENERATE_LYRICS,
-      async (event, payload) => {
-        const taskId = payload.taskId || `lyric_task_${Date.now()}`;
-        const onToken = (token) => {
-          try {
-            if (!event.sender.isDestroyed()) {
-              event.sender.send(IPC_CHANNELS.MUSIC_LYRICS_TOKEN, { taskId, token });
-            }
+            e.sender.isDestroyed() || e.sender.send(w.MUSIC_LYRICS_TOKEN, { taskId: s, token: r });
           } catch {
           }
         };
         try {
-          const result = await QwenLyricService.getInstance().generateLyricsStream(payload.prompt, onToken);
-          return { success: true, lyrics: result.lyrics, engine: result.engine, taskId };
-        } catch (err) {
-          console.error("[MusicController] Error generating lyrics with Qwen:", err);
-          return { success: false, error: (err == null ? void 0 : err.message) || "Failed to generate lyrics", taskId };
+          const r = await we.getInstance().generateLyricsStream(t.prompt, i);
+          return { success: !0, lyrics: r.lyrics, engine: r.engine, taskId: s };
+        } catch (r) {
+          return console.error("[MusicController] Error generating lyrics with Qwen:", r), { success: !1, error: (r == null ? void 0 : r.message) || "Failed to generate lyrics", taskId: s };
         }
       }
     );
   }
-  saveMusicActivity(item) {
+  saveMusicActivity(e) {
     if (!this.activityRepo) return;
-    const rawCaption = item.caption || "Music Track";
-    const title = rawCaption.length > 50 ? `${rawCaption.slice(0, 47)}...` : rawCaption;
-    const mediaAudioUrl = item.wavFilePath ? `echo-media://${item.wavFilePath}` : item.audioUrl && item.audioUrl.length > 5e4 ? "" : item.audioUrl;
+    const t = e.caption || "Music Track", s = t.length > 50 ? `${t.slice(0, 47)}...` : t, i = e.wavFilePath ? `echo-media://${e.wavFilePath}` : e.audioUrl && e.audioUrl.length > 5e4 ? "" : e.audioUrl;
     this.activityRepo.saveActivity({
-      id: `act-music-${item.id}`,
+      id: `act-music-${e.id}`,
       type: "music",
-      title,
-      description: item.lyrics ? item.lyrics.slice(0, 160) : item.caption,
+      title: s,
+      description: e.lyrics ? e.lyrics.slice(0, 160) : e.caption,
       category: "Music Generation",
       subCategory: "AudioGen",
-      originId: item.id,
+      originId: e.id,
       originType: "music",
       metadata: {
-        taskId: item.taskId,
-        caption: item.caption,
-        lyrics: item.lyrics,
-        audioUrl: mediaAudioUrl,
-        wavFilePath: item.wavFilePath,
-        durationMs: item.durationMs,
-        duration: item.durationMs ? `${Math.round(item.durationMs / 1e3)}s` : "Audio",
-        waveform: item.waveform || [],
-        bpm: item.bpm,
-        keyscale: item.keyscale,
-        timesignature: item.timesignature,
-        vocalLanguage: item.vocalLanguage,
+        taskId: e.taskId,
+        caption: e.caption,
+        lyrics: e.lyrics,
+        audioUrl: i,
+        wavFilePath: e.wavFilePath,
+        durationMs: e.durationMs,
+        duration: e.durationMs ? `${Math.round(e.durationMs / 1e3)}s` : "Audio",
+        waveform: e.waveform || [],
+        bpm: e.bpm,
+        keyscale: e.keyscale,
+        timesignature: e.timesignature,
+        vocalLanguage: e.vocalLanguage,
         engine: "acestep",
         cover: "/covers/got/direwolf.jpg"
       }
-    }).catch((err) => console.error("[MusicController] Failed to auto-save activity:", err));
+    }).catch((r) => console.error("[MusicController] Failed to auto-save activity:", r));
   }
 }
-class ActivityRepositoryService {
-  constructor(db, musicService) {
-    __publicField(this, "db");
-    __publicField(this, "musicService");
-    this.db = db;
-    this.musicService = musicService;
+class St {
+  constructor(e, t) {
+    b(this, "db");
+    b(this, "musicService");
+    this.db = e, this.musicService = t;
   }
   /**
    * Resolve origin data (TTS, Music, Story) based on activity record and relations
    */
-  formatActivityRecord(a) {
-    var _a;
-    let parsedMetadata = void 0;
-    if (a.metadata) {
+  formatActivityRecord(e) {
+    var n;
+    let t;
+    if (e.metadata)
       try {
-        parsedMetadata = typeof a.metadata === "string" ? JSON.parse(a.metadata) : a.metadata;
-        if (parsedMetadata && typeof parsedMetadata === "object") {
-          const rawUrl = parsedMetadata.audioUrl;
-          const wavPath = parsedMetadata.wavFilePath;
-          if (wavPath) {
-            parsedMetadata.audioUrl = `echo-media://${wavPath}`;
-          } else if (rawUrl && rawUrl.startsWith("data:") && rawUrl.length > 5e4) {
-            parsedMetadata.audioUrl = "";
-          }
+        if (t = typeof e.metadata == "string" ? JSON.parse(e.metadata) : e.metadata, t && typeof t == "object") {
+          const a = t.audioUrl, c = t.wavFilePath;
+          c ? t.audioUrl = `echo-media://${c}` : a && a.startsWith("data:") && a.length > 5e4 && (t.audioUrl = "");
         }
       } catch {
-        parsedMetadata = void 0;
+        t = void 0;
       }
-    }
-    const ttsData = a.conversation ? {
-      id: a.conversation.id,
-      text: a.conversation.text,
-      previewSnippet: a.conversation.previewSnippet || a.conversation.text,
-      voiceName: a.conversation.voiceName,
-      voiceColor: a.conversation.voiceColor,
-      voiceAvatarUrl: a.conversation.voiceAvatarUrl,
-      model: a.conversation.model,
-      engine: a.conversation.engine,
-      duration: a.conversation.duration,
-      durationSec: a.conversation.durationSec,
-      emotion: a.conversation.emotion,
-      audioUrl: a.conversation.audioUrl,
-      waveform: a.conversation.waveform ? JSON.parse(a.conversation.waveform) : [],
-      speakerCount: a.conversation.speakerCount,
-      rounds: Array.isArray(a.conversation.rounds) ? a.conversation.rounds.map((r) => ({
-        id: r.id,
-        roundOrder: r.roundOrder,
-        voiceId: r.voiceId,
-        text: r.text,
-        speed: r.speed,
-        emotion: r.emotion,
-        pace: r.pace,
-        prompt: r.prompt,
-        description: r.description,
-        referenceAudioSrc: r.referenceAudioSrc,
-        speakerName: r.speakerName,
-        speakerColor: r.speakerColor
+    const s = e.conversation ? {
+      id: e.conversation.id,
+      text: e.conversation.text,
+      previewSnippet: e.conversation.previewSnippet || e.conversation.text,
+      voiceName: e.conversation.voiceName,
+      voiceColor: e.conversation.voiceColor,
+      voiceAvatarUrl: e.conversation.voiceAvatarUrl,
+      model: e.conversation.model,
+      engine: e.conversation.engine,
+      duration: e.conversation.duration,
+      durationSec: e.conversation.durationSec,
+      emotion: e.conversation.emotion,
+      audioUrl: e.conversation.audioUrl,
+      waveform: e.conversation.waveform ? JSON.parse(e.conversation.waveform) : [],
+      speakerCount: e.conversation.speakerCount,
+      rounds: Array.isArray(e.conversation.rounds) ? e.conversation.rounds.map((a) => ({
+        id: a.id,
+        roundOrder: a.roundOrder,
+        voiceId: a.voiceId,
+        text: a.text,
+        speed: a.speed,
+        emotion: a.emotion,
+        pace: a.pace,
+        prompt: a.prompt,
+        description: a.description,
+        referenceAudioSrc: a.referenceAudioSrc,
+        speakerName: a.speakerName,
+        speakerColor: a.speakerColor
       })) : []
-    } : a.type === "tts" && parsedMetadata ? {
-      id: a.originId || a.id.replace(/^act-/, ""),
-      text: a.description || parsedMetadata.text || a.title,
-      previewSnippet: parsedMetadata.previewSnippet || a.description || a.title,
-      voiceName: parsedMetadata.voiceName || a.subCategory || "Speech Synthesis",
-      voiceColor: parsedMetadata.voiceColor || "#38bdf8",
-      voiceAvatarUrl: parsedMetadata.voiceAvatarUrl || "/voices/sterling.jpg",
-      model: parsedMetadata.model || "cosyvoice-v1",
-      engine: parsedMetadata.engine || "cosyvoice3",
-      duration: parsedMetadata.duration || "Audio",
-      durationSec: parsedMetadata.durationSec || 0,
-      emotion: parsedMetadata.emotion || void 0,
-      audioUrl: parsedMetadata.audioUrl || void 0,
-      waveform: Array.isArray(parsedMetadata.waveform) ? parsedMetadata.waveform : [],
-      speakerCount: parsedMetadata.speakerCount || 1,
-      rounds: Array.isArray(parsedMetadata.rounds) ? parsedMetadata.rounds : []
+    } : e.type === "tts" && t ? {
+      id: e.originId || e.id.replace(/^act-/, ""),
+      text: e.description || t.text || e.title,
+      previewSnippet: t.previewSnippet || e.description || e.title,
+      voiceName: t.voiceName || e.subCategory || "Speech Synthesis",
+      voiceColor: t.voiceColor || "#38bdf8",
+      voiceAvatarUrl: t.voiceAvatarUrl || "/voices/sterling.jpg",
+      model: t.model || "cosyvoice-v1",
+      engine: t.engine || "cosyvoice3",
+      duration: t.duration || "Audio",
+      durationSec: t.durationSec || 0,
+      emotion: t.emotion || void 0,
+      audioUrl: t.audioUrl || void 0,
+      waveform: Array.isArray(t.waveform) ? t.waveform : [],
+      speakerCount: t.speakerCount || 1,
+      rounds: Array.isArray(t.rounds) ? t.rounds : []
     } : void 0;
-    let musicData = void 0;
-    if (a.type === "music") {
-      const musicId = a.originId || a.id.replace(/^act-music-/, "").replace(/^act-/, "");
-      const cached = (_a = this.musicService) == null ? void 0 : _a.getHistoryItem(musicId);
-      const wavPath = (cached == null ? void 0 : cached.wavFilePath) || (parsedMetadata == null ? void 0 : parsedMetadata.wavFilePath);
-      let resolvedAudioUrl = wavPath ? `echo-media://${wavPath}` : (cached == null ? void 0 : cached.audioUrl) || (parsedMetadata == null ? void 0 : parsedMetadata.audioUrl);
-      if (resolvedAudioUrl && resolvedAudioUrl.startsWith("data:") && resolvedAudioUrl.length > 5e4) {
-        resolvedAudioUrl = void 0;
-      }
-      musicData = {
-        id: musicId,
-        taskId: (cached == null ? void 0 : cached.taskId) || (parsedMetadata == null ? void 0 : parsedMetadata.taskId) || void 0,
-        title: a.title,
-        caption: (cached == null ? void 0 : cached.caption) || (parsedMetadata == null ? void 0 : parsedMetadata.caption) || a.title,
-        lyrics: (cached == null ? void 0 : cached.lyrics) || (parsedMetadata == null ? void 0 : parsedMetadata.lyrics) || void 0,
-        audioUrl: resolvedAudioUrl,
-        wavFilePath: wavPath || void 0,
-        duration: (parsedMetadata == null ? void 0 : parsedMetadata.duration) || ((cached == null ? void 0 : cached.durationMs) ? `${Math.round(cached.durationMs / 1e3)}s` : "Audio"),
-        durationMs: (cached == null ? void 0 : cached.durationMs) || (parsedMetadata == null ? void 0 : parsedMetadata.durationMs) || void 0,
-        waveform: (cached == null ? void 0 : cached.waveform) || (parsedMetadata == null ? void 0 : parsedMetadata.waveform) || [],
-        bpm: (cached == null ? void 0 : cached.bpm) || (parsedMetadata == null ? void 0 : parsedMetadata.bpm) || void 0,
-        keyscale: (cached == null ? void 0 : cached.keyscale) || (parsedMetadata == null ? void 0 : parsedMetadata.keyscale) || void 0,
-        timesignature: (cached == null ? void 0 : cached.timesignature) || (parsedMetadata == null ? void 0 : parsedMetadata.timesignature) || void 0,
-        vocalLanguage: (cached == null ? void 0 : cached.vocalLanguage) || (parsedMetadata == null ? void 0 : parsedMetadata.vocalLanguage) || void 0,
-        seed: (cached == null ? void 0 : cached.seed) || (parsedMetadata == null ? void 0 : parsedMetadata.seed) || void 0,
-        taskType: (cached == null ? void 0 : cached.taskType) || (parsedMetadata == null ? void 0 : parsedMetadata.taskType) || void 0,
-        lrc: (cached == null ? void 0 : cached.lrc) || (parsedMetadata == null ? void 0 : parsedMetadata.lrc) || void 0,
-        qualityScore: (cached == null ? void 0 : cached.qualityScore) || (parsedMetadata == null ? void 0 : parsedMetadata.qualityScore) || void 0,
-        engine: (parsedMetadata == null ? void 0 : parsedMetadata.engine) || "acestep",
-        cover: (parsedMetadata == null ? void 0 : parsedMetadata.cover) || "/covers/got/direwolf.jpg",
-        createdAt: (cached == null ? void 0 : cached.createdAt) || (a.createdAt instanceof Date ? a.createdAt.toISOString() : a.createdAt)
+    let i;
+    if (e.type === "music") {
+      const a = e.originId || e.id.replace(/^act-music-/, "").replace(/^act-/, ""), c = (n = this.musicService) == null ? void 0 : n.getHistoryItem(a), l = (c == null ? void 0 : c.wavFilePath) || (t == null ? void 0 : t.wavFilePath);
+      let d = l ? `echo-media://${l}` : (c == null ? void 0 : c.audioUrl) || (t == null ? void 0 : t.audioUrl);
+      d && d.startsWith("data:") && d.length > 5e4 && (d = void 0), i = {
+        id: a,
+        taskId: (c == null ? void 0 : c.taskId) || (t == null ? void 0 : t.taskId) || void 0,
+        title: e.title,
+        caption: (c == null ? void 0 : c.caption) || (t == null ? void 0 : t.caption) || e.title,
+        lyrics: (c == null ? void 0 : c.lyrics) || (t == null ? void 0 : t.lyrics) || void 0,
+        audioUrl: d,
+        wavFilePath: l || void 0,
+        duration: (t == null ? void 0 : t.duration) || (c != null && c.durationMs ? `${Math.round(c.durationMs / 1e3)}s` : "Audio"),
+        durationMs: (c == null ? void 0 : c.durationMs) || (t == null ? void 0 : t.durationMs) || void 0,
+        waveform: (c == null ? void 0 : c.waveform) || (t == null ? void 0 : t.waveform) || [],
+        bpm: (c == null ? void 0 : c.bpm) || (t == null ? void 0 : t.bpm) || void 0,
+        keyscale: (c == null ? void 0 : c.keyscale) || (t == null ? void 0 : t.keyscale) || void 0,
+        timesignature: (c == null ? void 0 : c.timesignature) || (t == null ? void 0 : t.timesignature) || void 0,
+        vocalLanguage: (c == null ? void 0 : c.vocalLanguage) || (t == null ? void 0 : t.vocalLanguage) || void 0,
+        seed: (c == null ? void 0 : c.seed) || (t == null ? void 0 : t.seed) || void 0,
+        taskType: (c == null ? void 0 : c.taskType) || (t == null ? void 0 : t.taskType) || void 0,
+        lrc: (c == null ? void 0 : c.lrc) || (t == null ? void 0 : t.lrc) || void 0,
+        qualityScore: (c == null ? void 0 : c.qualityScore) || (t == null ? void 0 : t.qualityScore) || void 0,
+        engine: (t == null ? void 0 : t.engine) || "acestep",
+        cover: (t == null ? void 0 : t.cover) || "/covers/got/direwolf.jpg",
+        createdAt: (c == null ? void 0 : c.createdAt) || (e.createdAt instanceof Date ? e.createdAt.toISOString() : e.createdAt)
       };
     }
-    let storyData = void 0;
-    if (a.type === "story" || a.type === "stories") {
-      const storyId = a.originId || a.id.replace(/^act-story-/, "").replace(/^act-/, "");
-      storyData = {
-        id: storyId,
-        title: a.title,
-        subtitle: (parsedMetadata == null ? void 0 : parsedMetadata.subtitle) || a.description || void 0,
-        narrator: (parsedMetadata == null ? void 0 : parsedMetadata.narrator) || a.subCategory || "Narrator",
-        duration: (parsedMetadata == null ? void 0 : parsedMetadata.duration) || "Story",
-        audioUrl: (parsedMetadata == null ? void 0 : parsedMetadata.audioUrl) || void 0,
-        cover: (parsedMetadata == null ? void 0 : parsedMetadata.cover) || "/covers/got/winterfell.jpg",
-        text: a.description || (parsedMetadata == null ? void 0 : parsedMetadata.text) || void 0,
-        chapters: Array.isArray(parsedMetadata == null ? void 0 : parsedMetadata.chapters) ? parsedMetadata.chapters : [],
-        model: (parsedMetadata == null ? void 0 : parsedMetadata.model) || void 0,
-        engine: (parsedMetadata == null ? void 0 : parsedMetadata.engine) || void 0,
-        characterVoices: Array.isArray(parsedMetadata == null ? void 0 : parsedMetadata.characterVoices) ? parsedMetadata.characterVoices : void 0,
-        backgroundMusicUrl: (parsedMetadata == null ? void 0 : parsedMetadata.backgroundMusicUrl) || void 0,
-        createdAt: a.createdAt instanceof Date ? a.createdAt.toISOString() : a.createdAt
-      };
-    }
-    const relatedData = ttsData || musicData || storyData || (parsedMetadata ? { ...parsedMetadata } : void 0);
+    let r;
+    (e.type === "story" || e.type === "stories") && (r = {
+      id: e.originId || e.id.replace(/^act-story-/, "").replace(/^act-/, ""),
+      title: e.title,
+      subtitle: (t == null ? void 0 : t.subtitle) || e.description || void 0,
+      narrator: (t == null ? void 0 : t.narrator) || e.subCategory || "Narrator",
+      duration: (t == null ? void 0 : t.duration) || "Story",
+      audioUrl: (t == null ? void 0 : t.audioUrl) || void 0,
+      cover: (t == null ? void 0 : t.cover) || "/covers/got/winterfell.jpg",
+      text: e.description || (t == null ? void 0 : t.text) || void 0,
+      chapters: Array.isArray(t == null ? void 0 : t.chapters) ? t.chapters : [],
+      model: (t == null ? void 0 : t.model) || void 0,
+      engine: (t == null ? void 0 : t.engine) || void 0,
+      characterVoices: Array.isArray(t == null ? void 0 : t.characterVoices) ? t.characterVoices : void 0,
+      backgroundMusicUrl: (t == null ? void 0 : t.backgroundMusicUrl) || void 0,
+      createdAt: e.createdAt instanceof Date ? e.createdAt.toISOString() : e.createdAt
+    });
+    const o = s || i || r || (t ? { ...t } : void 0);
     return {
-      id: a.id,
-      type: a.type,
-      title: a.title,
-      description: a.description || void 0,
-      category: a.category || void 0,
-      subCategory: a.subCategory || void 0,
-      originId: a.originId || void 0,
-      originType: a.originType || void 0,
-      conversationId: a.conversationId || void 0,
-      metadata: parsedMetadata,
-      createdAt: a.createdAt instanceof Date ? a.createdAt.toISOString() : a.createdAt,
-      updatedAt: a.updatedAt instanceof Date ? a.updatedAt.toISOString() : a.updatedAt,
+      id: e.id,
+      type: e.type,
+      title: e.title,
+      description: e.description || void 0,
+      category: e.category || void 0,
+      subCategory: e.subCategory || void 0,
+      originId: e.originId || void 0,
+      originType: e.originType || void 0,
+      conversationId: e.conversationId || void 0,
+      metadata: t,
+      createdAt: e.createdAt instanceof Date ? e.createdAt.toISOString() : e.createdAt,
+      updatedAt: e.updatedAt instanceof Date ? e.updatedAt.toISOString() : e.updatedAt,
       // Related origin data returned when fetching activities
-      data: relatedData,
-      origin: relatedData,
-      tts: ttsData,
-      music: musicData,
-      story: storyData
+      data: o,
+      origin: o,
+      tts: s,
+      music: i,
+      story: r
     };
   }
   /**
@@ -4984,25 +3834,23 @@ class ActivityRepositoryService {
    */
   async syncMissingOrigins() {
     try {
-      const existingActivities = await this.db.client.activity.findMany({
+      const e = await this.db.client.activity.findMany({
         where: {
           OR: [{ conversationId: { not: null } }, { type: "tts" }]
         },
         select: {
-          conversationId: true,
-          originId: true
+          conversationId: !0,
+          originId: !0
         }
-      });
-      const linkedIds = /* @__PURE__ */ new Set();
-      for (const act of existingActivities) {
-        const item = act;
-        if (item.conversationId) linkedIds.add(item.conversationId);
-        if (item.originId) linkedIds.add(item.originId);
+      }), t = /* @__PURE__ */ new Set();
+      for (const i of e) {
+        const r = i;
+        r.conversationId && t.add(r.conversationId), r.originId && t.add(r.originId);
       }
-      const unlinkedConversations = await this.db.client.conversation.findMany({
-        where: linkedIds.size > 0 ? {
+      const s = await this.db.client.conversation.findMany({
+        where: t.size > 0 ? {
           id: {
-            notIn: Array.from(linkedIds)
+            notIn: Array.from(t)
           }
         } : void 0,
         include: {
@@ -5011,91 +3859,81 @@ class ActivityRepositoryService {
           }
         }
       });
-      for (const conv of unlinkedConversations) {
-        const rawSnippet = conv.previewSnippet || conv.text || "";
-        const cleanSnippet = rawSnippet.replace(/\s+/g, " ").trim();
-        const baseTitle = cleanSnippet ? cleanSnippet.length > 55 ? `${cleanSnippet.slice(0, 52)}...` : cleanSnippet : `${conv.voiceName || "Speech Synthesis"} Turn`;
-        let uniqueTitle = baseTitle;
-        let counter = 1;
-        while (await this.db.client.activity.findUnique({ where: { title: uniqueTitle } })) {
-          counter++;
-          uniqueTitle = `${baseTitle} #${counter}`;
-        }
-        const activityMetadata = JSON.stringify({
-          model: conv.model,
-          engine: conv.engine,
-          duration: conv.duration,
-          durationSec: conv.durationSec,
-          emotion: conv.emotion,
-          audioUrl: conv.audioUrl,
-          waveform: conv.waveform ? JSON.parse(conv.waveform) : [],
-          speakerCount: conv.speakerCount
+      for (const i of s) {
+        const o = (i.previewSnippet || i.text || "").replace(/\s+/g, " ").trim(), n = o ? o.length > 55 ? `${o.slice(0, 52)}...` : o : `${i.voiceName || "Speech Synthesis"} Turn`;
+        let a = n, c = 1;
+        for (; await this.db.client.activity.findUnique({ where: { title: a } }); )
+          c++, a = `${n} #${c}`;
+        const l = JSON.stringify({
+          model: i.model,
+          engine: i.engine,
+          duration: i.duration,
+          durationSec: i.durationSec,
+          emotion: i.emotion,
+          audioUrl: i.audioUrl,
+          waveform: i.waveform ? JSON.parse(i.waveform) : [],
+          speakerCount: i.speakerCount
         });
         await this.db.client.activity.create({
           data: {
-            id: `act-${conv.id}`,
+            id: `act-${i.id}`,
             type: "tts",
-            title: uniqueTitle,
+            title: a,
             category: "Text to Speech",
-            subCategory: conv.speakerCount > 1 ? `${conv.speakerCount} Speakers Diarized` : conv.voiceName,
-            description: cleanSnippet ? cleanSnippet.slice(0, 160) : null,
-            originId: conv.id,
+            subCategory: i.speakerCount > 1 ? `${i.speakerCount} Speakers Diarized` : i.voiceName,
+            description: o ? o.slice(0, 160) : null,
+            originId: i.id,
             originType: "conversation",
-            conversationId: conv.id,
-            metadata: activityMetadata
+            conversationId: i.id,
+            metadata: l
           }
         });
       }
       if (this.musicService) {
-        const history = this.musicService.listHistory();
-        for (const item of history) {
-          const actId = `act-music-${item.id}`;
-          const existing = await this.db.client.activity.findFirst({
+        const i = this.musicService.listHistory();
+        for (const r of i) {
+          const o = `act-music-${r.id}`;
+          if (!await this.db.client.activity.findFirst({
             where: {
-              OR: [{ id: actId }, { originId: item.id }]
+              OR: [{ id: o }, { originId: r.id }]
             }
-          });
-          if (!existing) {
-            const rawCaption = item.caption || "Music Track";
-            const baseTitle = rawCaption.length > 50 ? `${rawCaption.slice(0, 47)}...` : rawCaption;
-            let uniqueTitle = baseTitle;
-            let counter = 1;
-            while (await this.db.client.activity.findUnique({ where: { title: uniqueTitle } })) {
-              counter++;
-              uniqueTitle = `${baseTitle} #${counter}`;
-            }
-            const mediaAudioUrl = item.wavFilePath ? `echo-media://${item.wavFilePath}` : item.audioUrl && item.audioUrl.length > 5e4 ? "" : item.audioUrl;
+          })) {
+            const a = r.caption || "Music Track", c = a.length > 50 ? `${a.slice(0, 47)}...` : a;
+            let l = c, d = 1;
+            for (; await this.db.client.activity.findUnique({ where: { title: l } }); )
+              d++, l = `${c} #${d}`;
+            const u = r.wavFilePath ? `echo-media://${r.wavFilePath}` : r.audioUrl && r.audioUrl.length > 5e4 ? "" : r.audioUrl;
             await this.db.client.activity.create({
               data: {
-                id: actId,
+                id: o,
                 type: "music",
-                title: uniqueTitle,
-                description: item.lyrics ? item.lyrics.slice(0, 160) : item.caption,
+                title: l,
+                description: r.lyrics ? r.lyrics.slice(0, 160) : r.caption,
                 category: "Music Generation",
                 subCategory: "AudioGen",
-                originId: item.id,
+                originId: r.id,
                 originType: "music",
                 metadata: JSON.stringify({
-                  taskId: item.taskId,
-                  caption: item.caption,
-                  lyrics: item.lyrics,
-                  audioUrl: mediaAudioUrl,
-                  wavFilePath: item.wavFilePath,
-                  durationMs: item.durationMs,
-                  duration: item.durationMs ? `${Math.round(item.durationMs / 1e3)}s` : "Audio",
-                  waveform: item.waveform || [],
-                  bpm: item.bpm,
-                  keyscale: item.keyscale,
-                  timesignature: item.timesignature,
-                  vocalLanguage: item.vocalLanguage
+                  taskId: r.taskId,
+                  caption: r.caption,
+                  lyrics: r.lyrics,
+                  audioUrl: u,
+                  wavFilePath: r.wavFilePath,
+                  durationMs: r.durationMs,
+                  duration: r.durationMs ? `${Math.round(r.durationMs / 1e3)}s` : "Audio",
+                  waveform: r.waveform || [],
+                  bpm: r.bpm,
+                  keyscale: r.keyscale,
+                  timesignature: r.timesignature,
+                  vocalLanguage: r.vocalLanguage
                 })
               }
             });
           }
         }
       }
-    } catch (err) {
-      console.warn("[ActivityRepositoryService] Error syncing missing origins:", err);
+    } catch (e) {
+      console.warn("[ActivityRepositoryService] Error syncing missing origins:", e);
     }
   }
   /**
@@ -5104,8 +3942,7 @@ class ActivityRepositoryService {
   async listActivities() {
     await this.db.init();
     try {
-      await this.syncMissingOrigins();
-      const records = await this.db.client.activity.findMany({
+      return await this.syncMissingOrigins(), (await this.db.client.activity.findMany({
         include: {
           conversation: {
             include: {
@@ -5118,21 +3955,19 @@ class ActivityRepositoryService {
         orderBy: {
           createdAt: "desc"
         }
-      });
-      return records.map((a) => this.formatActivityRecord(a));
-    } catch (err) {
-      console.error("[ActivityRepositoryService] Failed to query activities:", err);
-      return [];
+      })).map((t) => this.formatActivityRecord(t));
+    } catch (e) {
+      return console.error("[ActivityRepositoryService] Failed to query activities:", e), [];
     }
   }
   /**
    * Find an activity by ID including related origin data
    */
-  async getActivityById(id) {
+  async getActivityById(e) {
     await this.db.init();
     try {
-      const record = await this.db.client.activity.findUnique({
-        where: { id },
+      const t = await this.db.client.activity.findUnique({
+        where: { id: e },
         include: {
           conversation: {
             include: {
@@ -5143,22 +3978,20 @@ class ActivityRepositoryService {
           }
         }
       });
-      if (!record) return null;
-      return this.formatActivityRecord(record);
-    } catch (err) {
-      console.error("[ActivityRepositoryService] Failed to find activity by ID:", err);
-      return null;
+      return t ? this.formatActivityRecord(t) : null;
+    } catch (t) {
+      return console.error("[ActivityRepositoryService] Failed to find activity by ID:", t), null;
     }
   }
   /**
    * Find an activity by origin ID (e.g. conversationId) including related origin data
    */
-  async getActivityByOrigin(originId) {
+  async getActivityByOrigin(e) {
     await this.db.init();
     try {
-      const record = await this.db.client.activity.findFirst({
+      const t = await this.db.client.activity.findFirst({
         where: {
-          OR: [{ conversationId: originId }, { originId }]
+          OR: [{ conversationId: e }, { originId: e }]
         },
         include: {
           conversation: {
@@ -5170,162 +4003,127 @@ class ActivityRepositoryService {
           }
         }
       });
-      if (!record) return null;
-      return this.formatActivityRecord(record);
-    } catch (err) {
-      console.error("[ActivityRepositoryService] Failed to find activity by origin:", err);
-      return null;
+      return t ? this.formatActivityRecord(t) : null;
+    } catch (t) {
+      return console.error("[ActivityRepositoryService] Failed to find activity by origin:", t), null;
     }
   }
   /**
    * Save or update an activity in SQLite
    */
-  async saveActivity(data) {
+  async saveActivity(e) {
     await this.db.init();
     try {
-      const metadataStr = data.metadata ? typeof data.metadata === "string" ? data.metadata : JSON.stringify(data.metadata) : null;
-      let finalTitle = data.title.trim();
-      let counter = 1;
-      let isUnique = false;
-      while (!isUnique) {
-        const existing = await this.db.client.activity.findUnique({
-          where: { title: finalTitle }
+      const t = e.metadata ? typeof e.metadata == "string" ? e.metadata : JSON.stringify(e.metadata) : null;
+      let s = e.title.trim(), i = 1, r = !1;
+      for (; !r; ) {
+        const a = await this.db.client.activity.findUnique({
+          where: { title: s }
         });
-        if (!existing || existing.id === data.id) {
-          isUnique = true;
-        } else {
-          counter++;
-          finalTitle = `${data.title.trim()} #${counter}`;
-        }
+        !a || a.id === e.id ? r = !0 : (i++, s = `${e.title.trim()} #${i}`);
       }
-      const defaultCategory = data.category || (data.type === "music" ? "Music Generation" : "Text to Speech");
-      const record = await this.db.client.activity.upsert({
-        where: { id: data.id },
+      const o = e.category || (e.type === "music" ? "Music Generation" : "Text to Speech"), n = await this.db.client.activity.upsert({
+        where: { id: e.id },
         update: {
-          type: data.type,
-          title: finalTitle,
-          description: data.description || null,
-          category: defaultCategory,
-          subCategory: data.subCategory || null,
-          originId: data.originId || data.conversationId || null,
-          originType: data.originType || (data.conversationId ? "conversation" : data.type),
-          conversationId: data.conversationId || null,
-          metadata: metadataStr
+          type: e.type,
+          title: s,
+          description: e.description || null,
+          category: o,
+          subCategory: e.subCategory || null,
+          originId: e.originId || e.conversationId || null,
+          originType: e.originType || (e.conversationId ? "conversation" : e.type),
+          conversationId: e.conversationId || null,
+          metadata: t
         },
         create: {
-          id: data.id,
-          type: data.type,
-          title: finalTitle,
-          description: data.description || null,
-          category: defaultCategory,
-          subCategory: data.subCategory || null,
-          originId: data.originId || data.conversationId || null,
-          originType: data.originType || (data.conversationId ? "conversation" : data.type),
-          conversationId: data.conversationId || null,
-          metadata: metadataStr
+          id: e.id,
+          type: e.type,
+          title: s,
+          description: e.description || null,
+          category: o,
+          subCategory: e.subCategory || null,
+          originId: e.originId || e.conversationId || null,
+          originType: e.originType || (e.conversationId ? "conversation" : e.type),
+          conversationId: e.conversationId || null,
+          metadata: t
         }
       });
-      return { success: true, data: this.formatActivityRecord(record) };
-    } catch (err) {
-      console.error("[ActivityRepositoryService] Failed to save activity:", err);
-      const message = err instanceof Error ? err.message : String(err);
-      return { success: false, error: message };
+      return { success: !0, data: this.formatActivityRecord(n) };
+    } catch (t) {
+      return console.error("[ActivityRepositoryService] Failed to save activity:", t), { success: !1, error: t instanceof Error ? t.message : String(t) };
     }
   }
   /**
    * Delete an activity by ID
    */
-  async deleteActivity(id) {
+  async deleteActivity(e) {
     await this.db.init();
     try {
-      await this.db.client.activity.delete({
-        where: { id }
-      });
-      return { success: true };
-    } catch (err) {
-      console.error("[ActivityRepositoryService] Failed to delete activity:", err);
-      const message = err instanceof Error ? err.message : String(err);
-      return { success: false, error: message };
+      return await this.db.client.activity.delete({
+        where: { id: e }
+      }), { success: !0 };
+    } catch (t) {
+      return console.error("[ActivityRepositoryService] Failed to delete activity:", t), { success: !1, error: t instanceof Error ? t.message : String(t) };
     }
   }
 }
-class ActivityController extends BaseController {
-  constructor(activityRepo) {
-    super();
-    this.activityRepo = activityRepo;
+class pt extends ie {
+  constructor(e) {
+    super(), this.activityRepo = e;
   }
   init() {
-    ipcMain.handle(IPC_CHANNELS.ACTIVITY_LIST, async () => {
+    A.handle(w.ACTIVITY_LIST, async () => {
       try {
-        const list = await this.activityRepo.listActivities();
-        return { success: true, data: list };
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        return { success: false, error: message };
+        return { success: !0, data: await this.activityRepo.listActivities() };
+      } catch (e) {
+        return { success: !1, error: e instanceof Error ? e.message : String(e) };
       }
-    });
-    ipcMain.handle(IPC_CHANNELS.ACTIVITY_GET, async (_event, payload) => {
+    }), A.handle(w.ACTIVITY_GET, async (e, t) => {
       try {
-        const id = typeof payload === "string" ? payload : payload.id;
-        const item = await this.activityRepo.getActivityById(id);
-        return { success: true, data: item };
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        return { success: false, error: message };
+        const s = typeof t == "string" ? t : t.id;
+        return { success: !0, data: await this.activityRepo.getActivityById(s) };
+      } catch (s) {
+        return { success: !1, error: s instanceof Error ? s.message : String(s) };
       }
-    });
-    ipcMain.handle(
-      IPC_CHANNELS.ACTIVITY_GET_BY_ORIGIN,
-      async (_event, payload) => {
+    }), A.handle(
+      w.ACTIVITY_GET_BY_ORIGIN,
+      async (e, t) => {
         try {
-          const originId = typeof payload === "string" ? payload : payload.originId;
-          const item = await this.activityRepo.getActivityByOrigin(originId);
-          return { success: true, data: item };
-        } catch (err) {
-          const message = err instanceof Error ? err.message : String(err);
-          return { success: false, error: message };
+          const s = typeof t == "string" ? t : t.originId;
+          return { success: !0, data: await this.activityRepo.getActivityByOrigin(s) };
+        } catch (s) {
+          return { success: !1, error: s instanceof Error ? s.message : String(s) };
         }
       }
-    );
-    ipcMain.handle(IPC_CHANNELS.ACTIVITY_SAVE, async (_event, data) => {
+    ), A.handle(w.ACTIVITY_SAVE, async (e, t) => {
       try {
-        const res = await this.activityRepo.saveActivity(data);
-        return res;
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        return { success: false, error: message };
+        return await this.activityRepo.saveActivity(t);
+      } catch (s) {
+        return { success: !1, error: s instanceof Error ? s.message : String(s) };
       }
-    });
-    ipcMain.handle(IPC_CHANNELS.ACTIVITY_DELETE, async (_event, payload) => {
+    }), A.handle(w.ACTIVITY_DELETE, async (e, t) => {
       try {
-        const id = typeof payload === "string" ? payload : payload.id;
-        const res = await this.activityRepo.deleteActivity(id);
-        return res;
-      } catch (err) {
-        const message = err instanceof Error ? err.message : String(err);
-        return { success: false, error: message };
+        const s = typeof t == "string" ? t : t.id;
+        return await this.activityRepo.deleteActivity(s);
+      } catch (s) {
+        return { success: !1, error: s instanceof Error ? s.message : String(s) };
       }
     });
   }
 }
-class DatabaseService {
+const wt = Ke(import.meta.url), { PrismaClient: Et } = wt("@prisma/client");
+class Tt {
   constructor() {
-    __publicField(this, "prisma");
-    __publicField(this, "initialized", false);
-    __publicField(this, "initPromise", null);
-    const isPackaged = app ? app.isPackaged : false;
-    const dbDir = isPackaged ? app.getPath("userData") : path.join(process.cwd(), "prisma");
-    if (!fs.existsSync(dbDir)) {
-      fs.mkdirSync(dbDir, { recursive: true });
-    }
-    const dbPath = path.join(dbDir, "echo.db");
-    const dbUrl = `file:${dbPath}`;
-    process.env.DATABASE_URL = dbUrl;
-    console.log(`[DatabaseService] SQLite DB initialized at: ${dbPath}`);
-    this.prisma = new PrismaClient({
+    b(this, "prisma");
+    b(this, "initialized", !1);
+    b(this, "initPromise", null);
+    const t = (U ? U.isPackaged : !1) ? U.getPath("userData") : y.join(process.cwd(), "prisma");
+    g.existsSync(t) || g.mkdirSync(t, { recursive: !0 });
+    const s = y.join(t, "echo.db"), i = `file:${s}`;
+    process.env.DATABASE_URL = i, console.log(`[DatabaseService] SQLite DB initialized at: ${s}`), this.prisma = new Et({
       datasources: {
         db: {
-          url: dbUrl
+          url: i
         }
       },
       log: ["warn", "error"]
@@ -5341,11 +4139,10 @@ class DatabaseService {
    * Verify and initialize core schema tables on application startup
    */
   async init() {
-    if (this.initialized) return;
-    if (this.initPromise) return this.initPromise;
-    this.initPromise = (async () => {
-      try {
-        await this.prisma.$executeRawUnsafe(`
+    if (!this.initialized)
+      return this.initPromise ? this.initPromise : (this.initPromise = (async () => {
+        try {
+          await this.prisma.$executeRawUnsafe(`
         CREATE TABLE IF NOT EXISTS "conversations" (
           "id" TEXT PRIMARY KEY,
           "text" TEXT NOT NULL,
@@ -5370,8 +4167,7 @@ class DatabaseService {
           "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
           "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
         );
-      `);
-        await this.prisma.$executeRawUnsafe(`
+      `), await this.prisma.$executeRawUnsafe(`
         CREATE TABLE IF NOT EXISTS "speech_rounds" (
           "id" TEXT PRIMARY KEY,
           "conversationId" TEXT NOT NULL,
@@ -5388,8 +4184,7 @@ class DatabaseService {
           "speakerColor" TEXT,
           FOREIGN KEY ("conversationId") REFERENCES "conversations"("id") ON DELETE CASCADE
         );
-      `);
-        await this.prisma.$executeRawUnsafe(`
+      `), await this.prisma.$executeRawUnsafe(`
         CREATE TABLE IF NOT EXISTS "custom_voices" (
           "id" TEXT PRIMARY KEY,
           "name" TEXT NOT NULL,
@@ -5407,15 +4202,13 @@ class DatabaseService {
           "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
           "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
         );
-      `);
-        await this.prisma.$executeRawUnsafe(`
+      `), await this.prisma.$executeRawUnsafe(`
         CREATE TABLE IF NOT EXISTS "user_preferences" (
           "key" TEXT PRIMARY KEY,
           "value" TEXT NOT NULL,
           "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
         );
-      `);
-        await this.prisma.$executeRawUnsafe(`
+      `), await this.prisma.$executeRawUnsafe(`
         CREATE TABLE IF NOT EXISTS "activities" (
           "id" TEXT PRIMARY KEY,
           "type" TEXT NOT NULL,
@@ -5431,16 +4224,13 @@ class DatabaseService {
           "updatedAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
           FOREIGN KEY ("conversationId") REFERENCES "conversations"("id") ON DELETE CASCADE
         );
-      `);
-        this.initialized = true;
-        console.log("[DatabaseService] SQLite database schema initialized");
-      } catch (err) {
-        console.error("[DatabaseService] Error verifying SQLite tables:", err);
-      } finally {
-        this.initPromise = null;
-      }
-    })();
-    return this.initPromise;
+      `), this.initialized = !0, console.log("[DatabaseService] SQLite database schema initialized");
+        } catch (e) {
+          console.error("[DatabaseService] Error verifying SQLite tables:", e);
+        } finally {
+          this.initPromise = null;
+        }
+      })(), this.initPromise);
   }
   /**
    * Graceful disconnect on application exit
@@ -5448,164 +4238,115 @@ class DatabaseService {
   async close() {
     try {
       await this.prisma.$disconnect();
-    } catch (err) {
-      console.warn("[DatabaseService] Failed to disconnect cleanly:", err);
+    } catch (e) {
+      console.warn("[DatabaseService] Failed to disconnect cleanly:", e);
     }
   }
 }
-function bootstrapCore() {
-  const dbService = new DatabaseService();
-  const systemService = new SystemService();
-  const modelsService = new ModelsService();
-  const musicService = new MusicService();
-  const voiceRepository = new VoiceRepositoryService(dbService);
-  const conversationRepository = new ConversationRepositoryService(dbService);
-  const activityRepository = new ActivityRepositoryService(dbService, musicService);
-  const voiceService = new VoiceService(voiceRepository);
-  const ttsService = new TtsService(modelsService, conversationRepository);
-  const controllers = [
-    new SystemController(systemService),
-    new ModelsController(modelsService),
-    new VoiceController(voiceService),
-    new TtsController(ttsService),
-    new MusicController(musicService, activityRepository),
-    new ActivityController(activityRepository)
+function Mt() {
+  const h = new Tt(), e = new Ze(), t = new Te(), s = new yt(), i = new it(h), r = new mt(h), o = new St(h, s), n = new st(i), a = new ht(t, r), c = [
+    new et(e),
+    new tt(t),
+    new rt(n),
+    new gt(a),
+    new vt(s, o),
+    new pt(o)
   ];
-  for (const controller of controllers) {
-    controller.init();
-  }
+  for (const l of c)
+    l.init();
   return {
-    systemService,
-    modelsService,
-    voiceService,
-    ttsService,
-    musicService,
-    activityRepository,
-    dbService,
-    controllers
+    systemService: e,
+    modelsService: t,
+    voiceService: n,
+    ttsService: a,
+    musicService: s,
+    activityRepository: o,
+    dbService: h,
+    controllers: c
   };
 }
-protocol.registerSchemesAsPrivileged([
+xe.registerSchemesAsPrivileged([
   {
     scheme: "echo-media",
     privileges: {
-      standard: true,
-      secure: true,
-      supportFetchAPI: true,
-      stream: true,
-      bypassCSP: true,
-      corsEnabled: true
+      standard: !0,
+      secure: !0,
+      supportFetchAPI: !0,
+      stream: !0,
+      bypassCSP: !0,
+      corsEnabled: !0
     }
   }
 ]);
-const __dirname$1 = path.dirname(fileURLToPath(import.meta.url));
-process.env.APP_ROOT = path.join(__dirname$1, "..");
-const VITE_DEV_SERVER_URL = process.env["VITE_DEV_SERVER_URL"];
-const MAIN_DIST = path.join(process.env.APP_ROOT, "dist-electron");
-const RENDERER_DIST = path.join(process.env.APP_ROOT, "dist");
-process.env.VITE_PUBLIC = VITE_DEV_SERVER_URL ? path.join(process.env.APP_ROOT, "public") : RENDERER_DIST;
-const core = bootstrapCore();
-let win = null;
-function createWindow() {
-  win = new BrowserWindow({
-    icon: path.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
+const ke = y.dirname(Qe(import.meta.url));
+process.env.APP_ROOT = y.join(ke, "..");
+const Ee = process.env.VITE_DEV_SERVER_URL, kt = y.join(process.env.APP_ROOT, "dist-electron"), Ue = y.join(process.env.APP_ROOT, "dist");
+process.env.VITE_PUBLIC = Ee ? y.join(process.env.APP_ROOT, "public") : Ue;
+const Ut = Mt();
+let G = null;
+function Oe() {
+  G = new Ne({
+    icon: y.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
     trafficLightPosition: { x: 14, y: 12 },
     webPreferences: {
-      preload: path.join(__dirname$1, "preload.mjs")
+      preload: y.join(ke, "preload.mjs")
     }
-  });
-  win.webContents.on("console-message", (event, ...args) => {
-    if (typeof event === "object" && event !== null && "message" in event) {
-      const src = event.sourceId ? path.basename(event.sourceId) : "renderer";
-      console.log(`[Renderer ${src}:${event.lineNumber}] ${event.message}`);
+  }), G.webContents.on("console-message", (h, ...e) => {
+    if (typeof h == "object" && h !== null && "message" in h) {
+      const t = h.sourceId ? y.basename(h.sourceId) : "renderer";
+      console.log(`[Renderer ${t}:${h.lineNumber}] ${h.message}`);
     } else {
-      const [_level, message, line, sourceId] = args;
-      const src = sourceId ? path.basename(sourceId) : "renderer";
-      console.log(`[Renderer ${src}:${line}] ${message}`);
+      const [t, s, i, r] = e, o = r ? y.basename(r) : "renderer";
+      console.log(`[Renderer ${o}:${i}] ${s}`);
     }
-  });
-  win.webContents.on("render-process-gone", (_event, details) => {
-    console.error("[Renderer Crashed]:", details);
-  });
-  win.webContents.on("did-finish-load", () => {
-    win == null ? void 0 : win.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
-  });
-  if (VITE_DEV_SERVER_URL) {
-    win.loadURL(VITE_DEV_SERVER_URL);
-  } else {
-    win.loadFile(path.join(RENDERER_DIST, "index.html"));
-  }
+  }), G.webContents.on("render-process-gone", (h, e) => {
+    console.error("[Renderer Crashed]:", e);
+  }), G.webContents.on("did-finish-load", () => {
+    G == null || G.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
+  }), Ee ? G.loadURL(Ee) : G.loadFile(y.join(Ue, "index.html"));
 }
-app.on("window-all-closed", () => {
-  if (process.platform !== "darwin") {
-    app.quit();
-    win = null;
-  }
+U.on("window-all-closed", () => {
+  process.platform !== "darwin" && (U.quit(), G = null);
 });
-app.on("activate", () => {
-  if (BrowserWindow.getAllWindows().length === 0) {
-    createWindow();
-  }
+U.on("activate", () => {
+  Ne.getAllWindows().length === 0 && Oe();
 });
-app.whenReady().then(() => {
-  protocol.handle("echo-media", async (request) => {
+U.whenReady().then(() => {
+  xe.handle("echo-media", async (h) => {
     try {
-      const raw = request.url.replace(/^echo-media:\/\//, "");
-      let filePath = decodeURIComponent(raw.startsWith("/") ? raw : "/" + raw);
-      if (process.platform === "win32" && filePath.startsWith("/")) {
-        filePath = filePath.slice(1);
-      }
-      if (!fs.existsSync(filePath)) {
+      const e = h.url.replace(/^echo-media:\/\//, "");
+      let t = decodeURIComponent(e.startsWith("/") ? e : "/" + e);
+      if (process.platform === "win32" && t.startsWith("/") && (t = t.slice(1)), !g.existsSync(t))
         return new Response("Media not found", { status: 404 });
-      }
-      const total = fs.statSync(filePath).size;
-      const contentType = filePath.endsWith(".mp3") ? "audio/mpeg" : filePath.endsWith(".wav") ? "audio/wav" : "application/octet-stream";
-      const headers = new Headers({
+      const s = g.statSync(t).size, i = t.endsWith(".mp3") ? "audio/mpeg" : t.endsWith(".wav") ? "audio/wav" : "application/octet-stream", r = new Headers({
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
         "Access-Control-Allow-Headers": "*",
         "Accept-Ranges": "bytes",
-        "Content-Type": contentType
-      });
-      const rangeHeader = request.headers.get("range");
-      const match = rangeHeader ? /bytes=(\d*)-(\d*)/.exec(rangeHeader) : null;
-      let start = 0;
-      let end = total - 1;
-      let status = 200;
-      if (match && (match[1] !== "" || match[2] !== "")) {
-        if (match[1] === "") {
-          start = Math.max(0, total - parseInt(match[2], 10));
-        } else {
-          start = parseInt(match[1], 10);
-          if (match[2] !== "") end = Math.min(end, parseInt(match[2], 10));
-        }
-        if (start >= total || start > end) {
-          headers.set("Content-Range", `bytes */${total}`);
-          return new Response(null, { status: 416, headers });
-        }
-        status = 206;
-        headers.set("Content-Range", `bytes ${start}-${end}/${total}`);
+        "Content-Type": i
+      }), o = h.headers.get("range"), n = o ? /bytes=(\d*)-(\d*)/.exec(o) : null;
+      let a = 0, c = s - 1, l = 200;
+      if (n && (n[1] !== "" || n[2] !== "")) {
+        if (n[1] === "" ? a = Math.max(0, s - parseInt(n[2], 10)) : (a = parseInt(n[1], 10), n[2] !== "" && (c = Math.min(c, parseInt(n[2], 10)))), a >= s || a > c)
+          return r.set("Content-Range", `bytes */${s}`), new Response(null, { status: 416, headers: r });
+        l = 206, r.set("Content-Range", `bytes ${a}-${c}/${s}`);
       }
-      headers.set("Content-Length", String(end - start + 1));
-      if (request.method === "HEAD") {
-        return new Response(null, { status, headers });
-      }
-      const stream = Readable.toWeb(
-        fs.createReadStream(filePath, { start, end })
+      if (r.set("Content-Length", String(c - a + 1)), h.method === "HEAD")
+        return new Response(null, { status: l, headers: r });
+      const d = Ye.toWeb(
+        g.createReadStream(t, { start: a, end: c })
       );
-      return new Response(stream, { status, headers });
-    } catch (err) {
-      console.error("[echo-media protocol] Error loading media:", err);
-      return new Response("Error loading media", { status: 500 });
+      return new Response(d, { status: l, headers: r });
+    } catch (e) {
+      return console.error("[echo-media protocol] Error loading media:", e), new Response("Error loading media", { status: 500 });
     }
-  });
-  createWindow();
+  }), Oe();
 });
 console.log("Electron:", process.versions.electron);
 console.log("Chromium:", process.versions.chrome);
 export {
-  MAIN_DIST,
-  RENDERER_DIST,
-  VITE_DEV_SERVER_URL,
-  core
+  kt as MAIN_DIST,
+  Ue as RENDERER_DIST,
+  Ee as VITE_DEV_SERVER_URL,
+  Ut as core
 };

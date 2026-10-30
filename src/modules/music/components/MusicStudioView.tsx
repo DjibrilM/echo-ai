@@ -45,7 +45,7 @@ export interface MusicStudioViewProps {
   duration: number
   onChangeDuration: (val: number) => void
   engine: string
-  onChangeEngine: (engine: 'acestep' | 'minimax') => void
+  onChangeEngine?: (engine: 'acestep' | 'minimax') => void
   onGenerate: () => void
   onCancelGeneration?: () => void
   isGenerating: boolean
@@ -96,7 +96,6 @@ export const MusicStudioView: React.FC<MusicStudioViewProps> = ({
   duration,
   onChangeDuration,
   engine,
-  onChangeEngine,
   onGenerate,
   onCancelGeneration,
   isGenerating,
@@ -213,14 +212,12 @@ export const MusicStudioView: React.FC<MusicStudioViewProps> = ({
           {/* Model Pills row */}
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => onChangeEngine(engine === 'acestep' ? 'minimax' : 'acestep')}
-                className="flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium bg-[#161619] hover:bg-[#1e1e22] text-zinc-200 border border-[#27272a] hover:border-zinc-700 transition-colors cursor-pointer select-none"
+              <div
+                className="flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium bg-[#161619] text-zinc-200 border border-[#27272a] select-none"
               >
                 <FileMusic className="size-3.5 text-zinc-400" />
-                <span>{engine === 'acestep' ? 'Music v2 (ACE-Step)' : 'MiniMax Music'}</span>
-              </button>
+                <span>MiniMax-Music3 (Songs)</span>
+              </div>
 
               <button
                 type="button"
@@ -539,10 +536,10 @@ export const MusicStudioView: React.FC<MusicStudioViewProps> = ({
                 className="px-5 py-2.5 rounded-xl bg-white text-black hover:bg-zinc-200 active:scale-95 disabled:opacity-40 disabled:pointer-events-none transition-all flex items-center gap-2 font-medium text-xs sm:text-sm shadow-xl cursor-pointer"
                 title={
                   !prompt.trim()
-                    ? 'Enter a prompt description'
+                    ? 'Enter a song description'
                     : isGenerating
                       ? 'Synthesizing...'
-                      : 'Generate Music'
+                      : 'Generate Song'
                 }
               >
                 <span>{isGenerating ? 'Synthesizing...' : 'Generate'}</span>

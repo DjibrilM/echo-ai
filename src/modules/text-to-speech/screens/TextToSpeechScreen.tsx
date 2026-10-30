@@ -4,7 +4,7 @@ import { motion, AnimatePresence, LayoutGroup, Reorder } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { TrackWavePlayer } from '@/components/player/TrackWavePlayer'
 import { ShimmeringText } from '@/components/ui/shimmering-text'
-import { useModels } from '@/modules/models'
+import { deleteAllModels, useModels } from '@/modules/models'
 import { usePlayer } from '@/hooks/usePlayer'
 import { useAudioEffect } from '@/hooks/useAudioEffect'
 import { cn } from '@/lib/utils'
@@ -40,7 +40,7 @@ import { InstallRequiredModelsView } from '../components/InstallRequiredModelsVi
 export function TextToSpeechScreen() {
   const [state, updateState] = useTextToSpeechState()
   const [loadedHistoryId, setLoadedHistoryId] = useState<string | null>(null)
-  const { allRequiredReady, deleteAllModels, selectedEngine, setSelectedEngine } = useModels()
+  const { allRequiredReady, selectedEngine, setSelectedEngine } = useModels()
   const player = usePlayer()
   const recording = useVoiceCloneRecording({ state, updateState })
   const voicePreview = useVoicePreview()
@@ -459,11 +459,11 @@ export function TextToSpeechScreen() {
         const conversationPreview =
           activeRounds.length > 1
             ? activeRounds
-                .map((r) => {
-                  const spk = getVoice(r.voiceId)
-                  return `${spk.name}: "${r.text.trim()}"`
-                })
-                .join('  •  ')
+              .map((r) => {
+                const spk = getVoice(r.voiceId)
+                return `${spk.name}: "${r.text.trim()}"`
+              })
+              .join('  •  ')
             : newGen.textSnippet
 
         const newHist: HistoryEntry = {
@@ -571,22 +571,22 @@ export function TextToSpeechScreen() {
 
       const restoredGen: Generation | null = audioUrl
         ? {
-            id: item.generationId || `gen-${item.id}`,
-            roundIndex: 0,
-            title:
-              item.speakerCount && item.speakerCount > 1
-                ? `${item.speakerCount} Speakers Dialogue`
-                : item.voiceName || 'Dialogue',
-            textSnippet: item.text,
-            speakerName: item.voiceName,
-            speakerColor: item.voiceColor || '#10b981',
-            speakerAvatarUrl: item.voiceAvatarUrl,
-            duration: durSec,
-            waveform: item.waveform && item.waveform.length > 0 ? item.waveform : [],
-            timestamp: item.timeAgo || 'Restored',
-            emotion: item.emotion || 'Neutral',
-            audioUrl,
-          }
+          id: item.generationId || `gen-${item.id}`,
+          roundIndex: 0,
+          title:
+            item.speakerCount && item.speakerCount > 1
+              ? `${item.speakerCount} Speakers Dialogue`
+              : item.voiceName || 'Dialogue',
+          textSnippet: item.text,
+          speakerName: item.voiceName,
+          speakerColor: item.voiceColor || '#10b981',
+          speakerAvatarUrl: item.voiceAvatarUrl,
+          duration: durSec,
+          waveform: item.waveform && item.waveform.length > 0 ? item.waveform : [],
+          timestamp: item.timeAgo || 'Restored',
+          emotion: item.emotion || 'Neutral',
+          audioUrl,
+        }
         : null
 
       setLoadedHistoryId(item.id)
@@ -832,7 +832,7 @@ export function TextToSpeechScreen() {
                           trackId={state.generations[0].id}
                           waveform={
                             state.generations[0].waveform &&
-                            state.generations[0].waveform.length > 0
+                              state.generations[0].waveform.length > 0
                               ? state.generations[0].waveform
                               : undefined
                           }

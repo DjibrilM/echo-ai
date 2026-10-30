@@ -17,7 +17,8 @@ import {
   VoiceChangingIcon,
   VoiceChangerIcon,
   SpeechToTextIcon,
-  MusicIcon,
+  SongsIcon,
+  BeatsIcon,
   DubbingIcon,
   StoriesGenerationIcon,
   AudiobooksIcon,
@@ -56,7 +57,12 @@ function getRouteData(pathname: string) {
     case "/voice-changer":
       return { title: "Voice Changer", icon: VoiceChangerIcon }
     case "/music":
-      return { title: "Music", icon: MusicIcon }
+    case "/music/songs":
+    case "/songs":
+      return { title: "Music • Songs", icon: SongsIcon }
+    case "/music/beats":
+    case "/beats":
+      return { title: "Music • Beats", icon: BeatsIcon }
     case "/speech-to-text":
       return { title: "Speech To Text", icon: SpeechToTextIcon }
     case "/dubbing":

@@ -20,23 +20,43 @@ export interface PromptSuggestion {
   prompt: string
 }
 
-const DEFAULT_PROMPT_SUGGESTIONS: PromptSuggestion[] = [
+export const SONG_PROMPT_SUGGESTIONS: PromptSuggestion[] = [
   {
     label: 'Upbeat Pop Anthem',
     prompt:
-      'Upbeat pop anthem with vibrant modern synths, punchy bass groove, and energetic commercial hook',
+      'Upbeat pop anthem with vibrant modern synths, punchy bass groove, soaring vocal melodies and catchy hook',
   },
   {
     label: 'Melancholy Piano Ballad',
     prompt:
-      'Melancholy emotional piano ballad with gentle cello harmonies, emotive chords, and intimate room reverb',
+      'Melancholy emotional piano ballad with gentle cello harmonies, emotive chords, intimate vocal delivery, and room reverb',
   },
   {
-    label: 'Aggressive Electronic Track',
+    label: 'R&B Soul Slow Jam',
     prompt:
-      'Aggressive electronic cyberpunk track with distorted 808 subs, hard driving percussion, and gritty synth leads',
+      'Smooth contemporary R&B slow jam with silky falsetto harmonies, warm rhodes chords, and deep sub bass',
   },
 ]
+
+export const BEAT_PROMPT_SUGGESTIONS: PromptSuggestion[] = [
+  {
+    label: 'Hard 808 Trap Beat',
+    prompt:
+      'Dark energetic trap beat with heavy distorted 808 glides, rapid hi-hat rolls, crisp clap, and eerie bell melody',
+  },
+  {
+    label: 'Lo-Fi Chillhop Beat',
+    prompt:
+      'Dusty lo-fi hip hop beat with warm rhodes keys, vinyl crackle, mellow bassline, and laid-back boom bap drums',
+  },
+  {
+    label: 'Neon Synthwave Beat',
+    prompt:
+      'Pulsing 80s outrun synthwave beat with analog arpeggios, punchy gated snare, driving bassline, and vintage drum machine',
+  },
+]
+
+export const DEFAULT_PROMPT_SUGGESTIONS: PromptSuggestion[] = SONG_PROMPT_SUGGESTIONS
 
 const LYRIC_STRUCTURE_TAGS = ['[Verse]', '[Chorus]', '[Bridge]', '[Outro]']
 
@@ -70,9 +90,10 @@ export const MusicPromptHeroCard: React.FC<MusicPromptHeroCardProps> = ({
   onChangeDuration,
   onGenerate,
   isGenerating,
-  suggestions = DEFAULT_PROMPT_SUGGESTIONS,
+  suggestions,
   className,
 }) => {
+  const activeSuggestions = suggestions || SONG_PROMPT_SUGGESTIONS
   const currentMode = vocalMode || (isInstrumental ? 'instrumental' : lyrics.trim() ? 'manual' : 'auto')
   const handleModeChange = (mode: 'instrumental' | 'manual' | 'auto') => {
     if (onChangeVocalMode) {
@@ -130,10 +151,10 @@ export const MusicPromptHeroCard: React.FC<MusicPromptHeroCardProps> = ({
   }
 
   const generateTooltip = !prompt.trim()
-    ? 'Enter a prompt description'
+    ? 'Enter a song description'
     : isGenerating
       ? 'Generating audio...'
-      : 'Generate Music'
+      : 'Generate Song'
 
   return (
     <div className={clsx('relative flex flex-col items-center w-full pt-1', className)}>
@@ -144,7 +165,7 @@ export const MusicPromptHeroCard: React.FC<MusicPromptHeroCardProps> = ({
       <div className="relative z-10 w-full max-w-3xl bg-[#232327]/95 border border-[#35353c] focus-within:border-zinc-500 rounded-2xl p-4 sm:p-5 shadow-2xl backdrop-blur-xl transition-all flex flex-col gap-3.5">
         {/* Top: Suggestion Chips inside the card */}
         <div className="flex flex-wrap items-center gap-2">
-          {suggestions.map((suggestion) => (
+          {activeSuggestions.map((suggestion) => (
             <button
               key={suggestion.label}
               type="button"
@@ -224,7 +245,7 @@ export const MusicPromptHeroCard: React.FC<MusicPromptHeroCardProps> = ({
           onChange={(e) => onChangePrompt(e.target.value)}
           onKeyDown={handleKeyDown}
           minHeight={75}
-          placeholder="Produce mysterious tension music for a thriller scene."
+          placeholder="Produce an upbeat modern pop anthem with catchy vocal harmonies, soaring hook, and driving drums."
           className="w-full bg-transparent text-[14.5px] sm:text-[15px] text-zinc-100 placeholder:text-zinc-400/90 outline-none leading-relaxed font-normal"
         />
 

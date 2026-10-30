@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { MusicScreen } from '@/modules/music'
+import { BeatsScreen } from '@/modules/beats'
 import {
   TextToSpeechIcon,
   VoiceCreationIcon,
@@ -332,6 +333,14 @@ export function SpeechToTextPage() {
       </Card>
     </div>
   )
+}
+
+export function SongsPage() {
+  return <MusicScreen />
+}
+
+export function BeatsPage() {
+  return <BeatsScreen />
 }
 
 export function MusicPage() {
