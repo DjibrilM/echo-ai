@@ -1,12 +1,12 @@
 var je = Object.defineProperty;
-var He = (h, e, t) => e in h ? je(h, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : h[e] = t;
-var b = (h, e, t) => He(h, typeof e != "symbol" ? e + "" : e, t);
+var He = (m, e, t) => e in m ? je(m, e, { enumerable: !0, configurable: !0, writable: !0, value: t }) : m[e] = t;
+var A = (m, e, t) => He(m, typeof e != "symbol" ? e + "" : e, t);
 import y from "node:path";
 import g from "node:fs";
-import { app as U, shell as We, ipcMain as A, protocol as xe, BrowserWindow as Ne } from "electron";
+import { app as O, shell as We, ipcMain as C, protocol as Ne, BrowserWindow as Ue } from "electron";
 import { fileURLToPath as Qe } from "node:url";
 import { Readable as Ye } from "node:stream";
-import O from "node:os";
+import R from "node:os";
 import * as v from "@qvac/sdk";
 import { execFileSync as Xe } from "node:child_process";
 import { createRequire as Ke } from "node:module";
@@ -14,35 +14,35 @@ process.env.QVAC_RPC_INIT_TIMEOUT_MS || (process.env.QVAC_RPC_INIT_TIMEOUT_MS = 
 const Je = [
   y.resolve(process.cwd(), "node_modules/@qvac/sdk/dist/src/worker/index.js")
 ];
-for (const h of Je)
-  if (g.existsSync(h)) {
+for (const m of Je)
+  if (g.existsSync(m)) {
     try {
-      process.env.QVAC_WORKER_PATH = g.realpathSync(h);
+      process.env.QVAC_WORKER_PATH = g.realpathSync(m);
     } catch {
-      process.env.QVAC_WORKER_PATH = h;
+      process.env.QVAC_WORKER_PATH = m;
     }
     break;
   }
 class Ze {
   constructor() {
-    b(this, "prevCpuTimes", null);
+    A(this, "prevCpuTimes", null);
   }
   /**
    * Calculate live CPU usage from os.cpus()
    */
   getCpuUsage() {
-    const e = O.cpus();
-    let t = 0, s = 0;
+    const e = R.cpus();
+    let t = 0, i = 0;
     for (const n of e) {
       for (const a of Object.keys(n.times))
-        s += n.times[a];
+        i += n.times[a];
       t += n.times.idle;
     }
     if (!this.prevCpuTimes)
-      return this.prevCpuTimes = { idle: t, total: s }, 14;
-    const i = t - this.prevCpuTimes.idle, r = s - this.prevCpuTimes.total;
-    if (this.prevCpuTimes = { idle: t, total: s }, r <= 0) return 14;
-    const o = Math.round((r - i) / r * 100);
+      return this.prevCpuTimes = { idle: t, total: i }, 14;
+    const s = t - this.prevCpuTimes.idle, r = i - this.prevCpuTimes.total;
+    if (this.prevCpuTimes = { idle: t, total: i }, r <= 0) return 14;
+    const o = Math.round((r - s) / r * 100);
     return Math.max(1, Math.min(100, o));
   }
   /**
@@ -50,29 +50,29 @@ class Ze {
    */
   getMetrics() {
     var u;
-    const e = O.totalmem(), t = O.freemem(), s = Math.max(0, e - t), i = s / e * 100, r = Math.sin(Date.now() / 3e3) * 0.8 + (Math.random() * 0.4 - 0.2), o = Math.max(5, Math.min(99, Math.round(i + r))), n = this.getCpuUsage(), a = Math.round(Math.sin(Date.now() / 2e3) * 3 + (Math.random() * 3 - 1)), c = Math.max(3, Math.min(98, Math.round(n + a)));
+    const e = R.totalmem(), t = R.freemem(), i = Math.max(0, e - t), s = i / e * 100, r = Math.sin(Date.now() / 3e3) * 0.8 + (Math.random() * 0.4 - 0.2), o = Math.max(5, Math.min(99, Math.round(s + r))), n = this.getCpuUsage(), a = Math.round(Math.sin(Date.now() / 2e3) * 3 + (Math.random() * 3 - 1)), c = Math.max(3, Math.min(98, Math.round(n + a)));
     let l = 12;
     try {
-      const f = U.getAppMetrics().find((S) => S.type === "GPU");
+      const f = O.getAppMetrics().find((p) => p.type === "GPU");
       if (f)
         l = Math.min(100, Math.max(8, Math.round(f.cpu.percentCPUUsage * 2 + 10)));
       else {
-        const S = Math.round(Math.cos(Date.now() / 2500) * 3 + (Math.random() * 2 - 1));
-        l = Math.max(6, Math.min(94, Math.round(c * 0.7 + 8 + S)));
+        const p = Math.round(Math.cos(Date.now() / 2500) * 3 + (Math.random() * 2 - 1));
+        l = Math.max(6, Math.min(94, Math.round(c * 0.7 + 8 + p)));
       }
     } catch {
       l = Math.max(6, Math.min(94, Math.round(c * 0.7 + 8)));
     }
     return {
       ram: {
-        usedGB: (s / (1024 * 1024 * 1024) + r * 0.1).toFixed(1),
+        usedGB: (i / (1024 * 1024 * 1024) + r * 0.1).toFixed(1),
         totalGB: (e / (1024 * 1024 * 1024)).toFixed(1),
         percent: o
       },
       cpu: {
         percent: c,
-        cores: O.cpus().length,
-        model: ((u = O.cpus()[0]) == null ? void 0 : u.model) || "Processor"
+        cores: R.cpus().length,
+        model: ((u = R.cpus()[0]) == null ? void 0 : u.model) || "Processor"
       },
       gpu: {
         percent: l,
@@ -85,16 +85,16 @@ class Ze {
    */
   async openExportsFolder() {
     try {
-      const e = y.join(U.getPath("documents"), "Echo", "Exports");
+      const e = y.join(O.getPath("documents"), "Echo", "Exports");
       return g.existsSync(e) || g.mkdirSync(e, { recursive: !0 }), await We.openPath(e), { success: !0, path: e };
     } catch (e) {
       return console.error("[SystemService] Failed to open exports directory:", e), { success: !1, error: String(e) };
     }
   }
 }
-class ie {
+class ne {
 }
-const w = {
+const S = {
   // Voices domain (metadata & SQLite persistence)
   VOICES_SCAN: "voices:scan",
   VOICES_LOAD: "voices:load",
@@ -163,22 +163,22 @@ const w = {
   LEGACY_GET_SYSTEM_METRICS: "get-system-metrics",
   LEGACY_OPEN_EXPORTS_FOLDER: "open-exports-folder"
 };
-class et extends ie {
+class et extends ne {
   constructor(e) {
     super(), this.systemService = e;
   }
   init() {
-    A.handle(w.SYSTEM_GET_METRICS, async () => this.systemService.getMetrics()), A.handle(w.LEGACY_GET_SYSTEM_METRICS, async () => this.systemService.getMetrics()), A.handle(w.SYSTEM_OPEN_EXPORTS, async () => this.systemService.openExportsFolder()), A.handle(w.LEGACY_OPEN_EXPORTS_FOLDER, async () => this.systemService.openExportsFolder());
+    C.handle(S.SYSTEM_GET_METRICS, async () => this.systemService.getMetrics()), C.handle(S.LEGACY_GET_SYSTEM_METRICS, async () => this.systemService.getMetrics()), C.handle(S.SYSTEM_OPEN_EXPORTS, async () => this.systemService.openExportsFolder()), C.handle(S.LEGACY_OPEN_EXPORTS_FOLDER, async () => this.systemService.openExportsFolder());
   }
 }
-class Te {
+class Ie {
   constructor() {
-    b(this, "cacheDir");
-    b(this, "stateFilePath");
-    b(this, "downloadedModelIds", /* @__PURE__ */ new Set());
-    b(this, "activeDownloads", /* @__PURE__ */ new Map());
+    A(this, "cacheDir");
+    A(this, "stateFilePath");
+    A(this, "downloadedModelIds", /* @__PURE__ */ new Set());
+    A(this, "activeDownloads", /* @__PURE__ */ new Map());
     // Full specification of neural TTS voice models
-    b(this, "modelDefinitions", [
+    A(this, "modelDefinitions", [
       {
         id: "chatterbox-t3-turbo-q8_0",
         name: "Chatterbox T3 Turbo Backbone (Q8_0 GGUF)",
@@ -344,10 +344,21 @@ class Te {
         category: "vocoder",
         engine: "minimax",
         required: !0
+      },
+      {
+        id: "qwen3-1.7b-lyric-generator",
+        name: "Qwen3-1.7B Lyric Generator (Q4_0 GGUF)",
+        descriptorName: "QWEN3_1_7B_INST_Q4",
+        sizeBytes: 1056782912,
+        sizeFormatted: "1.05 GB",
+        description: "Local 1.7B Instruct LLM for composing rhyming song lyrics, verse/chorus structures, and stylistic themes from prompts.",
+        category: "lm",
+        engine: "minimax",
+        required: !0
       }
     ]);
-    this.cacheDir = y.join(O.homedir(), ".qvac", "models");
-    const e = U ? U.getPath("userData") : y.join(O.homedir(), ".echo-ai");
+    this.cacheDir = y.join(R.homedir(), ".qvac", "models");
+    const e = O ? O.getPath("userData") : y.join(R.homedir(), ".echo-ai");
     if (!g.existsSync(e))
       try {
         g.mkdirSync(e, { recursive: !0 });
@@ -406,7 +417,7 @@ class Te {
     let e = !1;
     try {
       if (g.existsSync(this.cacheDir)) {
-        const t = /* @__PURE__ */ new Set(), s = (o, n) => {
+        const t = /* @__PURE__ */ new Set(), i = (o, n) => {
           const a = n.toLowerCase();
           if (a.endsWith(".download") || a.endsWith(".tmp") || a.endsWith(".partial") || a.endsWith(".crdownload"))
             return;
@@ -416,11 +427,11 @@ class Te {
           } catch {
             return;
           }
-          c.isFile() && c.size > 1024 * 1024 && (a.includes("parler-large-v1-f16") || a.includes("parler-large-v1-fp16") ? t.add("chatterbox-t3-turbo-q8_0") : a.includes("chatterbox-s3gen-q8") || a.includes("chatterbox-s3gen") ? t.add("chatterbox-s3gen-q8_0") : a.includes("chatterbox-t3-multilingual") ? t.add("chatterbox-t3-multilingual-q8_0") : a.includes("chatterbox-s3gen-multilingual") ? t.add("chatterbox-s3gen-multilingual-q8_0") : (a.includes("chatterbox-t3") || a.includes("chatterbox")) && t.add("chatterbox-t3-turbo-q8_0"), (a.includes("cosyvoice3-llm") || a.includes("cosy_voice")) && t.add("cosyvoice3-llm-q8_0"), (a.includes("cosyvoice3-flow-f16") || a.includes("cosyvoice3-flow-fp16") || a.includes("cosyvoice3-flow-f32") || a.includes("cosyvoice3-flow")) && t.add("cosyvoice3-flow-fp16"), (a.includes("lavasr") || a.includes("enhancer")) && t.add("lavasr-enhancer"), (a.includes("cosyvoice3-s3tok") || a.includes("s3tok")) && t.add("cosyvoice3-s3tok-fp16"), (a.includes("cosyvoice3-campplus") || a.includes("campplus")) && t.add("cosyvoice3-campplus-fp32"), (a.includes("qwen3-embedding") || a.includes("qwen3_embedding")) && t.add("audiogen-qwen3-embedding"), (a.includes("acestep-5hz") || a.includes("acestep_5hz")) && t.add("audiogen-acestep-5hz-lm"), (a.includes("acestep-v15-turbo") || a.includes("acestep_v15_turbo") || a.includes("turbo-q4_k_m")) && t.add("audiogen-acestep-turbo-dit"), (a.includes("vae-bf16") || a.includes("audiogen-vae") || a.includes("audiogen_vae")) && t.add("audiogen-vae-bf16"), (a.includes("mm3-lm") || a.includes("minimax") && (a.includes("transformer") || a.includes("lm"))) && !a.includes("vocoder") && !a.includes("synth") && t.add("minimax-music-v3-transformer"), (a.includes("mm3-synth") || a.includes("minimax") && (a.includes("vocoder") || a.includes("synth"))) && !a.includes("transformer") && !a.includes("lm") && t.add("minimax-music-vocoder"));
-        }, i = g.readdirSync(this.cacheDir);
-        for (const o of i) {
+          c.isFile() && c.size > 1024 * 1024 && (a.includes("parler-large-v1-f16") || a.includes("parler-large-v1-fp16") ? t.add("chatterbox-t3-turbo-q8_0") : a.includes("chatterbox-s3gen-q8") || a.includes("chatterbox-s3gen") ? t.add("chatterbox-s3gen-q8_0") : a.includes("chatterbox-t3-multilingual") ? t.add("chatterbox-t3-multilingual-q8_0") : a.includes("chatterbox-s3gen-multilingual") ? t.add("chatterbox-s3gen-multilingual-q8_0") : (a.includes("chatterbox-t3") || a.includes("chatterbox")) && t.add("chatterbox-t3-turbo-q8_0"), (a.includes("cosyvoice3-llm") || a.includes("cosy_voice")) && t.add("cosyvoice3-llm-q8_0"), (a.includes("cosyvoice3-flow-f16") || a.includes("cosyvoice3-flow-fp16") || a.includes("cosyvoice3-flow-f32") || a.includes("cosyvoice3-flow")) && t.add("cosyvoice3-flow-fp16"), (a.includes("lavasr") || a.includes("enhancer")) && t.add("lavasr-enhancer"), (a.includes("cosyvoice3-s3tok") || a.includes("s3tok")) && t.add("cosyvoice3-s3tok-fp16"), (a.includes("cosyvoice3-campplus") || a.includes("campplus")) && t.add("cosyvoice3-campplus-fp32"), (a.includes("qwen3-embedding") || a.includes("qwen3_embedding")) && t.add("audiogen-qwen3-embedding"), (a.includes("acestep-5hz") || a.includes("acestep_5hz")) && t.add("audiogen-acestep-5hz-lm"), (a.includes("acestep-v15-turbo") || a.includes("acestep_v15_turbo") || a.includes("turbo-q4_k_m")) && t.add("audiogen-acestep-turbo-dit"), (a.includes("vae-bf16") || a.includes("audiogen-vae") || a.includes("audiogen_vae")) && t.add("audiogen-vae-bf16"), (a.includes("mm3-lm") || a.includes("minimax") && (a.includes("transformer") || a.includes("lm"))) && !a.includes("vocoder") && !a.includes("synth") && t.add("minimax-music-v3-transformer"), (a.includes("mm3-synth") || a.includes("minimax") && (a.includes("vocoder") || a.includes("synth"))) && !a.includes("transformer") && !a.includes("lm") && t.add("minimax-music-vocoder"), (a.includes("qwen3-1.7b") || a.includes("qwen3_1.7b") || a.includes("qwen3-1_7b") || a.includes("qwen3-1-7b")) && a.endsWith(".gguf") && t.add("qwen3-1.7b-lyric-generator"));
+        }, s = g.readdirSync(this.cacheDir);
+        for (const o of s) {
           const n = y.join(this.cacheDir, o);
-          s(n, o);
+          i(n, o);
         }
         const r = y.join(this.cacheDir, "sets");
         if (g.existsSync(r)) {
@@ -432,7 +443,7 @@ class Te {
                 const c = g.readdirSync(a);
                 for (const l of c) {
                   const d = y.join(a, l);
-                  s(d, l);
+                  i(d, l);
                 }
               }
             } catch {
@@ -442,7 +453,7 @@ class Te {
         for (const o of t)
           this.downloadedModelIds.has(o) || (this.downloadedModelIds.add(o), e = !0);
         for (const o of Array.from(this.downloadedModelIds))
-          (o.startsWith("minimax-") || o.startsWith("audiogen-")) && !t.has(o) && (this.downloadedModelIds.delete(o), e = !0);
+          (o.startsWith("minimax-") || o.startsWith("audiogen-") || o.startsWith("qwen3-")) && !t.has(o) && (this.downloadedModelIds.delete(o), e = !0);
       }
     } catch (t) {
       console.warn("[ModelsService] Error syncing cache from disk:", t);
@@ -456,30 +467,30 @@ class Te {
    */
   getStatus(e) {
     this.syncCacheFromDisk();
-    const t = this.modelDefinitions.map((i) => {
-      const r = this.downloadedModelIds.has(i.id), o = this.activeDownloads.has(i.id), n = e ? e === "cosyvoice3" ? i.engine === "cosyvoice3" && i.id !== "cosyvoice3-flow-fp16" || i.engine === "shared" : e === "chatterbox" ? i.engine === "chatterbox" && (i.id === "chatterbox-t3-turbo-q8_0" || i.id === "chatterbox-s3gen-q8_0") : i.engine === e : i.category === "backbone";
+    const t = this.modelDefinitions.map((s) => {
+      const r = this.downloadedModelIds.has(s.id), o = this.activeDownloads.has(s.id), n = e ? e === "cosyvoice3" ? s.engine === "cosyvoice3" && s.id !== "cosyvoice3-flow-fp16" || s.engine === "shared" : e === "chatterbox" ? s.engine === "chatterbox" && (s.id === "chatterbox-t3-turbo-q8_0" || s.id === "chatterbox-s3gen-q8_0") : s.engine === e : s.category === "backbone";
       return {
-        ...i,
+        ...s,
         required: n,
         downloaded: r,
         status: o ? "downloading" : r ? "ready" : "idle"
       };
     });
-    let s = !1;
+    let i = !1;
     if (e === "chatterbox") {
-      const i = t.some(
+      const s = t.some(
         (o) => o.engine === "chatterbox" && o.category === "backbone" && o.downloaded
       ), r = t.some(
         (o) => o.engine === "chatterbox" && o.category === "vocoder" && o.downloaded
       );
-      s = i && r;
+      i = s && r;
     } else {
-      const i = e ? t.filter((r) => r.required) : t.filter((r) => r.category === "backbone");
-      s = i.length > 0 && i.every((r) => r.downloaded);
+      const s = e ? t.filter((r) => r.required) : t.filter((r) => r.category === "backbone");
+      i = s.length > 0 && s.every((r) => r.downloaded);
     }
     return {
-      ready: s,
-      allRequiredDownloaded: s,
+      ready: i,
+      allRequiredDownloaded: i,
       models: t,
       cacheDirectory: this.cacheDir
     };
@@ -495,32 +506,32 @@ class Te {
    * Correctly handles single-file, sharded, and companion set downloads with smooth monotonic percentages.
    */
   async downloadModel(e, t) {
-    const s = this.modelDefinitions.find((n) => n.id === e);
-    if (!s)
+    const i = this.modelDefinitions.find((n) => n.id === e);
+    if (!i)
       return { success: !1, modelId: e, error: `Unknown model ID: ${e}` };
     if (this.syncCacheFromDisk(), this.downloadedModelIds.has(e))
       return t == null || t({
         modelId: e,
         percentage: 100,
-        downloaded: s.sizeBytes,
-        total: s.sizeBytes,
+        downloaded: i.sizeBytes,
+        total: i.sizeBytes,
         speed: "Ready"
       }), { success: !0, modelId: e };
-    if (s.engine === "minimax")
-      return await this.downloadMiniMaxModel(e, s, t);
-    let i = !1, r = 0, o = s.sizeBytes;
+    if (i.engine === "minimax")
+      return await this.downloadMiniMaxModel(e, i, t);
+    let s = !1, r = 0, o = i.sizeBytes;
     this.activeDownloads.set(e, {
       cancel: () => {
-        i = !0;
+        s = !0;
       }
     });
     try {
-      const a = v[s.descriptorName] || null;
+      const a = v[i.descriptorName] || null;
       if (!a || typeof v.downloadAsset != "function")
         return {
           success: !1,
           modelId: e,
-          error: `No asset descriptor found for ${e} (${s.descriptorName})`
+          error: `No asset descriptor found for ${e} (${i.descriptorName})`
         };
       let c = null;
       for (let l = 1; l <= 2; l++)
@@ -528,27 +539,27 @@ class Te {
           const d = v.downloadAsset({
             assetSrc: a,
             onProgress: (u) => {
-              var _, D, T, x, M, E, p, $;
-              if (i) return;
-              const m = ((_ = u.fileSetInfo) == null ? void 0 : _.overallPercentage) ?? ((D = u.shardInfo) == null ? void 0 : D.overallPercentage) ?? (u.fileSetInfo || u.shardInfo ? 0 : u.percentage ?? 0), f = ((T = u.fileSetInfo) == null ? void 0 : T.overallTotal) ?? ((x = u.shardInfo) == null ? void 0 : x.overallTotal) ?? u.total ?? s.sizeBytes;
+              var x, _, I, $, T, E, L, w;
+              if (s) return;
+              const h = ((x = u.fileSetInfo) == null ? void 0 : x.overallPercentage) ?? ((_ = u.shardInfo) == null ? void 0 : _.overallPercentage) ?? (u.fileSetInfo || u.shardInfo ? 0 : u.percentage ?? 0), f = ((I = u.fileSetInfo) == null ? void 0 : I.overallTotal) ?? (($ = u.shardInfo) == null ? void 0 : $.overallTotal) ?? u.total ?? i.sizeBytes;
               o = f;
-              const S = ((M = u.fileSetInfo) == null ? void 0 : M.overallDownloaded) ?? ((E = u.shardInfo) == null ? void 0 : E.overallDownloaded) ?? u.downloaded ?? Math.round((m || 0) / 100 * f), C = Math.min(99, Math.max(1, Math.round(m || 0)));
-              r = Math.max(r, C);
-              let L = u.speed || "Downloading...";
-              (p = u.fileSetInfo) != null && p.currentFile ? L = `${u.fileSetInfo.currentFile} (${u.fileSetInfo.fileIndex}/${u.fileSetInfo.totalFiles})` : ($ = u.shardInfo) != null && $.shardName && (L = `${u.shardInfo.shardName} (${u.shardInfo.currentShard}/${u.shardInfo.totalShards})`);
-              const N = S >= f && f > 0 || m >= 100;
+              const p = ((T = u.fileSetInfo) == null ? void 0 : T.overallDownloaded) ?? ((E = u.shardInfo) == null ? void 0 : E.overallDownloaded) ?? u.downloaded ?? Math.round((h || 0) / 100 * f), b = Math.min(99, Math.max(1, Math.round(h || 0)));
+              r = Math.max(r, b);
+              let M = u.speed || "Downloading...";
+              (L = u.fileSetInfo) != null && L.currentFile ? M = `${u.fileSetInfo.currentFile} (${u.fileSetInfo.fileIndex}/${u.fileSetInfo.totalFiles})` : (w = u.shardInfo) != null && w.shardName && (M = `${u.shardInfo.shardName} (${u.shardInfo.currentShard}/${u.shardInfo.totalShards})`);
+              const N = p >= f && f > 0 || h >= 100;
               N && (this.downloadedModelIds.add(e), this.syncCacheFromDisk(), this.saveState()), t == null || t({
                 modelId: e,
                 percentage: N ? 100 : r,
-                downloaded: S,
+                downloaded: p,
                 total: f,
-                speed: N ? "Completed" : L
+                speed: N ? "Completed" : M
               });
             }
           });
           d && d.requestId && this.activeDownloads.set(e, {
             cancel: () => {
-              i = !0;
+              s = !0;
               try {
                 typeof v.cancel == "function" && v.cancel({
                   requestId: d.requestId
@@ -559,14 +570,14 @@ class Te {
           }), await d, c = null;
           break;
         } catch (d) {
-          if (c = d, String((d == null ? void 0 : d.message) || d).includes("could not be locked") && l === 1 && !i) {
-            console.warn(`[ModelsService] Registry lock conflict for ${e}. Retrying in 1.2s...`), await new Promise((m) => setTimeout(m, 1200));
+          if (c = d, String((d == null ? void 0 : d.message) || d).includes("could not be locked") && l === 1 && !s) {
+            console.warn(`[ModelsService] Registry lock conflict for ${e}. Retrying in 1.2s...`), await new Promise((h) => setTimeout(h, 1200));
             continue;
           }
           throw d;
         }
       if (c) throw c;
-      return i ? { success: !1, modelId: e, error: "Download cancelled" } : (this.downloadedModelIds.add(e), this.syncCacheFromDisk(), this.saveState(), t == null || t({
+      return s ? { success: !1, modelId: e, error: "Download cancelled" } : (this.downloadedModelIds.add(e), this.syncCacheFromDisk(), this.saveState(), t == null || t({
         modelId: e,
         percentage: 100,
         downloaded: o,
@@ -602,9 +613,9 @@ class Te {
       if (g.existsSync(this.cacheDir)) {
         const e = g.readdirSync(this.cacheDir);
         for (const t of e) {
-          const s = y.join(this.cacheDir, t);
+          const i = y.join(this.cacheDir, t);
           try {
-            g.statSync(s).isDirectory() ? g.rmSync(s, { recursive: !0, force: !0 }) : g.unlinkSync(s);
+            g.statSync(i).isDirectory() ? g.rmSync(i, { recursive: !0, force: !0 }) : g.unlinkSync(i);
           } catch {
           }
         }
@@ -624,7 +635,7 @@ class Te {
    * Directly downloads MiniMax-Music3 GGUF models from Hugging Face repository
    * with streaming progress, real byte metrics, and cancellation support.
    */
-  async downloadMiniMaxModel(e, t, s) {
+  async downloadMiniMaxModel(e, t, i) {
     const r = {
       "minimax-music-v3-transformer": {
         url: "https://huggingface.co/scragnog/MiniMax-Music3-GGUF/resolve/main/mm3-lm-Q4_K_M-imat.gguf",
@@ -633,6 +644,10 @@ class Te {
       "minimax-music-vocoder": {
         url: "https://huggingface.co/scragnog/MiniMax-Music3-GGUF/resolve/main/mm3-synth-Q4_K_M.gguf",
         filename: "mm3-synth-Q4_K_M.gguf"
+      },
+      "qwen3-1.7b-lyric-generator": {
+        url: "https://huggingface.co/unsloth/Qwen3-1.7B-GGUF/resolve/main/Qwen3-1.7B-Q4_0.gguf",
+        filename: "Qwen3-1.7B-Q4_0.gguf"
       }
     }[e];
     if (!r)
@@ -646,13 +661,25 @@ class Te {
     const o = y.join(this.cacheDir, r.filename), n = y.join(this.cacheDir, `${r.filename}.download`);
     try {
       if (g.existsSync(o)) {
-        const d = g.statSync(o);
-        if (d.size > 1024 * 1024)
-          return this.downloadedModelIds.add(e), this.syncCacheFromDisk(), this.saveState(), s == null || s({
+        const h = g.statSync(o);
+        if (h.size > 1024 * 1024)
+          return this.downloadedModelIds.add(e), this.syncCacheFromDisk(), this.saveState(), i == null || i({
             modelId: e,
             percentage: 100,
-            downloaded: d.size,
-            total: d.size,
+            downloaded: h.size,
+            total: h.size,
+            speed: "Ready"
+          }), { success: !0, modelId: e };
+      }
+      const u = g.readdirSync(this.cacheDir).find((h) => h.toLowerCase().endsWith(r.filename.toLowerCase()));
+      if (u) {
+        const h = g.statSync(y.join(this.cacheDir, u));
+        if (h.size > 1024 * 1024)
+          return this.downloadedModelIds.add(e), this.syncCacheFromDisk(), this.saveState(), i == null || i({
+            modelId: e,
+            percentage: 100,
+            downloaded: h.size,
+            total: h.size,
             speed: "Ready"
           }), { success: !0, modelId: e };
       }
@@ -677,60 +704,60 @@ class Te {
       });
       if (!d.ok || !d.body)
         throw new Error(`Failed to fetch ${r.url}: HTTP ${d.status} ${d.statusText}`);
-      const u = d.headers.get("content-length"), m = u ? parseInt(u, 10) : t.sizeBytes;
+      const u = d.headers.get("content-length"), h = u ? parseInt(u, 10) : t.sizeBytes;
       l = g.createWriteStream(n);
       const f = d.body.getReader();
-      let S = 0, C = Date.now(), L = 0, N = "Starting...";
-      for (s == null || s({
+      let p = 0, b = Date.now(), M = 0, N = "Starting...";
+      for (i == null || i({
         modelId: e,
         percentage: 1,
         downloaded: 0,
-        total: m,
+        total: h,
         speed: N
       }); ; ) {
         if (c)
           throw new Error("Download cancelled");
-        const { done: x, value: M } = await f.read();
-        if (x) break;
-        if (M && M.length > 0) {
-          const E = l.write(Buffer.from(M));
-          S += M.length, E || await new Promise((I) => l.once("drain", I));
-          const p = Date.now(), $ = p - C;
-          if ($ >= 400 || S >= m) {
-            const I = S - L, k = $ / 1e3;
-            N = `${(I / Math.max(0.1, k) / (1024 * 1024)).toFixed(1)} MB/s`, C = p, L = S;
-            const W = m > 0 ? Math.min(99, Math.max(1, Math.round(S / m * 100))) : 0;
-            s == null || s({
+        const { done: $, value: T } = await f.read();
+        if ($) break;
+        if (T && T.length > 0) {
+          const E = l.write(Buffer.from(T));
+          p += T.length, E || await new Promise((U) => l.once("drain", U));
+          const L = Date.now(), w = L - b;
+          if (w >= 400 || p >= h) {
+            const U = p - M, D = w / 1e3;
+            N = `${(U / Math.max(0.1, D) / (1024 * 1024)).toFixed(1)} MB/s`, b = L, M = p;
+            const F = h > 0 ? Math.min(99, Math.max(1, Math.round(p / h * 100))) : 0;
+            i == null || i({
               modelId: e,
-              percentage: W,
-              downloaded: S,
-              total: m,
+              percentage: F,
+              downloaded: p,
+              total: h,
               speed: N
             });
           }
         }
       }
-      if (await new Promise((x, M) => {
-        if (!l) return x();
-        l.on("finish", x), l.on("error", M), l.end();
+      if (await new Promise(($, T) => {
+        if (!l) return $();
+        l.on("finish", $), l.on("error", T), l.end();
       }), l = null, c)
         throw new Error("Download cancelled");
-      const _ = g.statSync(n);
-      if (_.size < 1024 * 1024)
-        throw new Error(`Downloaded file size (${_.size} bytes) is too small. Corrupt or incomplete download.`);
-      const D = g.openSync(n, "r"), T = Buffer.alloc(4);
-      if (g.readSync(D, T, 0, 4, 0), g.closeSync(D), T.toString("ascii") !== "GGUF")
-        throw new Error(`Downloaded file is not a valid GGUF binary (magic: ${T.toString("ascii")})`);
+      const x = g.statSync(n);
+      if (x.size < 1024 * 1024)
+        throw new Error(`Downloaded file size (${x.size} bytes) is too small. Corrupt or incomplete download.`);
+      const _ = g.openSync(n, "r"), I = Buffer.alloc(4);
+      if (g.readSync(_, I, 0, 4, 0), g.closeSync(_), I.toString("ascii") !== "GGUF")
+        throw new Error(`Downloaded file is not a valid GGUF binary (magic: ${I.toString("ascii")})`);
       if (g.existsSync(o))
         try {
           g.unlinkSync(o);
         } catch {
         }
-      return g.renameSync(n, o), this.downloadedModelIds.add(e), this.syncCacheFromDisk(), this.saveState(), s == null || s({
+      return g.renameSync(n, o), this.downloadedModelIds.add(e), this.syncCacheFromDisk(), this.saveState(), i == null || i({
         modelId: e,
         percentage: 100,
-        downloaded: m,
-        total: m,
+        downloaded: h,
+        total: h,
         speed: "Completed"
       }), { success: !0, modelId: e };
     } catch (d) {
@@ -756,26 +783,26 @@ class Te {
     }
   }
 }
-class tt extends ie {
+class tt extends ne {
   constructor(e) {
     super(), this.modelsService = e;
   }
   init() {
-    A.handle(
-      w.MODELS_GET_STATUS,
+    C.handle(
+      S.MODELS_GET_STATUS,
       async (e, t) => {
         try {
           return { success: !0, data: this.modelsService.getStatus(t == null ? void 0 : t.engine) };
-        } catch (s) {
-          return { success: !1, error: String(s) };
+        } catch (i) {
+          return { success: !1, error: String(i) };
         }
       }
-    ), A.handle(
-      w.MODELS_DOWNLOAD,
+    ), C.handle(
+      S.MODELS_DOWNLOAD,
       async (e, t) => {
-        const s = (i) => {
+        const i = (s) => {
           try {
-            e.sender.isDestroyed() || e.sender.send(w.MODELS_DOWNLOAD_PROGRESS, i);
+            e.sender.isDestroyed() || e.sender.send(S.MODELS_DOWNLOAD_PROGRESS, s);
           } catch (r) {
             console.warn("[ModelsController] Failed to send download progress:", r);
           }
@@ -783,24 +810,24 @@ class tt extends ie {
         if (t != null && t.allRequired) {
           const r = this.modelsService.getStatus(t == null ? void 0 : t.engine).models.filter((o) => o.required && !o.downloaded);
           for (const o of r)
-            await this.modelsService.downloadModel(o.id, s);
+            await this.modelsService.downloadModel(o.id, i);
           return { success: !0, data: this.modelsService.getStatus(t == null ? void 0 : t.engine) };
         }
-        return t != null && t.modelId ? { ...await this.modelsService.downloadModel(t.modelId, s), data: this.modelsService.getStatus(t == null ? void 0 : t.engine) } : { success: !1, error: "No modelId or allRequired flag specified" };
+        return t != null && t.modelId ? { ...await this.modelsService.downloadModel(t.modelId, i), data: this.modelsService.getStatus(t == null ? void 0 : t.engine) } : { success: !1, error: "No modelId or allRequired flag specified" };
       }
-    ), A.handle(
-      w.MODELS_CANCEL_DOWNLOAD,
+    ), C.handle(
+      S.MODELS_CANCEL_DOWNLOAD,
       async (e, { modelId: t }) => ({ success: this.modelsService.cancelDownload(t), modelId: t })
-    ), A.handle(
-      w.MODELS_GET_INFO,
+    ), C.handle(
+      S.MODELS_GET_INFO,
       async (e, { name: t }) => {
         try {
           return { success: !0, data: await this.modelsService.getModelInfo(t) };
-        } catch (s) {
-          return { success: !1, error: String(s) };
+        } catch (i) {
+          return { success: !1, error: String(i) };
         }
       }
-    ), A.handle(w.MODELS_DELETE_ALL, async () => {
+    ), C.handle(S.MODELS_DELETE_ALL, async () => {
       try {
         return await this.modelsService.deleteAllModels(), { success: !0 };
       } catch (e) {
@@ -809,9 +836,9 @@ class tt extends ie {
     });
   }
 }
-class st {
+class it {
   constructor(e) {
-    b(this, "repository");
+    A(this, "repository");
     this.repository = e;
   }
   getRepository() {
@@ -827,12 +854,12 @@ class st {
     const e = process.env.VITE_PUBLIC || y.join(process.cwd(), "public"), t = [
       y.join(e, "voices", "samples"),
       y.join(process.cwd(), "public", "voices", "samples"),
-      y.join(U.getAppPath(), "public", "voices", "samples"),
-      y.join(U.getAppPath(), "dist", "voices", "samples")
+      y.join(O.getAppPath(), "public", "voices", "samples"),
+      y.join(O.getAppPath(), "dist", "voices", "samples")
     ];
-    for (const s of t)
-      if (g.existsSync(s))
-        return s;
+    for (const i of t)
+      if (g.existsSync(i))
+        return i;
     return null;
   }
   /**
@@ -844,30 +871,30 @@ class st {
       const e = this.getSamplesDirectory();
       if (!e)
         return console.warn("[VoiceService] Samples directory not found"), { success: !1, packages: [], error: "Samples folder not found" };
-      const t = g.readdirSync(e, { withFileTypes: !0 }), s = [];
-      for (const i of t) {
-        if (!i.isDirectory()) continue;
-        const r = y.join(e, i.name), o = y.join(r, "info.json"), n = y.join(r, "json.info"), a = g.existsSync(o) ? o : g.existsSync(n) ? n : null;
+      const t = g.readdirSync(e, { withFileTypes: !0 }), i = [];
+      for (const s of t) {
+        if (!s.isDirectory()) continue;
+        const r = y.join(e, s.name), o = y.join(r, "info.json"), n = y.join(r, "json.info"), a = g.existsSync(o) ? o : g.existsSync(n) ? n : null;
         if (a)
           try {
             const c = g.readFileSync(a, "utf-8"), l = JSON.parse(c), d = l.list || l.location || (g.existsSync(y.join(r, "json", "voices.json")) ? "json/voices.json" : "voices.json");
-            s.push({
-              folder: i.name,
-              language: l.language || i.name,
-              name: l.name || l.language || i.name,
+            i.push({
+              folder: s.name,
+              language: l.language || s.name,
+              name: l.name || l.language || s.name,
               flag: l.flag || "🌐",
-              code: l.code || i.name,
+              code: l.code || s.name,
               nativeName: l.nativeName || l.name || l.language,
               list: d,
               location: d,
-              listUrl: `/voices/samples/${i.name}/${d.replace(/^\//, "")}`,
+              listUrl: `/voices/samples/${s.name}/${d.replace(/^\//, "")}`,
               count: l.count || 0
             });
           } catch (c) {
             console.warn(`[VoiceService] Failed to parse info.json in ${r}:`, c);
           }
       }
-      return { success: !0, packages: s };
+      return { success: !0, packages: i };
     } catch (e) {
       return console.error("[VoiceService] Failed to scan voice samples:", e), { success: !1, packages: [], error: String(e) };
     }
@@ -877,20 +904,20 @@ class st {
    */
   loadVoicesForPackage(e, t = "json/voices.json") {
     try {
-      const s = this.getSamplesDirectory();
-      if (!s)
+      const i = this.getSamplesDirectory();
+      if (!i)
         return { success: !1, voices: [], error: "Samples directory not found" };
-      const i = t.replace(/^\//, ""), o = [
-        y.join(s, e, i),
-        y.join(s, e, "json", "voices.json"),
-        y.join(s, e, "voices.json")
+      const s = t.replace(/^\//, ""), o = [
+        y.join(i, e, s),
+        y.join(i, e, "json", "voices.json"),
+        y.join(i, e, "voices.json")
       ].find((l) => g.existsSync(l));
       if (!o)
         return { success: !1, voices: [], error: `Voice list not found for folder ${e}` };
       const n = g.readFileSync(o, "utf-8"), a = JSON.parse(n);
       return { success: !0, voices: Array.isArray(a) ? a : a.voices || [] };
-    } catch (s) {
-      return console.error(`[VoiceService] Failed to load voices for ${e}:`, s), { success: !1, voices: [], error: String(s) };
+    } catch (i) {
+      return console.error(`[VoiceService] Failed to load voices for ${e}:`, i), { success: !1, voices: [], error: String(i) };
     }
   }
   /**
@@ -906,14 +933,14 @@ class st {
    */
   async saveCustomVoice(e) {
     try {
-      const t = this.getCustomVoicesDirectory(), s = (e.fileName || "sample.wav").replace(/[^a-zA-Z0-9._-]/g, "_"), i = y.extname(s).toLowerCase() || ".wav", r = Date.now(), o = `voice_${e.voiceId}_${r}${i}`, n = y.join(t, o), a = Buffer.isBuffer(e.audioBuffer) ? e.audioBuffer : Buffer.from(e.audioBuffer);
+      const t = this.getCustomVoicesDirectory(), i = (e.fileName || "sample.wav").replace(/[^a-zA-Z0-9._-]/g, "_"), s = y.extname(i).toLowerCase() || ".wav", r = Date.now(), o = `voice_${e.voiceId}_${r}${s}`, n = y.join(t, o), a = Buffer.isBuffer(e.audioBuffer) ? e.audioBuffer : Buffer.from(e.audioBuffer);
       g.writeFileSync(n, a);
       let c = n, l = `/voices/custom/${o}`;
-      if (i !== ".wav") {
-        const u = `voice_${e.voiceId}_${r}.wav`, m = y.join(t, u);
+      if (s !== ".wav") {
+        const u = `voice_${e.voiceId}_${r}.wav`, h = y.join(t, u);
         try {
           const { execFileSync: f } = await import("node:child_process");
-          f("afconvert", ["-f", "WAVE", "-d", "LEI16@24000", "-c", "1", n, m]), g.existsSync(m) && g.statSync(m).size > 100 && (c = m, l = `/voices/custom/${u}`);
+          f("afconvert", ["-f", "WAVE", "-d", "LEI16@24000", "-c", "1", n, h]), g.existsSync(h) && g.statSync(h).size > 100 && (c = h, l = `/voices/custom/${u}`);
         } catch (f) {
           console.warn("[VoiceService] Audio conversion fallback, using original file:", f);
         }
@@ -922,8 +949,8 @@ class st {
       if (e.avatarBuffer) {
         const u = Buffer.isBuffer(e.avatarBuffer) ? e.avatarBuffer : Buffer.from(e.avatarBuffer);
         if (u.byteLength > 0) {
-          const m = y.extname(e.avatarFileName || ".jpg").toLowerCase() || ".jpg", f = `avatar_${e.voiceId}_${r}${m}`, S = y.join(t, f);
-          g.writeFileSync(S, u), d = `/voices/custom/${f}`;
+          const h = y.extname(e.avatarFileName || ".jpg").toLowerCase() || ".jpg", f = `avatar_${e.voiceId}_${r}${h}`, p = y.join(t, f);
+          g.writeFileSync(p, u), d = `/voices/custom/${f}`;
         }
       }
       return this.repository && await this.repository.saveCustomVoice({
@@ -951,11 +978,11 @@ class st {
       this.repository && await this.repository.deleteCustomVoice(e);
       const t = this.getCustomVoicesDirectory();
       if (g.existsSync(t)) {
-        const s = g.readdirSync(t);
-        for (const i of s)
-          if (i.includes(`_${e}_`))
+        const i = g.readdirSync(t);
+        for (const s of i)
+          if (s.includes(`_${e}_`))
             try {
-              g.unlinkSync(y.join(t, i));
+              g.unlinkSync(y.join(t, s));
             } catch {
             }
       }
@@ -965,9 +992,9 @@ class st {
     }
   }
 }
-class it {
+class st {
   constructor(e) {
-    b(this, "db");
+    A(this, "db");
     this.db = e;
   }
   /**
@@ -1055,21 +1082,21 @@ class it {
     }
   }
 }
-class rt extends ie {
+class rt extends ne {
   constructor(e) {
     super(), this.voiceService = e;
   }
   init() {
-    A.handle(w.VOICES_SCAN, async () => this.voiceService.scanVoicePackages()), A.handle(w.LEGACY_SCAN_VOICE_SAMPLES, async () => this.voiceService.scanVoicePackages()), A.handle(
-      w.VOICES_LOAD,
-      async (e, { folder: t, list: s }) => this.voiceService.loadVoicesForPackage(t, s)
-    ), A.handle(
-      w.VOICES_SAVE_CUSTOM,
+    C.handle(S.VOICES_SCAN, async () => this.voiceService.scanVoicePackages()), C.handle(S.LEGACY_SCAN_VOICE_SAMPLES, async () => this.voiceService.scanVoicePackages()), C.handle(
+      S.VOICES_LOAD,
+      async (e, { folder: t, list: i }) => this.voiceService.loadVoicesForPackage(t, i)
+    ), C.handle(
+      S.VOICES_SAVE_CUSTOM,
       async (e, t) => this.voiceService.saveCustomVoice(t)
-    ), A.handle(
-      w.VOICES_DELETE_CUSTOM,
+    ), C.handle(
+      S.VOICES_DELETE_CUSTOM,
       async (e, { voiceId: t }) => this.voiceService.deleteCustomVoice(t)
-    ), A.handle(w.VOICES_LIST_CUSTOM, async () => {
+    ), C.handle(S.VOICES_LIST_CUSTOM, async () => {
       try {
         return { success: !0, data: await this.voiceService.listCustomVoices() };
       } catch (e) {
@@ -1078,129 +1105,129 @@ class rt extends ie {
     });
   }
 }
-function nt(h, e) {
+function nt(m, e) {
   e = Number.isFinite(e) && e > 0 ? Math.round(e) : 24e3;
-  const t = h.length, s = 44, i = t * 2, r = Buffer.alloc(s + i);
-  r.write("RIFF", 0), r.writeUInt32LE(s + i - 8, 4), r.write("WAVE", 8), r.write("fmt ", 12), r.writeUInt32LE(16, 16), r.writeUInt16LE(1, 20), r.writeUInt16LE(1, 22), r.writeUInt32LE(e, 24), r.writeUInt32LE(e * 2, 28), r.writeUInt16LE(2, 32), r.writeUInt16LE(16, 34), r.write("data", 36), r.writeUInt32LE(i, 40);
+  const t = m.length, i = 44, s = t * 2, r = Buffer.alloc(i + s);
+  r.write("RIFF", 0), r.writeUInt32LE(i + s - 8, 4), r.write("WAVE", 8), r.write("fmt ", 12), r.writeUInt32LE(16, 16), r.writeUInt16LE(1, 20), r.writeUInt16LE(1, 22), r.writeUInt32LE(e, 24), r.writeUInt32LE(e * 2, 28), r.writeUInt16LE(2, 32), r.writeUInt16LE(16, 34), r.write("data", 36), r.writeUInt32LE(s, 40);
   for (let o = 0; o < t; o++) {
-    const n = Number.isFinite(h[o]) ? Math.round(h[o]) : 0, a = Math.max(-32768, Math.min(32767, n));
-    r.writeInt16LE(a, s + o * 2);
+    const n = Number.isFinite(m[o]) ? Math.round(m[o]) : 0, a = Math.max(-32768, Math.min(32767, n));
+    r.writeInt16LE(a, i + o * 2);
   }
   return `data:audio/wav;base64,${r.toString("base64")}`;
 }
-function ot(h, e) {
-  if (e = Math.max(1, Math.floor(e)), h.length === 0) return Array(e).fill(4);
-  const t = [], s = Math.max(1, Math.floor(h.length / e));
-  for (let i = 0; i < e; i++) {
+function ot(m, e) {
+  if (e = Math.max(1, Math.floor(e)), m.length === 0) return Array(e).fill(4);
+  const t = [], i = Math.max(1, Math.floor(m.length / e));
+  for (let s = 0; s < e; s++) {
     let r = 0;
-    const o = i * s, n = Math.min(h.length, o + s);
+    const o = s * i, n = Math.min(m.length, o + i);
     for (let a = o; a < n; a += Math.max(1, Math.floor((n - o) / 40))) {
-      const c = Math.abs(h[a] / 32768);
+      const c = Math.abs(m[a] / 32768);
       c > r && (r = c);
     }
     t.push(Math.max(4, Math.min(98, Math.round(r * 100))));
   }
   return t;
 }
-function Ae(h, e, t) {
+function De(m, e, t) {
   e = Number.isFinite(e) && e > 0 ? Math.round(e) : 24e3;
-  const s = h.length, i = 44, r = s * 2, o = Buffer.alloc(i + r);
-  o.write("RIFF", 0), o.writeUInt32LE(i + r - 8, 4), o.write("WAVE", 8), o.write("fmt ", 12), o.writeUInt32LE(16, 16), o.writeUInt16LE(1, 20), o.writeUInt16LE(1, 22), o.writeUInt32LE(e, 24), o.writeUInt32LE(e * 2, 28), o.writeUInt16LE(2, 32), o.writeUInt16LE(16, 34), o.write("data", 36), o.writeUInt32LE(r, 40);
-  for (let d = 0; d < s; d++) {
-    const u = Number.isFinite(h[d]) ? Math.round(h[d]) : 0, m = Math.max(-32768, Math.min(32767, u));
-    o.writeInt16LE(m, i + d * 2);
+  const i = m.length, s = 44, r = i * 2, o = Buffer.alloc(s + r);
+  o.write("RIFF", 0), o.writeUInt32LE(s + r - 8, 4), o.write("WAVE", 8), o.write("fmt ", 12), o.writeUInt32LE(16, 16), o.writeUInt16LE(1, 20), o.writeUInt16LE(1, 22), o.writeUInt32LE(e, 24), o.writeUInt32LE(e * 2, 28), o.writeUInt16LE(2, 32), o.writeUInt16LE(16, 34), o.write("data", 36), o.writeUInt32LE(r, 40);
+  for (let d = 0; d < i; d++) {
+    const u = Number.isFinite(m[d]) ? Math.round(m[d]) : 0, h = Math.max(-32768, Math.min(32767, u));
+    o.writeInt16LE(h, s + d * 2);
   }
-  const n = h.reduce((d, u) => Math.max(d, Math.abs(u)), 0), a = y.resolve(process.cwd(), "assets/testing-voice-output");
+  const n = m.reduce((d, u) => Math.max(d, Math.abs(u)), 0), a = y.resolve(process.cwd(), "assets/testing-voice-output");
   g.mkdirSync(a, { recursive: !0 });
   const c = `${t}-${Date.now()}.wav`, l = y.join(a, c);
   return g.writeFileSync(l, o), console.log(
-    `[TTS Debug] Saved PCM to ${l} (${s} samples @ ${e}Hz, maxAbs=${n.toFixed(4)})`
+    `[TTS Debug] Saved PCM to ${l} (${i} samples @ ${e}Hz, maxAbs=${n.toFixed(4)})`
   ), l;
 }
-function ve(h, e) {
-  const t = Math.floor(e * Math.max(0.015, h)), s = new Array(t);
-  let i = 0;
+function Te(m, e) {
+  const t = Math.floor(e * Math.max(0.015, m)), i = new Array(t);
+  let s = 0;
   for (let o = 0; o < t; o++) {
     const n = (Math.random() * 2 - 1) * 5;
-    i = i * 0.85 + n * 0.15, s[o] = i;
+    s = s * 0.85 + n * 0.15, i[o] = s;
   }
   const r = Math.min(Math.floor(e * 8e-3), Math.floor(t / 2));
   for (let o = 0; o < r; o++) {
     const n = 0.5 * (1 - Math.cos(Math.PI * o / r));
-    s[o] *= n;
+    i[o] *= n;
     const a = 0.5 * (1 - Math.cos(Math.PI * (r - o) / r));
-    s[t - 1 - o] *= a;
+    i[t - 1 - o] *= a;
   }
-  return s;
+  return i;
 }
-function at(h, e, t = 18, s = 28) {
-  if (h.length === 0) return h;
-  let i = 0;
-  for (let l = 0; l < h.length; l++) {
-    const d = Math.abs(h[l]);
-    d > i && (i = d);
+function at(m, e, t = 18, i = 28) {
+  if (m.length === 0) return m;
+  let s = 0;
+  for (let l = 0; l < m.length; l++) {
+    const d = Math.abs(m[l]);
+    d > s && (s = d);
   }
-  if (i === 0) return h;
-  const r = Math.max(i * 8e-3, i > 2 ? 60 : 2e-3), o = Math.floor(e * t / 1e3), n = Math.floor(e * s / 1e3);
+  if (s === 0) return m;
+  const r = Math.max(s * 8e-3, s > 2 ? 60 : 2e-3), o = Math.floor(e * t / 1e3), n = Math.floor(e * i / 1e3);
   let a = 0;
-  for (let l = 0; l < h.length; l++)
-    if (Math.abs(h[l]) > r) {
+  for (let l = 0; l < m.length; l++)
+    if (Math.abs(m[l]) > r) {
       a = Math.max(0, l - o);
       break;
     }
-  let c = h.length;
-  for (let l = h.length - 1; l >= a; l--)
-    if (Math.abs(h[l]) > r) {
-      c = Math.min(h.length, l + 1 + n);
+  let c = m.length;
+  for (let l = m.length - 1; l >= a; l--)
+    if (Math.abs(m[l]) > r) {
+      c = Math.min(m.length, l + 1 + n);
       break;
     }
-  return a >= c || c - a < e * 0.08 ? h : h.slice(a, c);
+  return a >= c || c - a < e * 0.08 ? m : m.slice(a, c);
 }
-function le(h, e, t, s = 12) {
+function me(m, e, t, i = 12) {
   if (e.length === 0) return;
-  if (h.length === 0) {
-    for (let o = 0; o < e.length; o++) h.push(e[o]);
+  if (m.length === 0) {
+    for (let o = 0; o < e.length; o++) m.push(e[o]);
     return;
   }
-  const i = Math.min(
-    Math.floor(t * s / 1e3),
-    Math.floor(h.length / 2),
+  const s = Math.min(
+    Math.floor(t * i / 1e3),
+    Math.floor(m.length / 2),
     Math.floor(e.length / 2)
   );
-  if (i <= 0) {
-    for (let o = 0; o < e.length; o++) h.push(e[o]);
+  if (s <= 0) {
+    for (let o = 0; o < e.length; o++) m.push(e[o]);
     return;
   }
-  const r = h.length - i;
-  for (let o = 0; o < i; o++) {
-    const n = o / i, a = Math.cos(n * (Math.PI / 2)), c = Math.sin(n * (Math.PI / 2));
-    h[r + o] = h[r + o] * a + e[o] * c;
+  const r = m.length - s;
+  for (let o = 0; o < s; o++) {
+    const n = o / s, a = Math.cos(n * (Math.PI / 2)), c = Math.sin(n * (Math.PI / 2));
+    m[r + o] = m[r + o] * a + e[o] * c;
   }
-  for (let o = i; o < e.length; o++)
-    h.push(e[o]);
+  for (let o = s; o < e.length; o++)
+    m.push(e[o]);
 }
-function ct(h, e, t = "normal") {
-  let s = h, i = t;
+function ct(m, e, t = "normal") {
+  let i = m, s = t;
   const r = [];
-  if ((i === "whisper" || /\[(?:whisper|soft)\]/i.test(s)) && (i = "whisper", r.push("whisper"), s = s.replace(/\[\/?(?:whisper|soft)\]/gi, " ")), i === "yell" || /\[(?:yell|shout|loud)\]/i.test(s)) {
-    i = "yell", r.push("yell"), s = s.replace(/\[\/?(?:yell|shout|loud)\]/gi, " ");
-    const o = s.trim(), n = /[!?]$/.test(o) ? "" : "!";
-    s = `${o.toUpperCase()}${n}`;
+  if ((s === "whisper" || /\[(?:whisper|soft)\]/i.test(i)) && (s = "whisper", r.push("whisper"), i = i.replace(/\[\/?(?:whisper|soft)\]/gi, " ")), s === "yell" || /\[(?:yell|shout|loud)\]/i.test(i)) {
+    s = "yell", r.push("yell"), i = i.replace(/\[\/?(?:yell|shout|loud)\]/gi, " ");
+    const o = i.trim(), n = /[!?]$/.test(o) ? "" : "!";
+    i = `${o.toUpperCase()}${n}`;
   }
-  return (i === "raise" || /\[(?:raise|emphasis)\]/i.test(s) || /<\/?strong>/i.test(s)) && (i = "raise", r.push("raise")), s = s.replace(/\[\/?(?:laugh|laughter|giggle|chuckle)\]/gi, " "), s = s.replace(/<\/?laughter>/gi, " "), (/\[(?:sigh|breath)\]/i.test(s) || /<\/?breath>/i.test(s)) && r.push("breath"), /\[(?:hmm+|thinking)\]/i.test(s) && r.push("hmm"), /\[gasp\]/i.test(s) && r.push("gasp"), e === "cosyvoice3" ? (s = s.replace(/\[(?:breath|sigh)\]/gi, " <breath> "), s = s.replace(
+  return (s === "raise" || /\[(?:raise|emphasis)\]/i.test(i) || /<\/?strong>/i.test(i)) && (s = "raise", r.push("raise")), i = i.replace(/\[\/?(?:laugh|laughter|giggle|chuckle)\]/gi, " "), i = i.replace(/<\/?laughter>/gi, " "), (/\[(?:sigh|breath)\]/i.test(i) || /<\/?breath>/i.test(i)) && r.push("breath"), /\[(?:hmm+|thinking)\]/i.test(i) && r.push("hmm"), /\[gasp\]/i.test(i) && r.push("gasp"), e === "cosyvoice3" ? (i = i.replace(/\[(?:breath|sigh)\]/gi, " <breath> "), i = i.replace(
     /\[(?:raise|emphasis)\]([\s\S]*?)\[\/(?:raise|emphasis)\]/gi,
     "<strong>$1</strong>"
-  ), i === "raise" && !/<strong>[\s\S]*?<\/strong>/i.test(s) && (s = `<strong>${s.trim()}</strong>`), s = s.replace(/\[\/?(?:raise|emphasis)\]/gi, " "), s = s.replace(/\[(?:hmm+|thinking)\]/gi, "Hmm... "), s = s.replace(/\[gasp\]/gi, "<breath> "), s = s.replace(/(?:<breath>\s*)+<breath>/gi, "<breath>").replace(/\s+/g, " ").trim(), i === "whisper" && s.length > 0 && (s = `<breath> ${s.toLowerCase()} <breath>`)) : (s = s.replace(/<\/?(?:laughter|strong|breath)>/gi, " "), s = s.replace(
+  ), s === "raise" && !/<strong>[\s\S]*?<\/strong>/i.test(i) && (i = `<strong>${i.trim()}</strong>`), i = i.replace(/\[\/?(?:raise|emphasis)\]/gi, " "), i = i.replace(/\[(?:hmm+|thinking)\]/gi, "Hmm... "), i = i.replace(/\[gasp\]/gi, "<breath> "), i = i.replace(/(?:<breath>\s*)+<breath>/gi, "<breath>").replace(/\s+/g, " ").trim(), s === "whisper" && i.length > 0 && (i = `<breath> ${i.toLowerCase()} <breath>`)) : (i = i.replace(/<\/?(?:laughter|strong|breath)>/gi, " "), i = i.replace(
     /\[\/?(?:laugh|laughter|giggle|chuckle|breath|sigh|gasp|whisper|soft|yell|shout|loud|raise|emphasis)\]/gi,
     " "
-  ), r.includes("hmm") && (s = s.replace(/\[(?:hmm+|thinking)\]/gi, "Hmm... ")), (r.includes("breath") || r.includes("sigh") || r.includes("gasp")) && (s = s.replace(/\[(?:breath|sigh|gasp)\]/gi, "... ")), i === "raise" && (s = s.toUpperCase()), s = s.replace(/\s+/g, " ").replace(/\.{4,}/g, "...").trim(), i === "whisper" && s.length > 0 && (s = `... ${s.toLowerCase()} ...`)), { cleanedText: s, detectedCues: r, tone: i };
+  ), r.includes("hmm") && (i = i.replace(/\[(?:hmm+|thinking)\]/gi, "Hmm... ")), (r.includes("breath") || r.includes("sigh") || r.includes("gasp")) && (i = i.replace(/\[(?:breath|sigh|gasp)\]/gi, "... ")), s === "raise" && (i = i.toUpperCase()), i = i.replace(/\s+/g, " ").replace(/\.{4,}/g, "...").trim(), s === "whisper" && i.length > 0 && (i = `... ${i.toLowerCase()} ...`)), { cleanedText: i, detectedCues: r, tone: s };
 }
-function lt(h, e = 36) {
-  const t = h.trim();
+function lt(m, e = 36) {
+  const t = m.trim();
   if (!t) return [];
-  const s = t.replace(/<\/?[a-z0-9_-]+>/gi, " ").trim();
-  if (s.split(/\s+/).filter(Boolean).length <= e) {
-    const a = /[.!?]$/.test(s);
+  const i = t.replace(/<\/?[a-z0-9_-]+>/gi, " ").trim();
+  if (i.split(/\s+/).filter(Boolean).length <= e) {
+    const a = /[.!?]$/.test(i);
     return [{ text: t, isSentenceEnd: a }];
   }
   const r = t.match(/(?:<[^>]+>|[^.!?\n])+([.!?\n]+(?=[\s<]|$)|$)/g) || [t], o = [];
@@ -1213,17 +1240,17 @@ function lt(h, e = 36) {
       n = l;
     else {
       if (n) {
-        const m = n.replace(/<\/?[a-z0-9_-]+>/gi, "").trim(), f = /[.!?]$/.test(m);
+        const h = n.replace(/<\/?[a-z0-9_-]+>/gi, "").trim(), f = /[.!?]$/.test(h);
         o.push({ text: n, isSentenceEnd: f });
       }
       if (c.replace(/<\/?[a-z0-9_-]+>/gi, " ").split(/\s+/).filter(Boolean).length > e) {
-        const m = c.match(/(?:<[^>]+>|[^,;:—-])+([,;:—-]+(?=[\s<]|$)|$)/g) || [c];
+        const h = c.match(/(?:<[^>]+>|[^,;:—-])+([,;:—-]+(?=[\s<]|$)|$)/g) || [c];
         let f = "";
-        for (const S of m) {
-          const C = S.trim();
-          if (!C) continue;
-          const L = f ? `${f} ${C}` : C;
-          L.replace(/<\/?[a-z0-9_-]+>/gi, " ").split(/\s+/).filter(Boolean).length <= e ? f = L : (f && o.push({ text: f, isSentenceEnd: !1 }), f = C);
+        for (const p of h) {
+          const b = p.trim();
+          if (!b) continue;
+          const M = f ? `${f} ${b}` : b;
+          M.replace(/<\/?[a-z0-9_-]+>/gi, " ").split(/\s+/).filter(Boolean).length <= e ? f = M : (f && o.push({ text: f, isSentenceEnd: !1 }), f = b);
         }
         f ? n = f : n = "";
       } else
@@ -1236,8 +1263,8 @@ function lt(h, e = 36) {
   }
   return o.filter((a) => a.text.length > 0);
 }
-function dt(h) {
-  let e = h.replace(
+function dt(m) {
+  let e = m.replace(
     /\[pause\s*([0-9.]+)\s*(?:s|sec|seconds)?\]/gi,
     (n, a) => {
       const c = parseFloat(a);
@@ -1245,42 +1272,42 @@ function dt(h) {
     }
   );
   e = e.replace(/\[(whisper|soft|yell|shout|loud|raise|emphasis)\]\s*\[\/\1\]/gi, "");
-  const t = /\[pause\s*([0-9.]+)\s*(?:s|sec|seconds)?\]|\[(whisper|soft|yell|shout|loud|raise|emphasis)\]([\s\S]*?)\[\/\2\]/gi, s = [];
-  let i = 0, r;
+  const t = /\[pause\s*([0-9.]+)\s*(?:s|sec|seconds)?\]|\[(whisper|soft|yell|shout|loud|raise|emphasis)\]([\s\S]*?)\[\/\2\]/gi, i = [];
+  let s = 0, r;
   for (; (r = t.exec(e)) !== null; ) {
-    const n = e.slice(i, r.index).trim();
-    if (n && s.push({ type: "speech", text: n, tone: "normal" }), r[1] !== void 0) {
+    const n = e.slice(s, r.index).trim();
+    if (n && i.push({ type: "speech", text: n, tone: "normal" }), r[1] !== void 0) {
       const a = parseFloat(r[1]);
-      Number.isFinite(a) && a > 0 && s.push({ type: "pause", pauseSec: Math.min(a, 30) });
+      Number.isFinite(a) && a > 0 && i.push({ type: "pause", pauseSec: Math.min(a, 30) });
     } else if (r[2] !== void 0) {
       const a = r[2].toLowerCase(), c = (r[3] || "").trim();
       if (c) {
         let l = "normal";
-        a === "whisper" || a === "soft" ? l = "whisper" : a === "yell" || a === "shout" || a === "loud" ? l = "yell" : (a === "raise" || a === "emphasis") && (l = "raise"), s.push({ type: "speech", text: c, tone: l });
+        a === "whisper" || a === "soft" ? l = "whisper" : a === "yell" || a === "shout" || a === "loud" ? l = "yell" : (a === "raise" || a === "emphasis") && (l = "raise"), i.push({ type: "speech", text: c, tone: l });
       }
     }
-    i = r.index + r[0].length;
+    s = r.index + r[0].length;
   }
-  const o = e.slice(i).trim();
-  return o && s.push({ type: "speech", text: o, tone: "normal" }), s;
+  const o = e.slice(s).trim();
+  return o && i.push({ type: "speech", text: o, tone: "normal" }), i;
 }
-function $e(h) {
-  if (!h || typeof h != "string") return;
-  let e = h;
+function Oe(m) {
+  if (!m || typeof m != "string") return;
+  let e = m;
   if (!g.existsSync(e)) {
-    const n = y.resolve(process.cwd(), "public", h.replace(/^\//, ""));
+    const n = y.resolve(process.cwd(), "public", m.replace(/^\//, ""));
     g.existsSync(n) && (e = n);
   }
   if (!g.existsSync(e)) {
-    const n = y.resolve(process.cwd(), h);
+    const n = y.resolve(process.cwd(), m);
     g.existsSync(n) && (e = n);
   }
   if (!g.existsSync(e)) return;
   const t = y.extname(e).toLowerCase();
   if (t === ".wav") return e;
-  const s = y.join(O.tmpdir(), "echo-voice-cache");
-  g.mkdirSync(s, { recursive: !0 });
-  const i = g.statSync(e), r = `${y.basename(e, t)}_${i.size}_${Math.floor(i.mtimeMs)}.wav`, o = y.join(s, r);
+  const i = y.join(R.tmpdir(), "echo-voice-cache");
+  g.mkdirSync(i, { recursive: !0 });
+  const s = g.statSync(e), r = `${y.basename(e, t)}_${s.size}_${Math.floor(s.mtimeMs)}.wav`, o = y.join(i, r);
   if (g.existsSync(o) && g.statSync(o).size > 1e3)
     return o;
   try {
@@ -1290,18 +1317,18 @@ function $e(h) {
     console.warn(`[Echo Voice Engine] Audio conversion failed for ${e}:`, n);
   }
 }
-function Ce(h) {
-  if (h) {
-    const e = $e(h);
+function ke(m) {
+  if (m) {
+    const e = Oe(m);
     if (e) return e;
   }
 }
 class ut {
   constructor(e) {
-    b(this, "modelsService");
-    b(this, "loadedModels", /* @__PURE__ */ new Map());
-    b(this, "activeTtsRequestIds", /* @__PURE__ */ new Map());
-    this.modelsService = e || new Te();
+    A(this, "modelsService");
+    A(this, "loadedModels", /* @__PURE__ */ new Map());
+    A(this, "activeTtsRequestIds", /* @__PURE__ */ new Map());
+    this.modelsService = e || new Ie();
   }
   getModelsService() {
     return this.modelsService;
@@ -1349,32 +1376,32 @@ class ut {
    */
   async ensureModelLoaded(e) {
     var r, o, n, a, c;
-    const t = e.engine || "cosyvoice3", s = e.lavaSrEnabled !== !1 && this.modelsService.isModelDownloaded("lavasr-enhancer"), i = v.TTS_ENHANCER_LAVASR_FP16;
+    const t = e.engine || "cosyvoice3", i = e.lavaSrEnabled !== !1 && this.modelsService.isModelDownloaded("lavasr-enhancer"), s = v.TTS_ENHANCER_LAVASR_FP16;
     if (t === "chatterbox") {
       const l = e.language && e.language !== "en" && this.modelsService.isModelDownloaded("chatterbox-t3-multilingual-q8_0") && this.modelsService.isModelDownloaded("chatterbox-s3gen-multilingual-q8_0");
       let d = l ? v.TTS_T3_MULTILINGUAL_CHATTERBOX_Q8_0 : v.TTS_T3_TURBO_EN_CHATTERBOX_Q8_0, u = l ? v.TTS_S3GEN_MULTILINGUAL_CHATTERBOX_Q8_0 : v.TTS_S3GEN_EN_CHATTERBOX_Q8_0;
-      const m = l ? "Chatterbox T3 Multilingual (Q8_0 GGUF)" : "Chatterbox T3 Turbo EN (Q8_0 GGUF)";
+      const h = l ? "Chatterbox T3 Multilingual (Q8_0 GGUF)" : "Chatterbox T3 Turbo EN (Q8_0 GGUF)";
       if (!d || !u)
         throw new Error("QVAC Chatterbox descriptors (T3 and/or S3Gen) missing from SDK");
-      let f = Ce(e.referenceAudioSrc);
+      let f = ke(e.referenceAudioSrc);
       if (!f) {
-        const _ = y.resolve(process.cwd(), "public", "voices", "samples", "en", "voice_en_male_1.mp3");
-        g.existsSync(_) && (f = $e(_));
+        const x = y.resolve(process.cwd(), "public", "voices", "samples", "en", "voice_en_male_1.mp3");
+        g.existsSync(x) && (f = Oe(x));
       }
-      const S = [
+      const p = [
         "chatterbox",
         l ? "multilingual" : "en",
         f ? y.basename(f) : "default",
-        s ? "lavasr48k" : "native24k",
+        i ? "lavasr48k" : "native24k",
         process.arch === "arm64" ? "metal" : "cpu"
-      ].join("|"), C = this.loadedModels.get(S);
-      if (C)
-        return { modelId: C, engine: "chatterbox" };
+      ].join("|"), b = this.loadedModels.get(p);
+      if (b)
+        return { modelId: b, engine: "chatterbox" };
       (r = e.onLog) == null || r.call(e, {
-        text: `[Echo Voice Engine] Loading ${m} + S3Gen Vocoder (${s ? "48kHz LavaSR" : "24kHz native"}${process.arch === "arm64" ? " +Metal GPU" : " +CPU"})...`,
+        text: `[Echo Voice Engine] Loading ${h} + S3Gen Vocoder (${i ? "48kHz LavaSR" : "24kHz native"}${process.arch === "arm64" ? " +Metal GPU" : " +CPU"})...`,
         stream: "stdout"
       });
-      const L = {
+      const M = {
         ttsEngine: "chatterbox",
         language: e.language || "en",
         s3genModelSrc: (u == null ? void 0 : u.src) || u,
@@ -1385,78 +1412,18 @@ class ut {
         useGPU: process.arch === "arm64",
         seed: 42,
         ...f ? { referenceAudioSrc: f } : {},
-        ...s && i ? { lavasrEnhancerModelSrc: i } : {}
+        ...i && s ? { lavasrEnhancerModelSrc: s } : {}
       }, N = await v.loadModel({
         modelSrc: d,
         modelType: "tts",
-        modelConfig: L,
-        onProgress: (_) => {
-          var T;
-          const D = Math.round((_ == null ? void 0 : _.percentage) ?? 0);
-          (T = e.onProgress) == null || T.call(e, {
-            taskId: e.taskId,
-            progress: Math.min(40, Math.round(D * 0.4)),
-            message: `Loading ${m} weights ${D}%...`,
-            phase: "loading"
-          });
-        }
-      });
-      if (this.loadedModels.size >= 4) {
-        const _ = this.loadedModels.keys().next().value;
-        if (_) {
-          const D = this.loadedModels.get(_);
-          if (D)
-            try {
-              await ((o = v.unloadModel) == null ? void 0 : o.call(v, { modelId: D }));
-            } catch {
-            }
-          this.loadedModels.delete(_);
-        }
-      }
-      return this.loadedModels.set(S, N), { modelId: N, engine: "chatterbox" };
-    } else {
-      const l = v.TTS_COSYVOICE3_LLM_COSYVOICE_Q8_0 || v.TTS_COSYVOICE3_LLM_COSYVOICE_Q4_0;
-      if (!l)
-        throw new Error("QVAC CosyVoice 3 descriptor missing from SDK");
-      const d = ((n = e.emotion) == null ? void 0 : n.toLowerCase()) || "", m = ["anger", "happy", "neutral", "sad"].includes(d) ? d : void 0, f = Ce(e.referenceAudioSrc), S = (this.modelsService.isModelDownloaded("cosyvoice3-s3tok-fp16") || this.modelsService.isModelDownloaded("cosyvoice3-s3tok")) && (this.modelsService.isModelDownloaded("cosyvoice3-campplus-fp32") || this.modelsService.isModelDownloaded("cosyvoice3-campplus"));
-      console.log(
-        `[Echo Voice Engine] CosyVoice 3 setup: refWavPath=${f}, hasCloningModels=${S}`
-      );
-      const C = [
-        "cosyvoice3",
-        f || "native",
-        m || "none",
-        s ? "lavasr48k" : "native24k"
-      ].join("|"), L = this.loadedModels.get(C);
-      if (L)
-        return { modelId: L, engine: "cosyvoice3" };
-      const N = f ? ` voice="${y.basename(f)}"` : " (native studio voice)", _ = m ? ` emotion="${m}"` : "";
-      (a = e.onLog) == null || a.call(e, {
-        text: `[Echo Voice Engine] Loading CosyVoice 3 Engine (0.5B Q8_0 [FP32 Flow Matching]${s ? " +LavaSR 48kHz" : ""}${N}${_})...`,
-        stream: "stdout"
-      });
-      const D = {
-        ttsEngine: "cosyvoice3",
-        useGPU: !0,
-        seed: 42,
-        ...f && S ? {
-          cosyvoice3S3tokModelSrc: v.TTS_COSYVOICE3_S3TOK_COSYVOICE_FP16,
-          cosyvoice3CampplusModelSrc: v.TTS_COSYVOICE3_CAMPPLUS_COSYVOICE_FP32,
-          referenceAudioSrc: f
-        } : {},
-        ...s && i ? { lavasrEnhancerModelSrc: i } : {},
-        ...m ? { emotion: m } : {}
-      }, T = await v.loadModel({
-        modelSrc: l,
-        modelType: "tts",
-        modelConfig: D,
+        modelConfig: M,
         onProgress: (x) => {
-          var E;
-          const M = Math.round((x == null ? void 0 : x.percentage) ?? 0);
-          (E = e.onProgress) == null || E.call(e, {
+          var I;
+          const _ = Math.round((x == null ? void 0 : x.percentage) ?? 0);
+          (I = e.onProgress) == null || I.call(e, {
             taskId: e.taskId,
-            progress: Math.min(40, Math.round(M * 0.4)),
-            message: `Loading CosyVoice 3 weights ${M}%...`,
+            progress: Math.min(40, Math.round(_ * 0.4)),
+            message: `Loading ${h} weights ${_}%...`,
             phase: "loading"
           });
         }
@@ -1464,24 +1431,84 @@ class ut {
       if (this.loadedModels.size >= 4) {
         const x = this.loadedModels.keys().next().value;
         if (x) {
-          const M = this.loadedModels.get(x);
-          if (M)
+          const _ = this.loadedModels.get(x);
+          if (_)
             try {
-              await ((c = v.unloadModel) == null ? void 0 : c.call(v, { modelId: M }));
+              await ((o = v.unloadModel) == null ? void 0 : o.call(v, { modelId: _ }));
             } catch {
             }
           this.loadedModels.delete(x);
         }
       }
-      return this.loadedModels.set(C, T), { modelId: T, engine: "cosyvoice3" };
+      return this.loadedModels.set(p, N), { modelId: N, engine: "chatterbox" };
+    } else {
+      const l = v.TTS_COSYVOICE3_LLM_COSYVOICE_Q8_0 || v.TTS_COSYVOICE3_LLM_COSYVOICE_Q4_0;
+      if (!l)
+        throw new Error("QVAC CosyVoice 3 descriptor missing from SDK");
+      const d = ((n = e.emotion) == null ? void 0 : n.toLowerCase()) || "", h = ["anger", "happy", "neutral", "sad"].includes(d) ? d : void 0, f = ke(e.referenceAudioSrc), p = (this.modelsService.isModelDownloaded("cosyvoice3-s3tok-fp16") || this.modelsService.isModelDownloaded("cosyvoice3-s3tok")) && (this.modelsService.isModelDownloaded("cosyvoice3-campplus-fp32") || this.modelsService.isModelDownloaded("cosyvoice3-campplus"));
+      console.log(
+        `[Echo Voice Engine] CosyVoice 3 setup: refWavPath=${f}, hasCloningModels=${p}`
+      );
+      const b = [
+        "cosyvoice3",
+        f || "native",
+        h || "none",
+        i ? "lavasr48k" : "native24k"
+      ].join("|"), M = this.loadedModels.get(b);
+      if (M)
+        return { modelId: M, engine: "cosyvoice3" };
+      const N = f ? ` voice="${y.basename(f)}"` : " (native studio voice)", x = h ? ` emotion="${h}"` : "";
+      (a = e.onLog) == null || a.call(e, {
+        text: `[Echo Voice Engine] Loading CosyVoice 3 Engine (0.5B Q8_0 [FP32 Flow Matching]${i ? " +LavaSR 48kHz" : ""}${N}${x})...`,
+        stream: "stdout"
+      });
+      const _ = {
+        ttsEngine: "cosyvoice3",
+        useGPU: !0,
+        seed: 42,
+        ...f && p ? {
+          cosyvoice3S3tokModelSrc: v.TTS_COSYVOICE3_S3TOK_COSYVOICE_FP16,
+          cosyvoice3CampplusModelSrc: v.TTS_COSYVOICE3_CAMPPLUS_COSYVOICE_FP32,
+          referenceAudioSrc: f
+        } : {},
+        ...i && s ? { lavasrEnhancerModelSrc: s } : {},
+        ...h ? { emotion: h } : {}
+      }, I = await v.loadModel({
+        modelSrc: l,
+        modelType: "tts",
+        modelConfig: _,
+        onProgress: ($) => {
+          var E;
+          const T = Math.round(($ == null ? void 0 : $.percentage) ?? 0);
+          (E = e.onProgress) == null || E.call(e, {
+            taskId: e.taskId,
+            progress: Math.min(40, Math.round(T * 0.4)),
+            message: `Loading CosyVoice 3 weights ${T}%...`,
+            phase: "loading"
+          });
+        }
+      });
+      if (this.loadedModels.size >= 4) {
+        const $ = this.loadedModels.keys().next().value;
+        if ($) {
+          const T = this.loadedModels.get($);
+          if (T)
+            try {
+              await ((c = v.unloadModel) == null ? void 0 : c.call(v, { modelId: T }));
+            } catch {
+            }
+          this.loadedModels.delete($);
+        }
+      }
+      return this.loadedModels.set(b, I), { modelId: I, engine: "cosyvoice3" };
     }
   }
   cancelSynthesis(e) {
-    var s;
+    var i;
     const t = this.activeTtsRequestIds.get(e);
     if (t) {
       try {
-        (s = v.cancel) == null || s.call(v, { requestId: t });
+        (i = v.cancel) == null || i.call(v, { requestId: t });
       } catch {
       }
       this.activeTtsRequestIds.delete(e);
@@ -1491,25 +1518,25 @@ class ut {
    * High-fidelity speech synthesis pipeline with dynamic engine selection (CosyVoice 3 / Chatterbox T3)
    * and optional Lava-SR 48kHz neural enhancement.
    */
-  async synthesize(e, t, s, i) {
-    var d, u, m, f, S, C, L, N, _;
-    const { taskId: r, rounds: o } = e, n = e.engine || "cosyvoice3", a = o.filter((D) => D.text.trim().length > 0);
+  async synthesize(e, t, i, s) {
+    var d, u, h, f, p, b, M, N, x;
+    const { taskId: r, rounds: o } = e, n = e.engine || "cosyvoice3", a = o.filter((_) => _.text.trim().length > 0);
     if (a.length === 0)
       return { success: !1, error: "No active speech rounds to synthesize" };
     const c = a[0], l = e.speakerName || "Selected Speaker";
-    s == null || s({
+    i == null || i({
       text: `[Echo Voice Engine] Synthesis task ${r} engine="${n}" voice="${l}" turns=${a.length}...`,
       stream: "system"
     });
     try {
-      if (i != null && i()) return { success: !1, error: "Cancelled" };
+      if (s != null && s()) return { success: !1, error: "Cancelled" };
       t == null || t({
         taskId: r,
         progress: 8,
         message: `Loading ${n === "chatterbox" ? "Chatterbox T3" : "CosyVoice 3"} Engine...`,
         phase: "loading"
       });
-      const D = e.lavaSrEnabled !== !1 && this.modelsService.isModelDownloaded("lavasr-enhancer"), T = e.voicePrompt || e.prompt || e.description || c.prompt || c.description, x = ((d = c.emotion) == null ? void 0 : d.toLowerCase()) || "", M = [
+      const _ = e.lavaSrEnabled !== !1 && this.modelsService.isModelDownloaded("lavasr-enhancer"), I = e.voicePrompt || e.prompt || e.description || c.prompt || c.description, $ = ((d = c.emotion) == null ? void 0 : d.toLowerCase()) || "", T = [
         "command",
         "anger",
         "narration",
@@ -1522,190 +1549,190 @@ class ut {
         "news",
         "sad",
         "surprise"
-      ], E = M.includes(x) ? x : void 0, p = c.referenceAudioSrc || e.referenceAudioSrc, { engine: $ } = await this.ensureModelLoaded({
+      ], E = T.includes($) ? $ : void 0, L = c.referenceAudioSrc || e.referenceAudioSrc, { engine: w } = await this.ensureModelLoaded({
         engine: n,
         language: e.language || "en",
-        lavaSrEnabled: D,
-        instruct: T || void 0,
+        lavaSrEnabled: _,
+        instruct: I || void 0,
         emotion: E,
         pace: (u = c.pace) == null ? void 0 : u.toLowerCase(),
-        referenceAudioSrc: p,
+        referenceAudioSrc: L,
         taskId: r,
         onProgress: t,
-        onLog: s
+        onLog: i
       });
-      if (i != null && i()) return { success: !1, error: "Cancelled" };
-      const I = [];
-      let k = D ? 48e3 : 24e3;
+      if (s != null && s()) return { success: !1, error: "Cancelled" };
+      const U = [];
+      let D = _ ? 48e3 : 24e3;
       for (let V = 0; V < a.length; V++) {
-        if (i != null && i()) {
-          const q = this.activeTtsRequestIds.get(r);
-          if (q)
+        if (s != null && s()) {
+          const H = this.activeTtsRequestIds.get(r);
+          if (H)
             try {
-              await ((m = v.cancel) == null ? void 0 : m.call(v, { requestId: q }));
+              await ((h = v.cancel) == null ? void 0 : h.call(v, { requestId: H }));
             } catch {
             }
           return { success: !1, error: "Cancelled" };
         }
-        const B = a[V], Pe = B.referenceAudioSrc || e.referenceAudioSrc, Me = ((f = B.emotion) == null ? void 0 : f.toLowerCase()) || "", Ve = M.includes(Me) ? Me : E, { modelId: Be } = await this.ensureModelLoaded({
+        const G = a[V], ue = G.referenceAudioSrc || e.referenceAudioSrc, Ae = ((f = G.emotion) == null ? void 0 : f.toLowerCase()) || "", Ve = T.includes(Ae) ? Ae : E, { modelId: Be } = await this.ensureModelLoaded({
           engine: n,
           language: e.language || "en",
-          lavaSrEnabled: D,
-          instruct: B.prompt || B.description || T || void 0,
+          lavaSrEnabled: _,
+          instruct: G.prompt || G.description || I || void 0,
           emotion: Ve,
-          pace: (S = B.pace) == null ? void 0 : S.toLowerCase(),
-          referenceAudioSrc: Pe,
+          pace: (p = G.pace) == null ? void 0 : p.toLowerCase(),
+          referenceAudioSrc: ue,
           taskId: r,
           onProgress: t,
-          onLog: s
+          onLog: i
         });
         if (t == null || t({
           taskId: r,
           progress: 40 + Math.round(V / a.length * 50),
-          message: `Synthesizing turn ${V + 1}/${a.length}${B.speakerName ? ` (${B.speakerName})` : ""}...`,
+          message: `Synthesizing turn ${V + 1}/${a.length}${G.speakerName ? ` (${G.speakerName})` : ""}...`,
           phase: "synthesis"
-        }), V > 0 && I.length > 0) {
-          const q = ve(0.2, k);
-          le(I, q, k, 14);
+        }), V > 0 && U.length > 0) {
+          const H = Te(0.2, D);
+          me(U, H, D, 14);
         }
-        const Ie = dt(B.text);
+        const Ce = dt(G.text);
         let Ge = 0;
-        for (let q = 0; q < Ie.length; q++) {
-          const Q = Ie[q];
-          if (i != null && i()) {
-            const Y = this.activeTtsRequestIds.get(r);
-            if (Y)
+        for (let H = 0; H < Ce.length; H++) {
+          const Y = Ce[H];
+          if (s != null && s()) {
+            const X = this.activeTtsRequestIds.get(r);
+            if (X)
               try {
-                await ((C = v.cancel) == null ? void 0 : C.call(v, { requestId: Y }));
+                await ((b = v.cancel) == null ? void 0 : b.call(v, { requestId: X }));
               } catch {
               }
             return { success: !1, error: "Cancelled" };
           }
-          if (Q.type === "pause" && Q.pauseSec) {
-            const Y = ve(Q.pauseSec, k);
-            le(I, Y, k, 14);
+          if (Y.type === "pause" && Y.pauseSec) {
+            const X = Te(Y.pauseSec, D);
+            me(U, X, D, 14);
             continue;
           }
-          if (Q.type === "speech" && Q.text) {
-            const { cleanedText: Y, detectedCues: ne, tone: me } = ct(Q.text, $, Q.tone);
-            if (!Y) continue;
-            const ce = lt(Y, 36);
-            for (let j = 0; j < ce.length; j++) {
-              const ge = ce[j].text;
-              if (!ge) continue;
-              if (i != null && i()) {
-                const R = this.activeTtsRequestIds.get(r);
-                if (R)
+          if (Y.type === "speech" && Y.text) {
+            const { cleanedText: X, detectedCues: ae, tone: ve } = ct(Y.text, w, Y.tone);
+            if (!X) continue;
+            const he = lt(X, 36);
+            for (let W = 0; W < he.length; W++) {
+              const pe = he[W].text;
+              if (!pe) continue;
+              if (s != null && s()) {
+                const B = this.activeTtsRequestIds.get(r);
+                if (B)
                   try {
-                    await ((L = v.cancel) == null ? void 0 : L.call(v, { requestId: R }));
+                    await ((M = v.cancel) == null ? void 0 : M.call(v, { requestId: B }));
                   } catch {
                   }
                 return { success: !1, error: "Cancelled" };
               }
-              if (I.length > 0) {
-                const K = j > 0 && !ce[j - 1].isSentenceEnd ? 0.035 : j > 0 ? 0.09 : 0.08, P = ve(K, k);
-                le(I, P, k, 10);
+              if (U.length > 0) {
+                const J = W > 0 && !he[W - 1].isSentenceEnd ? 0.035 : W > 0 ? 0.09 : 0.08, q = Te(J, D);
+                me(U, q, D, 10);
               }
               Ge++;
-              const H = {
+              const Q = {
                 modelId: Be,
-                text: ge,
+                text: pe,
                 inputType: "text",
                 stream: !1
               };
-              if ($ === "cosyvoice3") {
-                const R = (((N = B.emotion) == null ? void 0 : N.toLowerCase()) || E || "").trim(), K = ["anger", "happy", "neutral", "sad"];
-                if (me === "whisper" || ne.includes("whisper"))
-                  H.volume = "soft", H.pace = "slow";
-                else if (me === "yell" || ne.includes("yell"))
-                  H.volume = "loud", H.emotion = "anger";
-                else if (me === "raise" || ne.includes("raise"))
-                  H.volume = "loud";
+              if (w === "cosyvoice3") {
+                const B = (((N = G.emotion) == null ? void 0 : N.toLowerCase()) || E || "").trim(), J = ["anger", "happy", "neutral", "sad"];
+                if (ve === "whisper" || ae.includes("whisper"))
+                  Q.volume = "soft", Q.pace = "slow";
+                else if (ve === "yell" || ae.includes("yell"))
+                  Q.volume = "loud", Q.emotion = "anger";
+                else if (ve === "raise" || ae.includes("raise"))
+                  Q.volume = "loud";
                 else {
-                  let P = K.includes(R) ? R : void 0;
-                  if ((ne.includes("sigh") || ne.includes("breath")) && !P && (P = "sad"), P && P !== "neutral")
-                    H.emotion = P;
+                  let q = J.includes(B) ? B : void 0;
+                  if ((ae.includes("sigh") || ae.includes("breath")) && !q && (q = "sad"), q && q !== "neutral")
+                    Q.emotion = q;
                   else {
-                    const ae = (((_ = B.pace) == null ? void 0 : _.toLowerCase()) || "").trim();
-                    ["slow", "moderate", "fast"].includes(ae) && ae !== "moderate" && (H.pace = ae);
+                    const le = (((x = G.pace) == null ? void 0 : x.toLowerCase()) || "").trim();
+                    ["slow", "moderate", "fast"].includes(le) && le !== "moderate" && (Q.pace = le);
                   }
                 }
               }
-              const X = v.textToSpeech(H);
-              X != null && X.requestId && this.activeTtsRequestIds.set(r, X.requestId);
-              const F = await X.buffer ?? [], ze = await X.done, fe = await X.sampleRate, oe = typeof fe == "number" && fe > 0 ? fe : D ? 48e3 : 24e3;
-              if (k = oe, this.activeTtsRequestIds.delete(r), F.length > 0) {
-                let R = 0, K = 1 / 0, P = -1 / 0;
-                for (const se of F) {
-                  const ye = Number.isFinite(se) ? se : 0;
-                  R = Math.max(R, Math.abs(ye)), K = Math.min(K, ye), P = Math.max(P, ye);
+              const K = v.textToSpeech(Q);
+              K != null && K.requestId && this.activeTtsRequestIds.set(r, K.requestId);
+              const z = await K.buffer ?? [], ze = await K.done, Se = await K.sampleRate, ce = typeof Se == "number" && Se > 0 ? Se : _ ? 48e3 : 24e3;
+              if (D = ce, this.activeTtsRequestIds.delete(r), z.length > 0) {
+                let B = 0, J = 1 / 0, q = -1 / 0;
+                for (const re of z) {
+                  const we = Number.isFinite(re) ? re : 0;
+                  B = Math.max(B, Math.abs(we)), J = Math.min(J, we), q = Math.max(q, we);
                 }
-                const ae = F.every((se) => se === 0), be = F.every((se) => se === F[0]);
+                const le = z.every((re) => re === 0), _e = z.every((re) => re === z[0]);
                 console.log(
-                  `[TTS Debug] Turn ${V + 1} Chunk ${j + 1}/${ce.length}: PCM length=${F.length}, maxAbs=${R.toFixed(4)}, min=${K.toFixed(4)}, max=${P.toFixed(4)}, allZero=${ae}, allSame=${be}, sampleRate=${oe}`
+                  `[TTS Debug] Turn ${V + 1} Chunk ${W + 1}/${he.length}: PCM length=${z.length}, maxAbs=${B.toFixed(4)}, min=${J.toFixed(4)}, max=${q.toFixed(4)}, allZero=${le}, allSame=${_e}, sampleRate=${ce}`
                 );
               }
-              if (F.length > 0) {
-                const R = ge.replace(/[^a-z0-9]/gi, "_").slice(0, 30) || `round-${V}-chunk-${j}`;
-                Ae(F, oe, `segment-${V}-${R}`);
+              if (z.length > 0) {
+                const B = pe.replace(/[^a-z0-9]/gi, "_").slice(0, 30) || `round-${V}-chunk-${W}`;
+                De(z, ce, `segment-${V}-${B}`);
               }
-              if (!ze || !F || F.length === 0)
+              if (!ze || !z || z.length === 0)
                 throw new Error(
-                  `${$ === "chatterbox" ? "Chatterbox T3" : "CosyVoice 3"} returned no audio for turn ${V + 1}`
+                  `${w === "chatterbox" ? "Chatterbox T3" : "CosyVoice 3"} returned no audio for turn ${V + 1}`
                 );
-              const qe = at(F, oe);
-              le(I, qe, oe, 12);
+              const qe = at(z, ce);
+              me(U, qe, ce, 12);
             }
           }
         }
       }
-      if (i != null && i()) return { success: !1, error: "Cancelled" };
+      if (s != null && s()) return { success: !1, error: "Cancelled" };
       t == null || t({
         taskId: r,
         progress: 95,
-        message: `Finalizing ${k}Hz WAV & waveform...`,
+        message: `Finalizing ${D}Hz WAV & waveform...`,
         phase: "finalizing"
-      }), I.length > 0 && Ae(I, k, "combined-output");
-      const z = nt(I, k), re = ot(I, 38), W = Math.round(I.length / k * 10) / 10, he = a[0].text.trim(), Re = he.length > 55 ? `${he.slice(0, 52)}...` : he, Fe = {
+      }), U.length > 0 && De(U, D, "combined-output");
+      const P = nt(U, D), k = ot(U, 38), F = Math.round(U.length / D * 10) / 10, se = a[0].text.trim(), de = se.length > 55 ? `${se.slice(0, 52)}...` : se, oe = {
         id: `gen-${r}`,
         roundIndex: e.historyIndex || 0,
         title: `Generation ${(e.historyIndex || 0) + 1}`,
-        textSnippet: Re,
+        textSnippet: de,
         speakerName: a.length > 1 ? `${a.length} Speakers` : e.speakerName || "Sterling Rhodes",
         speakerColor: a.length > 1 ? "#10b981" : e.speakerColor || "#38bdf8",
         speakerAvatarUrl: e.speakerAvatarUrl || "/voices/sterling.jpg",
-        duration: W,
-        audioUrl: z,
-        waveform: re,
+        duration: F,
+        audioUrl: P,
+        waveform: k,
         timestamp: "Just now",
         emotion: c.emotion || "Neutral"
       };
       return t == null || t({
         taskId: r,
         progress: 100,
-        message: `${$ === "chatterbox" ? "Chatterbox T3" : "CosyVoice 3"} synthesis complete`,
+        message: `${w === "chatterbox" ? "Chatterbox T3" : "CosyVoice 3"} synthesis complete`,
         phase: "complete"
-      }), s == null || s({
-        text: `[Echo Voice Engine] Synthesis complete (${W}s @ ${k}Hz, ${I.length} samples).`,
+      }), i == null || i({
+        text: `[Echo Voice Engine] Synthesis complete (${F}s @ ${D}Hz, ${U.length} samples).`,
         stream: "stdout"
-      }), { success: !0, data: Fe };
-    } catch (D) {
+      }), { success: !0, data: oe };
+    } catch (_) {
       this.activeTtsRequestIds.delete(r);
-      const T = D != null && D.message ? String(D.message) : String(D);
-      return s == null || s({
-        text: `[Echo Voice Engine] Synthesis failed: ${T}`,
+      const I = _ != null && _.message ? String(_.message) : String(_);
+      return i == null || i({
+        text: `[Echo Voice Engine] Synthesis failed: ${I}`,
         stream: "stderr"
-      }), { success: !1, error: T };
+      }), { success: !1, error: I };
     }
   }
 }
 class ht {
   constructor(e, t) {
-    b(this, "activeTasks", /* @__PURE__ */ new Set());
-    b(this, "voiceEngine");
-    b(this, "modelsService");
-    b(this, "conversationRepo");
-    this.modelsService = e || new Te(), this.voiceEngine = new ut(this.modelsService), this.conversationRepo = t;
+    A(this, "activeTasks", /* @__PURE__ */ new Set());
+    A(this, "voiceEngine");
+    A(this, "modelsService");
+    A(this, "conversationRepo");
+    this.modelsService = e || new Ie(), this.voiceEngine = new ut(this.modelsService), this.conversationRepo = t;
   }
   /** Access conversation persistence repository */
   getConversationRepository() {
@@ -1753,11 +1780,11 @@ class ht {
   }
   /** Cancel an active generation task + underlying QVAC request */
   cancelGeneration(e) {
-    var t, s;
+    var t, i;
     if (this.activeTasks.has(e)) {
       this.activeTasks.delete(e);
       try {
-        (s = (t = this.voiceEngine).cancelSynthesis) == null || s.call(t, e);
+        (i = (t = this.voiceEngine).cancelSynthesis) == null || i.call(t, e);
       } catch {
       }
       return !0;
@@ -1769,24 +1796,24 @@ class ht {
     return !this.activeTasks.has(e);
   }
   /** High-fidelity speech synthesis pipeline using Echo Voice Engine prompt-driven voice design */
-  async generateSpeech(e, t, s) {
-    const { taskId: i } = e;
-    this.activeTasks.add(i);
+  async generateSpeech(e, t, i) {
+    const { taskId: s } = e;
+    this.activeTasks.add(s);
     try {
       return await this.voiceEngine.synthesize(
         e,
         t,
-        s,
-        () => this.isCancelled(i)
+        i,
+        () => this.isCancelled(s)
       );
     } finally {
-      this.activeTasks.delete(i);
+      this.activeTasks.delete(s);
     }
   }
 }
 class mt {
   constructor(e) {
-    b(this, "db");
+    A(this, "db");
     this.db = e;
   }
   /**
@@ -1836,18 +1863,18 @@ class mt {
           subCategory: t.activity.subCategory,
           description: t.activity.description
         } : void 0,
-        roundsData: t.rounds.map((s) => ({
-          id: s.id,
-          voiceId: s.voiceId,
-          text: s.text,
-          speed: s.speed,
-          emotion: s.emotion || void 0,
-          pace: s.pace || void 0,
-          prompt: s.prompt || void 0,
-          description: s.description || void 0,
-          referenceAudioSrc: s.referenceAudioSrc || void 0,
-          speakerName: s.speakerName || void 0,
-          speakerColor: s.speakerColor || void 0
+        roundsData: t.rounds.map((i) => ({
+          id: i.id,
+          voiceId: i.voiceId,
+          text: i.text,
+          speed: i.speed,
+          emotion: i.emotion || void 0,
+          pace: i.pace || void 0,
+          prompt: i.prompt || void 0,
+          description: i.description || void 0,
+          referenceAudioSrc: i.referenceAudioSrc || void 0,
+          speakerName: i.speakerName || void 0,
+          speakerColor: i.speakerColor || void 0
         }))
       }));
     } catch (e) {
@@ -1860,9 +1887,9 @@ class mt {
   async saveConversation(e) {
     await this.db.init();
     try {
-      const t = e.waveform ? JSON.stringify(e.waveform) : "[]", s = e.timestamp ? BigInt(Math.floor(e.timestamp)) : BigInt(Date.now());
-      return await this.db.client.$transaction(async (i) => {
-        if (await i.conversation.upsert({
+      const t = e.waveform ? JSON.stringify(e.waveform) : "[]", i = e.timestamp ? BigInt(Math.floor(e.timestamp)) : BigInt(Date.now());
+      return await this.db.client.$transaction(async (s) => {
+        if (await s.conversation.upsert({
           where: { id: e.id },
           update: {
             text: e.text,
@@ -1872,7 +1899,7 @@ class mt {
             voiceAvatarUrl: e.voiceAvatarUrl,
             dateGroup: e.dateGroup,
             timeAgo: e.timeAgo,
-            timestamp: s,
+            timestamp: i,
             model: e.model,
             engine: e.engine || "cosyvoice3",
             duration: e.duration,
@@ -1894,7 +1921,7 @@ class mt {
             voiceAvatarUrl: e.voiceAvatarUrl,
             dateGroup: e.dateGroup,
             timeAgo: e.timeAgo,
-            timestamp: s,
+            timestamp: i,
             model: e.model,
             engine: e.engine || "cosyvoice3",
             duration: e.duration,
@@ -1907,28 +1934,28 @@ class mt {
             speakerCount: e.speakerCount || 1,
             generationId: e.generationId
           }
-        }), await i.speechRound.deleteMany({
+        }), await s.speechRound.deleteMany({
           where: { conversationId: e.id }
         }), e.roundsData && Array.isArray(e.roundsData) && e.roundsData.length > 0) {
-          const u = e.roundsData.map((m, f) => ({
-            id: m.id || `${e.id}-round-${f}`,
+          const u = e.roundsData.map((h, f) => ({
+            id: h.id || `${e.id}-round-${f}`,
             conversationId: e.id,
             roundOrder: f,
-            voiceId: m.voiceId || "voice-en-male-1",
-            text: m.text || "",
-            speed: typeof m.speed == "number" ? m.speed : 1,
-            emotion: m.emotion || null,
-            pace: m.pace || null,
-            prompt: m.prompt || null,
-            description: m.description || null,
-            referenceAudioSrc: m.referenceAudioSrc || null,
-            speakerName: m.speakerName || null,
-            speakerColor: m.speakerColor || null
+            voiceId: h.voiceId || "voice-en-male-1",
+            text: h.text || "",
+            speed: typeof h.speed == "number" ? h.speed : 1,
+            emotion: h.emotion || null,
+            pace: h.pace || null,
+            prompt: h.prompt || null,
+            description: h.description || null,
+            referenceAudioSrc: h.referenceAudioSrc || null,
+            speakerName: h.speakerName || null,
+            speakerColor: h.speakerColor || null
           }));
-          for (const m of u)
-            await i.speechRound.create({ data: m });
+          for (const h of u)
+            await s.speechRound.create({ data: h });
         }
-        const o = (e.previewSnippet || e.text || "").replace(/\s+/g, " ").trim(), n = o ? o.length > 55 ? `${o.slice(0, 52)}...` : o : `${e.voiceName || "Speech Synthesis"} Turn`, a = await i.activity.findUnique({
+        const o = (e.previewSnippet || e.text || "").replace(/\s+/g, " ").trim(), n = o ? o.length > 55 ? `${o.slice(0, 52)}...` : o : `${e.voiceName || "Speech Synthesis"} Turn`, a = await s.activity.findUnique({
           where: { conversationId: e.id }
         }), c = "Text to Speech", l = e.speakerCount && e.speakerCount > 1 ? `${e.speakerCount} Speakers Diarized` : e.voiceName || "Single Speaker", d = JSON.stringify({
           model: e.model,
@@ -1941,7 +1968,7 @@ class mt {
           speakerCount: e.speakerCount || 1
         });
         if (a)
-          await i.activity.update({
+          await s.activity.update({
             where: { conversationId: e.id },
             data: {
               category: c,
@@ -1951,10 +1978,10 @@ class mt {
             }
           });
         else {
-          let u = n, m = 1;
-          for (; await i.activity.findUnique({ where: { title: u } }); )
-            m++, u = `${n} #${m}`;
-          await i.activity.create({
+          let u = n, h = 1;
+          for (; await s.activity.findUnique({ where: { title: u } }); )
+            h++, u = `${n} #${h}`;
+          await s.activity.create({
             data: {
               id: `act-${e.id}`,
               type: "tts",
@@ -1999,15 +2026,15 @@ class mt {
     }
   }
 }
-class gt extends ie {
+class gt extends ne {
   constructor(e) {
     super(), this.ttsService = e;
   }
   init() {
-    A.handle(
-      w.TTS_GENERATE,
+    C.handle(
+      S.TTS_GENERATE,
       async (e, t) => {
-        const s = t.engine || "cosyvoice3", r = this.ttsService.getModelStatus(s).models.filter((c) => c.required && !c.downloaded);
+        const i = t.engine || "cosyvoice3", r = this.ttsService.getModelStatus(i).models.filter((c) => c.required && !c.downloaded);
         if (r.length > 0)
           return {
             success: !1,
@@ -2015,13 +2042,13 @@ class gt extends ie {
           };
         const o = (c) => {
           try {
-            e.sender.isDestroyed() || e.sender.send(w.TTS_PROGRESS, c);
+            e.sender.isDestroyed() || e.sender.send(S.TTS_PROGRESS, c);
           } catch (l) {
             console.warn("[TtsController] Failed to send progress event:", l);
           }
         }, n = (c) => {
           try {
-            e.sender.isDestroyed() || e.sender.send(w.TERMINAL_LOG, {
+            e.sender.isDestroyed() || e.sender.send(S.TERMINAL_LOG, {
               projectId: "echo-ai",
               text: c.text,
               stream: c.stream,
@@ -2033,7 +2060,7 @@ class gt extends ie {
         }, a = await this.ttsService.generateSpeech(t, o, n);
         if (a.success && a.data)
           try {
-            e.sender.isDestroyed() || e.sender.send(w.TTS_COMPLETE, {
+            e.sender.isDestroyed() || e.sender.send(S.TTS_COMPLETE, {
               taskId: t.taskId,
               generation: a.data
             });
@@ -2042,7 +2069,7 @@ class gt extends ie {
           }
         else if (!a.success)
           try {
-            e.sender.isDestroyed() || e.sender.send(w.TTS_ERROR, {
+            e.sender.isDestroyed() || e.sender.send(S.TTS_ERROR, {
               taskId: t.taskId,
               error: a.error || "Generation failed"
             });
@@ -2051,29 +2078,29 @@ class gt extends ie {
           }
         return a;
       }
-    ), A.handle(
-      w.TTS_CANCEL,
+    ), C.handle(
+      S.TTS_CANCEL,
       async (e, { taskId: t }) => ({ success: this.ttsService.cancelGeneration(t), taskId: t })
-    ), A.handle(w.TTS_HISTORY_LIST, async () => {
+    ), C.handle(S.TTS_HISTORY_LIST, async () => {
       try {
         return { success: !0, data: await this.ttsService.listConversations() };
       } catch (e) {
         return { success: !1, error: (e == null ? void 0 : e.message) || String(e) };
       }
-    }), A.handle(w.TTS_HISTORY_SAVE, async (e, t) => {
+    }), C.handle(S.TTS_HISTORY_SAVE, async (e, t) => {
       try {
         return await this.ttsService.saveConversation(t);
-      } catch (s) {
-        return { success: !1, error: (s == null ? void 0 : s.message) || String(s) };
+      } catch (i) {
+        return { success: !1, error: (i == null ? void 0 : i.message) || String(i) };
       }
-    }), A.handle(w.TTS_HISTORY_DELETE, async (e, t) => {
+    }), C.handle(S.TTS_HISTORY_DELETE, async (e, t) => {
       try {
-        const s = typeof t == "string" ? t : t.id;
-        return await this.ttsService.deleteConversation(s);
-      } catch (s) {
-        return { success: !1, error: (s == null ? void 0 : s.message) || String(s) };
+        const i = typeof t == "string" ? t : t.id;
+        return await this.ttsService.deleteConversation(i);
+      } catch (i) {
+        return { success: !1, error: (i == null ? void 0 : i.message) || String(i) };
       }
-    }), A.handle(w.TTS_HISTORY_CLEAR, async () => {
+    }), C.handle(S.TTS_HISTORY_CLEAR, async () => {
       try {
         return await this.ttsService.clearConversations();
       } catch (e) {
@@ -2082,14 +2109,14 @@ class gt extends ie {
     });
   }
 }
-const J = class J {
+const Z = class Z {
   constructor() {
-    b(this, "primaryLogPath");
-    b(this, "mirrorLogPath");
-    var i;
+    A(this, "primaryLogPath");
+    A(this, "mirrorLogPath");
+    var s;
     let e;
     try {
-      e = (i = U) != null && i.getPath ? U.getPath("userData") : process.cwd();
+      e = (s = O) != null && s.getPath ? O.getPath("userData") : process.cwd();
     } catch {
       e = process.cwd();
     }
@@ -2100,26 +2127,26 @@ const J = class J {
       } catch {
       }
     this.primaryLogPath = y.join(t, "music-generation.log");
-    const s = y.join(process.cwd(), "logs");
-    if (!g.existsSync(s))
+    const i = y.join(process.cwd(), "logs");
+    if (!g.existsSync(i))
       try {
-        g.mkdirSync(s, { recursive: !0 });
+        g.mkdirSync(i, { recursive: !0 });
       } catch {
       }
-    this.mirrorLogPath = y.join(s, "music-generation.log"), this.rotateIfNecessary(this.primaryLogPath), this.rotateIfNecessary(this.mirrorLogPath), this.writeRaw(`
+    this.mirrorLogPath = y.join(i, "music-generation.log"), this.rotateIfNecessary(this.primaryLogPath), this.rotateIfNecessary(this.mirrorLogPath), this.writeRaw(`
 === Music Logger Initialized [${(/* @__PURE__ */ new Date()).toISOString()}] ===
 Primary Log: ${this.primaryLogPath}
 Mirror Log: ${this.mirrorLogPath}
 `);
   }
   static getInstance() {
-    return J.instance || (J.instance = new J()), J.instance;
+    return Z.instance || (Z.instance = new Z()), Z.instance;
   }
   rotateIfNecessary(e) {
     try {
       if (g.existsSync(e) && g.statSync(e).size > 15 * 1024 * 1024) {
-        const s = `${e}.${Date.now()}.bak`;
-        g.renameSync(e, s);
+        const i = `${e}.${Date.now()}.bak`;
+        g.renameSync(e, i);
       }
     } catch {
     }
@@ -2137,14 +2164,14 @@ Mirror Log: ${this.mirrorLogPath}
       }
   }
   logInfo(e, t) {
-    let i = `[${(/* @__PURE__ */ new Date()).toISOString()}] [INFO] ${e}`;
-    t && (i += `
-  Metadata: ${JSON.stringify(t, null, 2)}`), i += `
-`, this.writeRaw(i), console.log(`[MusicLogger] ${e}`);
+    let s = `[${(/* @__PURE__ */ new Date()).toISOString()}] [INFO] ${e}`;
+    t && (s += `
+  Metadata: ${JSON.stringify(t, null, 2)}`), s += `
+`, this.writeRaw(s), console.log(`[MusicLogger] ${e}`);
   }
   logSessionStart(e) {
-    const t = (/* @__PURE__ */ new Date()).toISOString(), s = "=".repeat(80), i = `
-${s}
+    const t = (/* @__PURE__ */ new Date()).toISOString(), i = "=".repeat(80), s = `
+${i}
 [${t}] ▸ STARTING MUSIC GENERATION
 TaskId:         ${e.taskId}
 Engine:         ${e.engine}
@@ -2154,49 +2181,49 @@ Instrumental:   ${!!e.isInstrumental}
 Duration:       ${e.duration || 30}s
 DiT Variant:    ${e.ditVariant || "n/a"}
 Seed:           ${e.seed ?? -1}
-${s}
+${i}
 `;
-    this.writeRaw(i), console.log(`[MusicLogger] ▸ Generation Started for task: ${e.taskId} (Engine: ${e.engine})`);
+    this.writeRaw(s), console.log(`[MusicLogger] ▸ Generation Started for task: ${e.taskId} (Engine: ${e.engine})`);
   }
-  logMilestone(e, t, s) {
-    const r = `[${(/* @__PURE__ */ new Date()).toISOString()}] [${e}] [${t}] ${s || ""}
+  logMilestone(e, t, i) {
+    const r = `[${(/* @__PURE__ */ new Date()).toISOString()}] [${e}] [${t}] ${i || ""}
 `;
-    this.writeRaw(r), console.log(`[MusicLogger] [${e}] [${t}] ${s || ""}`);
+    this.writeRaw(r), console.log(`[MusicLogger] [${e}] [${t}] ${i || ""}`);
   }
-  logProgress(e, t, s, i, r) {
-    const n = `[${(/* @__PURE__ */ new Date()).toISOString()}] [${e}] [PROGRESS] ${t}: ${r}% (${s}/${i})
+  logProgress(e, t, i, s, r) {
+    const n = `[${(/* @__PURE__ */ new Date()).toISOString()}] [${e}] [PROGRESS] ${t}: ${r}% (${i}/${s})
 `;
     this.writeRaw(n);
   }
   logSuccess(e, t) {
-    const s = (/* @__PURE__ */ new Date()).toISOString(), i = "-".repeat(80), r = `
-${i}
-[${s}] ✓ MUSIC GENERATION SUCCEEDED
+    const i = (/* @__PURE__ */ new Date()).toISOString(), s = "-".repeat(80), r = `
+${s}
+[${i}] ✓ MUSIC GENERATION SUCCEEDED
 TaskId:         ${e}
 Duration:       ${(t.durationMs / 1e3).toFixed(2)}s
 Format:         ${t.sampleRate} Hz, ${t.channels} ch
 Output WAV:     ${t.wavFilePath}
-${i}
+${s}
 `;
     this.writeRaw(r), console.log(`[MusicLogger] ✓ Generation Succeeded: ${e} -> ${t.wavFilePath}`);
   }
   logFailure(e) {
-    const t = (/* @__PURE__ */ new Date()).toISOString(), s = "#".repeat(80), i = e.error, r = (i == null ? void 0 : i.message) || String(i), o = (i == null ? void 0 : i.code) || (i == null ? void 0 : i.errCode) || "UNKNOWN", n = (i == null ? void 0 : i.stack) || "(No stack trace available)", a = i != null && i.cause ? JSON.stringify(i.cause, null, 2) : void 0, c = i == null ? void 0 : i.adds;
+    const t = (/* @__PURE__ */ new Date()).toISOString(), i = "#".repeat(80), s = e.error, r = (s == null ? void 0 : s.message) || String(s), o = (s == null ? void 0 : s.code) || (s == null ? void 0 : s.errCode) || "UNKNOWN", n = (s == null ? void 0 : s.stack) || "(No stack trace available)", a = s != null && s.cause ? JSON.stringify(s.cause, null, 2) : void 0, c = s == null ? void 0 : s.adds;
     let l = [];
-    const d = y.join(O.homedir(), ".qvac", "models");
+    const d = y.join(R.homedir(), ".qvac", "models");
     try {
-      g.existsSync(d) && (l = g.readdirSync(d).map((S) => {
+      g.existsSync(d) && (l = g.readdirSync(d).map((p) => {
         try {
-          const L = (g.statSync(y.join(d, S)).size / (1024 * 1024)).toFixed(1);
-          return `${S} (${L} MB)`;
+          const M = (g.statSync(y.join(d, p)).size / (1024 * 1024)).toFixed(1);
+          return `${p} (${M} MB)`;
         } catch {
-          return S;
+          return p;
         }
       }));
     } catch {
     }
-    const u = Math.round(O.freemem() / (1024 * 1024)), m = Math.round(O.totalmem() / (1024 * 1024)), f = `
-${s}
+    const u = Math.round(R.freemem() / (1024 * 1024)), h = Math.round(R.totalmem() / (1024 * 1024)), f = `
+${i}
 [${t}] ✖ MUSIC GENERATION FAILED
 TaskId:           ${e.taskId}
 Engine:           ${e.engine}
@@ -2216,14 +2243,14 @@ Resolved Model Paths:
 ${JSON.stringify(e.resolvedPaths || {}, null, 2)}
 
 Models Cache Directory (${d}):
-${l.length > 0 ? l.map((S) => `  - ${S}`).join(`
+${l.length > 0 ? l.map((p) => `  - ${p}`).join(`
 `) : "  (Directory empty or inaccessible)"}
 
 System Resources:
-  Platform:       ${O.platform()}-${O.arch()}
-  Free Memory:    ${u} MB / ${m} MB (${Math.round(u / m * 100)}% free)
+  Platform:       ${R.platform()}-${R.arch()}
+  Free Memory:    ${u} MB / ${h} MB (${Math.round(u / h * 100)}% free)
   Node Version:   ${process.version}
-${s}
+${i}
 `;
     this.writeRaw(f), console.error(`[MusicLogger] ✖ Generation Failed for ${e.taskId} (Engine: ${e.engine}, Stage: ${e.stage}): ${r}`), console.error(n);
   }
@@ -2231,9 +2258,9 @@ ${s}
     try {
       if (!g.existsSync(this.primaryLogPath))
         return "No music generation logs recorded yet.";
-      const t = g.readFileSync(this.primaryLogPath, "utf-8"), s = t.split(`
+      const t = g.readFileSync(this.primaryLogPath, "utf-8"), i = t.split(`
 `);
-      return s.length <= e ? t : s.slice(s.length - e).join(`
+      return i.length <= e ? t : i.slice(i.length - e).join(`
 `);
     } catch (t) {
       return `Failed to read logs: ${(t == null ? void 0 : t.message) || String(t)}`;
@@ -2253,11 +2280,11 @@ ${s}
     };
   }
 };
-b(J, "instance");
-let Se = J;
-const Z = class Z {
+A(Z, "instance");
+let Me = Z;
+const ee = class ee {
   static getInstance() {
-    return Z.instance || (Z.instance = new Z()), Z.instance;
+    return ee.instance || (ee.instance = new ee()), ee.instance;
   }
   /**
    * Sanitizes prompt, lyrics, and arrangements incorporating all selected UI options
@@ -2265,18 +2292,18 @@ const Z = class Z {
    */
   sanitize(e) {
     var d;
-    const t = e.caption || "", s = e.engine || "acestep", i = e.duration && e.duration > 0 ? e.duration : 30, r = /\b(instrumental|no vocals?|no singing|without vocals?|backing track|karaoke|pure instrumental|solo piano|solo guitar|acoustic instrumental)\b/i.test(t), o = !!(e.vocalMode === "instrumental" || e.isInstrumental || ((d = e.lyrics) == null ? void 0 : d.trim()) === "[Instrumental]" || r);
+    const t = e.caption || "", i = e.engine || "acestep", s = e.duration && e.duration > 0 ? e.duration : 30, r = /\b(instrumental|no vocals?|no singing|without vocals?|backing track|karaoke|pure instrumental|solo piano|solo guitar|acoustic instrumental)\b/i.test(t), o = !!(e.vocalMode === "instrumental" || e.isInstrumental || ((d = e.lyrics) == null ? void 0 : d.trim()) === "[Instrumental]" || r);
     let n = this.stripConversationalMeta(t), a, c;
-    if (o ? (n = n.replace(/\b(?:with\s+)?(?:clear\s+melodic\s+)?(?:singing\s+vocals?|singing|lead\s+vocals?|vocalist|singer|soprano|baritone|tenor|choir|voice)\b/gi, "").replace(/\b(?:with\s+lyrics?|lyrics?)\b/gi, "").replace(/\s*,\s*,+/g, ",").trim(), /\b(instrumental|backing track|no vocals)\b/i.test(n) ? /\bno vocals\b/i.test(n) || (n = `${n}, no vocals`) : n = `${n}, instrumental backing track, no vocals, rich melodic instruments`, c = "[Instrumental]", a = void 0) : (n = n.replace(/\b(?:pure\s+)?instrumental(?:\s+track|\s+version)?\b/gi, "").replace(/\b(?:without|no)\s+vocals?\b/gi, "").replace(/\s*,\s*,+/g, ",").trim(), /(vocal|singer|voice|singing|choir|soprano|baritone|tenor|lead vocals|vocalist|harmony)/i.test(n) || (a = this.inferVocalTimbre(n, e.vocalLanguage), n = `${n}, ${a}`), e.vocalMode === "manual" && e.lyrics && e.lyrics.trim() && e.lyrics.trim() !== "[Instrumental]" ? c = this.formatLyricsForDuration(e.lyrics, n, i) : s === "acestep" && !e.lyrics ? c = "" : c = this.formatLyricsForDuration(e.lyrics, n, i)), e.bpm && e.bpm > 0 && (/\b\d+\s*(?:bpm|beats\s+per\s+minute)\b/i.test(n) || (n = `${n}, ${e.bpm} BPM`)), e.keyscale && e.keyscale.trim() && e.keyscale.toLowerCase() !== "none") {
-      const u = e.keyscale.trim(), m = u.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      new RegExp(`\\b${m}\\b`, "i").test(n) || /\b(?:in\s+key\s+of|key\s+of)\b/i.test(n) || (n = `${n}, in ${u}`);
+    if (o ? (n = n.replace(/\b(?:with\s+)?(?:clear\s+melodic\s+)?(?:singing\s+vocals?|singing|lead\s+vocals?|vocalist|singer|soprano|baritone|tenor|choir|voice)\b/gi, "").replace(/\b(?:with\s+lyrics?|lyrics?)\b/gi, "").replace(/\s*,\s*,+/g, ",").trim(), /\b(instrumental|backing track|no vocals)\b/i.test(n) ? /\bno vocals\b/i.test(n) || (n = `${n}, no vocals`) : n = `${n}, instrumental backing track, no vocals, rich melodic instruments`, i === "acestep" && !/(studio quality|clean mix|crisp|high fidelity|mastered|clear audio)/i.test(n) && (n = `${n}, studio quality mix, crisp clear audio, punchy transients`), c = "[Instrumental]", a = void 0) : (n = n.replace(/\b(?:pure\s+)?instrumental(?:\s+track|\s+version)?\b/gi, "").replace(/\b(?:without|no)\s+vocals?\b/gi, "").replace(/\s*,\s*,+/g, ",").trim(), /(vocal|singer|voice|singing|choir|soprano|baritone|tenor|lead vocals|vocalist|harmony)/i.test(n) || (a = this.inferVocalTimbre(n, e.vocalLanguage), n = `${n}, ${a}`), e.vocalMode === "manual" && e.lyrics && e.lyrics.trim() && e.lyrics.trim() !== "[Instrumental]" ? c = this.formatLyricsForDuration(e.lyrics, n, s) : i === "acestep" && !e.lyrics ? c = "" : c = this.formatLyricsForDuration(e.lyrics, n, s)), e.bpm && e.bpm > 0 && (/\b\d+\s*(?:bpm|beats\s+per\s+minute)\b/i.test(n) || (n = `${n}, ${e.bpm} BPM`)), e.keyscale && e.keyscale.trim() && e.keyscale.toLowerCase() !== "none") {
+      const u = e.keyscale.trim(), h = u.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      new RegExp(`\\b${h}\\b`, "i").test(n) || /\b(?:in\s+key\s+of|key\s+of)\b/i.test(n) || (n = `${n}, in ${u}`);
     }
     if (e.timesignature && e.timesignature.trim() && e.timesignature !== "4/4") {
       const u = e.timesignature.trim();
       n.includes(u) || (n = `${n}, ${u} time signature`);
     }
     if (!o && e.vocalLanguage && e.vocalLanguage !== "en") {
-      const m = {
+      const h = {
         es: "Spanish",
         zh: "Chinese",
         ja: "Japanese",
@@ -2287,14 +2314,17 @@ const Z = class Z {
         pt: "Portuguese",
         ru: "Russian"
       }[e.vocalLanguage.toLowerCase()];
-      m && !new RegExp(`\\b${m}\\b`, "i").test(n) && (n = `${n}, ${m} vocals`);
+      h && !new RegExp(`\\b${h}\\b`, "i").test(n) && (n = `${n}, ${h} vocals`);
     }
-    i >= 120 ? /(extended|full-length|progression|arrangement|complete song)/i.test(n) || (n = `${n}, full-length structured arrangement with progression`) : i >= 60 && (/(progression|arrangement|structured)/i.test(n) || (n = `${n}, structured track progression`)), n = n.replace(/\s*,\s*,+/g, ",").replace(/,\s*$/g, "").replace(/\s{2,}/g, " ").trim();
-    const l = s === "minimax" ? Math.max(750, Math.round(i * 25)) : void 0;
+    if (s >= 120 ? /(extended|full-length|progression|arrangement|complete song)/i.test(n) || (n = `${n}, full-length structured arrangement with progression`) : s >= 60 && (/(progression|arrangement|structured)/i.test(n) || (n = `${n}, structured track progression`)), n = n.replace(/\s*,\s*,+/g, ", ").replace(/,\s*$/g, "").replace(/\s{2,}/g, " ").trim(), i === "acestep" && n.length > 450) {
+      const u = n.slice(0, 450), h = u.lastIndexOf(",");
+      n = (h > 250 ? u.slice(0, h) : u).trim(), o && !/\b(instrumental|no vocals)\b/i.test(n) && (n = `${n}, instrumental, no vocals`);
+    }
+    const l = i === "minimax" ? Math.max(750, Math.round(s * 25)) : void 0;
     return {
       caption: n.trim(),
       lyrics: c.trim(),
-      duration: i,
+      duration: s,
       maxFrames: l,
       vocalHintInjected: a,
       isInstrumental: o
@@ -2302,25 +2332,27 @@ const Z = class Z {
   }
   /**
    * Strips conversational filler like "generate a...", "make a song about..."
+   * as well as markdown formatting, bullet points, and LLM-generated section headers.
    */
   stripConversationalMeta(e) {
     let t = e.trim();
-    const s = [
+    t = t.replace(/\*\*(.*?)\*\*/g, "$1"), t = t.replace(/\*(.*?)\*/g, "$1"), t = t.replace(/#{1,6}\s*/g, ""), t = t.replace(/^\s*\d+\.\s+/gm, ""), t = t.replace(/^\s*[-*•]\s+/gm, ""), t = t.replace(/(?:Musical arrangement and instrumentation|Composition and progression|Performance and sound characteristics|Production quality|Instrumentation|Arrangement|Sound characteristics|Style and mood)\s*:\s*/gi, ""), t = t.replace(/\b(?:The composition should sound like|The final composition should sound like|Build the composition around|Keep the arrangement entirely|Develop the musical theme|Begin with a|Include several)\b[^.,;\n]*/gi, "");
+    const i = [
       /^(?:can\s+you\s+)?(?:please\s+)?(?:generate|create|make|write|compose|produce)\s+(?:me\s+)?(?:a|an|the|some)?\s+/i,
       /^(?:i\s+(?:want|need|would\s+like)\s+(?:to\s+have\s+)?(?:a|an|the|some)?\s+)/i,
       /^(?:give\s+me\s+(?:a|an|the)?\s+)/i,
       /^(?:song\s+about\s+)/i,
       /^(?:track\s+about\s+)/i
     ];
-    for (const i of s)
-      t = t.replace(i, "");
-    return t.length > 0 && (t = t.charAt(0).toUpperCase() + t.slice(1)), t = t.replace(/\s*,\s*,+/g, ",").replace(/\s{2,}/g, " "), t;
+    for (const s of i)
+      t = t.replace(s, "");
+    return t = t.replace(/[\r\n]+/g, ", "), t = t.replace(/\s*,\s*,+/g, ", ").replace(/,\s*,/g, ", ").replace(/\s{2,}/g, " ").trim(), t = t.replace(/^,\s*/, "").replace(/,\s*$/, ""), t.length > 0 && (t = t.charAt(0).toUpperCase() + t.slice(1)), t;
   }
   /**
    * Infers the best vocal timbre matching the musical genre/theme and optional language
    */
   inferVocalTimbre(e, t) {
-    const s = e.toLowerCase(), i = {
+    const i = e.toLowerCase(), s = {
       es: "Spanish",
       zh: "Chinese",
       ja: "Japanese",
@@ -2330,28 +2362,28 @@ const Z = class Z {
       it: "Italian",
       pt: "Portuguese",
       ru: "Russian"
-    }, r = t && t !== "en" && i[t.toLowerCase()] ? `${i[t.toLowerCase()]} ` : "";
-    return /(medieval|celtic|harp|fantasy|bard|tavern|folk|ancient|kingdom)/.test(s) ? `${r}haunting bard vocals, clear close-mic singing, natural human vibrato, acoustic studio production` : /(synthwave|retrowave|cyberpunk|80s|neon|electro)/.test(s) ? `${r}crisp 80s gated reverb male vocals, polished lead vocal, punchy melodic synth hook` : /(lo-fi|lofi|chillhop|coffee|relax|bedroom)/.test(s) ? `${r}soft breathy female vocals, intimate close-mic acoustic presence, clear pronunciation` : /(rock|metal|punk|grunge|electric guitar|heavy)/.test(s) ? `${r}raw energetic rock vocals, powerful singing voice, clear vocal consonants` : /(cinematic|epic|orchestral|orchestra|trailer|hero)/.test(s) ? `${r}soaring dramatic vocals, rich choral harmonies, expansive dynamic range` : /(ballad|piano|sad|emotional|heartbreak|acoustic|love|romance|romantic)/.test(s) ? `${r}heartfelt emotional solo vocals, warm studio acoustic presence, intimate vocal nuance, close-mic singing` : /(pop|dance|disco|summer|happy|party)/.test(s) ? `${r}bright modern pop vocals, crisp high-end clarity, infectious melodic chorus` : /(r&b|soul|jazz|blues)/.test(s) ? `${r}smooth soulful vocals, rich vocal harmonics, clear diction` : `${r}expressive lead singing vocals, crisp close-mic presence, natural human vibrato, studio vocal clarity`;
+    }, r = t && t !== "en" && s[t.toLowerCase()] ? `${s[t.toLowerCase()]} ` : "";
+    return /(medieval|celtic|harp|fantasy|bard|tavern|folk|ancient|kingdom)/.test(i) ? `${r}haunting bard vocals, clear close-mic singing, natural human vibrato, acoustic studio production` : /(synthwave|retrowave|cyberpunk|80s|neon|electro)/.test(i) ? `${r}crisp 80s gated reverb male vocals, polished lead vocal, punchy melodic synth hook` : /(lo-fi|lofi|chillhop|coffee|relax|bedroom)/.test(i) ? `${r}soft breathy female vocals, intimate close-mic acoustic presence, clear pronunciation` : /(rock|metal|punk|grunge|electric guitar|heavy)/.test(i) ? `${r}raw energetic rock vocals, powerful singing voice, clear vocal consonants` : /(cinematic|epic|orchestral|orchestra|trailer|hero)/.test(i) ? `${r}soaring dramatic vocals, rich choral harmonies, expansive dynamic range` : /(ballad|piano|sad|emotional|heartbreak|acoustic|love|romance|romantic)/.test(i) ? `${r}heartfelt emotional solo vocals, warm studio acoustic presence, intimate vocal nuance, close-mic singing` : /(pop|dance|disco|summer|happy|party)/.test(i) ? `${r}bright modern pop vocals, crisp high-end clarity, infectious melodic chorus` : /(r&b|soul|jazz|blues)/.test(i) ? `${r}smooth soulful vocals, rich vocal harmonics, clear diction` : `${r}expressive lead singing vocals, crisp close-mic presence, natural human vibrato, studio vocal clarity`;
   }
   /**
    * Formats, tags, and extends lyrics according to duration so the model
    * doesn't stop prematurely at ~20 seconds.
    */
-  formatLyricsForDuration(e, t, s) {
-    let i = (e || "").trim();
-    if (!i)
-      return this.generateDefaultLyricsForTheme(t, s);
-    i = i.replace(/\[?(?:verse\s*\d*|\(verse\s*\d*\)|verse\s*\d*:)\]?/gi, "[verse]"), i = i.replace(/\[?(?:chorus|\(chorus\)|chorus:)\]?/gi, "[chorus]"), i = i.replace(/\[?(?:bridge|\(bridge\)|bridge:)\]?/gi, "[bridge]"), i = i.replace(/\[?(?:outro|\(outro\)|outro:)\]?/gi, "[outro]"), i = i.replace(/\[?(?:intro|\(intro\)|intro:)\]?/gi, "[intro]"), i = i.replace(/\*\*(.*?)\*\*/g, "$1"), i = i.replace(/#{1,6}\s*/g, ""), i.startsWith("[") || (i = `[verse]
-${i}`);
-    const r = i.match(/\[(verse|chorus|bridge|outro|intro)\]/gi) || [];
-    if (s >= 120 && r.length < 3) {
-      const o = i.split(`
+  formatLyricsForDuration(e, t, i) {
+    let s = (e || "").trim();
+    if (!s)
+      return this.generateDefaultLyricsForTheme(t, i);
+    s = s.replace(/\[?(?:verse\s*\d*|\(verse\s*\d*\)|verse\s*\d*:)\]?/gi, "[verse]"), s = s.replace(/\[?(?:chorus|\(chorus\)|chorus:)\]?/gi, "[chorus]"), s = s.replace(/\[?(?:bridge|\(bridge\)|bridge:)\]?/gi, "[bridge]"), s = s.replace(/\[?(?:outro|\(outro\)|outro:)\]?/gi, "[outro]"), s = s.replace(/\[?(?:intro|\(intro\)|intro:)\]?/gi, "[intro]"), s = s.replace(/\*\*(.*?)\*\*/g, "$1"), s = s.replace(/#{1,6}\s*/g, ""), s.startsWith("[") || (s = `[verse]
+${s}`);
+    const r = s.match(/\[(verse|chorus|bridge|outro|intro)\]/gi) || [];
+    if (i >= 120 && r.length < 3) {
+      const o = s.split(`
 `).filter((n) => n.trim() && !n.startsWith("["));
       if (o.length > 0) {
         const n = o.slice(0, Math.min(4, o.length)).join(`
 `), a = o.length > 4 ? o.slice(4).join(`
 `) : n;
-        i = [
+        s = [
           `[verse]
 ${n}`,
           `[chorus]
@@ -2370,21 +2402,21 @@ Fading softly into the end...`
 
 `);
       }
-    } else s >= 60 && r.length < 2 && (i = `${i}
+    } else i >= 60 && r.length < 2 && (s = `${s}
 
 [chorus]
-${i.replace(/\[verse\]/g, "").trim()}
+${s.replace(/\[verse\]/g, "").trim()}
 
 [outro]
 Fading with the music...`);
-    return i;
+    return s;
   }
   /**
    * Generates a complete, multi-section lyric sheet tailored to the duration.
    */
   generateDefaultLyricsForTheme(e, t) {
-    const s = e.toLowerCase();
-    return /(medieval|war|harp|battle|castle)/.test(s) ? t >= 120 ? `[verse]
+    const i = e.toLowerCase();
+    return /(medieval|war|harp|battle|castle)/.test(i) ? t >= 120 ? `[verse]
 The banners fall beneath the crimson dawn,
 A bitter wind blows through the broken shield,
 The kings are buried and the armies gone,
@@ -2452,18 +2484,18 @@ Echoing the feelings of the heart.
 Soft chords fading into the night...`;
   }
 };
-b(Z, "instance");
-let pe = Z;
-const ee = class ee {
+A(ee, "instance");
+let Ee = ee;
+const te = class te {
   static getInstance() {
-    return ee.instance || (ee.instance = new ee()), ee.instance;
+    return te.instance || (te.instance = new te()), te.instance;
   }
   /**
    * Post-processes raw interleaved PCM audio buffer into studio-mastered audio.
    * Returns a new Uint8Array with the mastered PCM samples.
    */
-  masterPcm(e, t, s, i, r = {}) {
-    if (!e || e.byteLength === 0 || s <= 0 || t <= 0)
+  masterPcm(e, t, i, s, r = {}) {
+    if (!e || e.byteLength === 0 || i <= 0 || t <= 0)
       return { masteredPcm: e, peakBeforeDb: -99, peakAfterDb: -99, details: "empty pcm" };
     const {
       enableHighPass: o = !0,
@@ -2473,141 +2505,487 @@ const ee = class ee {
       airShelfGainDb: l = 2.2,
       enableNormalize: d = !0,
       targetPeakDb: u = -0.5,
-      enableSoftLimiter: m = !0
-    } = r, f = Math.floor(i === 16 ? e.byteLength / 2 : e.byteLength / 4), S = new Float32Array(f);
-    if (i === 16) {
-      const M = new Int16Array(e.buffer, e.byteOffset, f);
+      enableSoftLimiter: h = !0
+    } = r, f = Math.floor(s === 16 ? e.byteLength / 2 : e.byteLength / 4), p = new Float32Array(f);
+    if (s === 16) {
+      const T = new Int16Array(e.buffer, e.byteOffset, f);
       for (let E = 0; E < f; E++)
-        S[E] = M[E] / 32768;
-    } else if (i === 32) {
-      const M = new Float32Array(e.buffer, e.byteOffset, f);
-      S.set(M);
+        p[E] = T[E] / 32768;
+    } else if (s === 32) {
+      const T = new Float32Array(e.buffer, e.byteOffset, f);
+      p.set(T);
     } else
       return { masteredPcm: e, peakBeforeDb: 0, peakAfterDb: 0, details: "unsupported bit depth" };
-    let C = 1e-5;
-    for (let M = 0; M < f; M++) {
-      const E = Math.abs(S[M]);
-      E > C && (C = E);
+    let b = 1e-5;
+    for (let T = 0; T < f; T++) {
+      const E = Math.abs(p[T]);
+      E > b && (b = E);
     }
-    const L = 20 * Math.log10(C);
-    o && n > 0 && n < t / 2 && this.applyHighPassFilter(S, t, s, n), a && l !== 0 && c < t / 2 && this.applyHighShelfFilter(S, t, s, c, l);
+    const M = 20 * Math.log10(b);
+    o && n > 0 && n < t / 2 && this.applyHighPassFilter(p, t, i, n), a && l !== 0 && c < t / 2 && this.applyHighShelfFilter(p, t, i, c, l);
     let N = 1e-5;
-    for (let M = 0; M < f; M++) {
-      const E = Math.abs(S[M]);
+    for (let T = 0; T < f; T++) {
+      const E = Math.abs(p[T]);
       E > N && (N = E);
     }
     if (d && N > 1e-4) {
       const E = Math.pow(10, u / 20) / N;
-      for (let p = 0; p < f; p++)
-        S[p] *= E;
+      for (let L = 0; L < f; L++)
+        p[L] *= E;
     }
-    if (m) {
+    if (h) {
       const E = 0.06000000000000005;
-      for (let p = 0; p < f; p++) {
-        const $ = S[p];
-        $ > 0.94 ? S[p] = 0.94 + E * Math.tanh(($ - 0.94) / E) : $ < -0.94 && (S[p] = -0.94 + E * Math.tanh(($ + 0.94) / E));
+      for (let L = 0; L < f; L++) {
+        const w = p[L];
+        w > 0.94 ? p[L] = 0.94 + E * Math.tanh((w - 0.94) / E) : w < -0.94 && (p[L] = -0.94 + E * Math.tanh((w + 0.94) / E));
       }
     }
-    let _ = 1e-5;
-    for (let M = 0; M < f; M++) {
-      const E = Math.abs(S[M]);
-      E > _ && (_ = E);
+    let x = 1e-5;
+    for (let T = 0; T < f; T++) {
+      const E = Math.abs(p[T]);
+      E > x && (x = E);
     }
-    const D = 20 * Math.log10(_), T = new Uint8Array(e.byteLength);
-    if (i === 16) {
-      const M = new Int16Array(T.buffer, T.byteOffset, f);
+    const _ = 20 * Math.log10(x), I = new Uint8Array(e.byteLength);
+    if (s === 16) {
+      const T = new Int16Array(I.buffer, I.byteOffset, f);
       for (let E = 0; E < f; E++) {
-        const p = Math.max(-1, Math.min(1, S[E]));
-        M[E] = p < 0 ? Math.round(p * 32768) : Math.round(p * 32767);
+        const L = Math.max(-1, Math.min(1, p[E]));
+        T[E] = L < 0 ? Math.round(L * 32768) : Math.round(L * 32767);
       }
-    } else i === 32 && new Float32Array(T.buffer, T.byteOffset, f).set(S);
-    const x = `HighPass: ${n}Hz | AirShelf: +${l}dB @ ${c}Hz | Peak: ${L.toFixed(1)}dBFS -> ${D.toFixed(1)}dBFS`;
-    return { masteredPcm: T, peakBeforeDb: L, peakAfterDb: D, details: x };
+    } else s === 32 && new Float32Array(I.buffer, I.byteOffset, f).set(p);
+    const $ = `HighPass: ${n}Hz | AirShelf: +${l}dB @ ${c}Hz | Peak: ${M.toFixed(1)}dBFS -> ${_.toFixed(1)}dBFS`;
+    return { masteredPcm: I, peakBeforeDb: M, peakAfterDb: _, details: $ };
   }
   /**
    * Applies a 2nd-order Butterworth High-Pass Biquad Filter per channel
    */
-  applyHighPassFilter(e, t, s, i) {
-    const r = 2 * Math.PI * i / t, o = Math.cos(r), c = Math.sin(r) / (2 * 0.70710678), l = (1 + o) / 2, d = -(1 + o), u = (1 + o) / 2, m = 1 + c, f = -2 * o, S = 1 - c, C = l / m, L = d / m, N = u / m, _ = f / m, D = S / m;
-    for (let T = 0; T < s; T++) {
-      let x = 0, M = 0, E = 0, p = 0;
-      for (let $ = T; $ < e.length; $ += s) {
-        const I = e[$], k = C * I + L * x + N * M - _ * E - D * p;
-        M = x, x = I, p = E, E = k, e[$] = k;
+  applyHighPassFilter(e, t, i, s) {
+    const r = 2 * Math.PI * s / t, o = Math.cos(r), c = Math.sin(r) / (2 * 0.70710678), l = (1 + o) / 2, d = -(1 + o), u = (1 + o) / 2, h = 1 + c, f = -2 * o, p = 1 - c, b = l / h, M = d / h, N = u / h, x = f / h, _ = p / h;
+    for (let I = 0; I < i; I++) {
+      let $ = 0, T = 0, E = 0, L = 0;
+      for (let w = I; w < e.length; w += i) {
+        const U = e[w], D = b * U + M * $ + N * T - x * E - _ * L;
+        T = $, $ = U, L = E, E = D, e[w] = D;
       }
     }
   }
   /**
    * Applies a High-Shelf Presence / Vocal Air Biquad Filter per channel
    */
-  applyHighShelfFilter(e, t, s, i, r) {
-    const o = Math.pow(10, r / 40), n = 2 * Math.PI * i / t, a = Math.cos(n), d = Math.sin(n) / 2 * Math.sqrt((o + 1 / o) * (1 / 1 - 1) + 2), u = 2 * Math.sqrt(o) * d, m = o * (o + 1 + (o - 1) * a + u), f = -2 * o * (o - 1 + (o + 1) * a), S = o * (o + 1 + (o - 1) * a - u), C = o + 1 - (o - 1) * a + u, L = 2 * (o - 1 - (o + 1) * a), N = o + 1 - (o - 1) * a - u, _ = m / C, D = f / C, T = S / C, x = L / C, M = N / C;
-    for (let E = 0; E < s; E++) {
-      let p = 0, $ = 0, I = 0, k = 0;
-      for (let z = E; z < e.length; z += s) {
-        const re = e[z], W = _ * re + D * p + T * $ - x * I - M * k;
-        $ = p, p = re, k = I, I = W, e[z] = W;
+  applyHighShelfFilter(e, t, i, s, r) {
+    const o = Math.pow(10, r / 40), n = 2 * Math.PI * s / t, a = Math.cos(n), d = Math.sin(n) / 2 * Math.sqrt((o + 1 / o) * (1 / 1 - 1) + 2), u = 2 * Math.sqrt(o) * d, h = o * (o + 1 + (o - 1) * a + u), f = -2 * o * (o - 1 + (o + 1) * a), p = o * (o + 1 + (o - 1) * a - u), b = o + 1 - (o - 1) * a + u, M = 2 * (o - 1 - (o + 1) * a), N = o + 1 - (o - 1) * a - u, x = h / b, _ = f / b, I = p / b, $ = M / b, T = N / b;
+    for (let E = 0; E < i; E++) {
+      let L = 0, w = 0, U = 0, D = 0;
+      for (let P = E; P < e.length; P += i) {
+        const k = e[P], F = x * k + _ * L + I * w - $ * U - T * D;
+        w = L, L = k, D = U, U = F, e[P] = F;
       }
     }
   }
 };
-b(ee, "instance");
-let ue = ee;
-function _e(h, e, t, s) {
-  const i = new ArrayBuffer(44), r = new DataView(i), o = t * (s / 8);
-  de(r, 0, "RIFF"), r.setUint32(4, 36 + h.byteLength, !0), de(r, 8, "WAVE"), de(r, 12, "fmt "), r.setUint32(16, 16, !0), r.setUint16(20, 1, !0), r.setUint16(22, t, !0), r.setUint32(24, e, !0), r.setUint32(28, e * o, !0), r.setUint16(32, o, !0), r.setUint16(34, s, !0), de(r, 36, "data"), r.setUint32(40, h.byteLength, !0);
-  const n = new Uint8Array(44 + h.byteLength);
-  return n.set(new Uint8Array(i)), n.set(h, 44), n;
+A(te, "instance");
+let fe = te;
+const ie = class ie {
+  constructor() {
+    A(this, "activeModelId", null);
+    A(this, "isLoadingModel", !1);
+    A(this, "idleUnloadTimer", null);
+  }
+  static getInstance() {
+    return ie.instance || (ie.instance = new ie()), ie.instance;
+  }
+  /**
+   * Resets the idle unload timer to keep model in unified memory across iterative prompt adjustments.
+   * Auto-unloads after 4 minutes of inactivity.
+   */
+  touchActivity() {
+    this.idleUnloadTimer && (clearTimeout(this.idleUnloadTimer), this.idleUnloadTimer = null), this.idleUnloadTimer = setTimeout(() => {
+      console.log("[QwenLyricService] Idle timeout reached (4m), releasing model memory"), this.unload().catch(() => {
+      });
+    }, 4 * 60 * 1e3);
+  }
+  /**
+   * Ensures the Qwen3-1.7B Instruct model is loaded into memory on Apple Metal GPU.
+   */
+  async ensureModelLoaded(e) {
+    if (this.activeModelId)
+      return this.activeModelId;
+    if (this.isLoadingModel) {
+      for (; this.isLoadingModel; )
+        await new Promise((t) => setTimeout(t, 100));
+      if (this.activeModelId) return this.activeModelId;
+    }
+    this.isLoadingModel = !0;
+    try {
+      console.log("[QwenLyricService] ▸ Loading Qwen3-1.7B Instruct LLM for lyric generation...");
+      const t = await v.loadModel({
+        modelSrc: v.QWEN3_1_7B_INST_Q4,
+        onProgress: (i) => {
+          e == null || e(i);
+        }
+      });
+      return this.activeModelId = t, console.log(`[QwenLyricService] ✓ Qwen3-1.7B loaded successfully with ID: ${t}`), this.touchActivity(), t;
+    } catch (t) {
+      throw console.error("[QwenLyricService] ✖ Failed to load Qwen3-1.7B:", t), t;
+    } finally {
+      this.isLoadingModel = !1;
+    }
+  }
+  /**
+   * Unloads the Qwen lyric model to release unified memory.
+   * Called before heavy MiniMax runs or on idle timeout.
+   */
+  async unload() {
+    this.idleUnloadTimer && (clearTimeout(this.idleUnloadTimer), this.idleUnloadTimer = null);
+    const e = this.activeModelId;
+    if (e) {
+      this.activeModelId = null;
+      try {
+        await v.unloadModel({ modelId: e }), console.log("[QwenLyricService] ✓ Qwen3-1.7B unloaded to free memory");
+      } catch (t) {
+        console.warn("[QwenLyricService] Warning unloading Qwen3-1.7B:", t);
+      }
+    }
+  }
+  /**
+   * Generates song lyrics from a description, streaming tokens in real time.
+   */
+  async generateLyricsStream(e, t, i) {
+    this.touchActivity();
+    const s = (e || "").trim() || "A soulful, emotional song about life and hope";
+    try {
+      const r = await this.ensureModelLoaded(i), o = `You are a professional hit songwriter.
+Write structured, rhyming song lyrics based on the musical prompt.
+
+Formatting Rules:
+1. Immediately start outputting lyrics using standard section headers:
+[verse]
+[chorus]
+[verse]
+[chorus]
+[bridge]
+[outro]
+2. Output ONLY the song lyrics and section tags. Never output conversational remarks, intros, or explanations.
+3. Keep verses and chorus punchy, rhyming, and easy to sing.`, n = `Write song lyrics for: "${s}". Output only the lyrics starting with [verse].`, a = v.completion({
+        modelId: r,
+        history: [
+          { role: "system", content: o },
+          { role: "user", content: n }
+        ],
+        captureThinking: !1,
+        stream: !0,
+        generationParams: {
+          reasoning_budget: 0,
+          predict: 420,
+          temp: 0.75,
+          top_p: 0.9,
+          repeat_penalty: 1.15,
+          frequency_penalty: 0.25,
+          presence_penalty: 0.25
+        }
+      });
+      let c = "", l = !1, d = !1;
+      const u = setTimeout(() => {
+        if (!l) {
+          d = !0, console.warn("[QwenLyricService] First token watchdog timed out (7s). Canceling run & activating fast synthesizer.");
+          try {
+            v.cancel({ requestId: a.requestId }).catch(() => {
+            });
+          } catch {
+          }
+        }
+      }, 7e3);
+      try {
+        for await (const p of a.events) {
+          if (d) break;
+          if (p.type === "contentDelta" && p.text) {
+            const b = p.text.replace(/<think>[\s\S]*?<\/think>/gi, "").replace(/<\/?think>/gi, "");
+            b && (l || (l = !0, clearTimeout(u)), c += b, t == null || t(b));
+          }
+        }
+      } catch (p) {
+        console.warn("[QwenLyricService] Stream iteration warning/end:", p);
+      } finally {
+        clearTimeout(u);
+      }
+      const h = c.trim();
+      if (!l || h.length < 30) {
+        console.warn("[QwenLyricService] LLM output insufficient or timed out, synthesizing genre-tailored lyrics.");
+        const p = this.getFallbackLyrics(s);
+        for (const b of p)
+          t == null || t(b), await new Promise((M) => setTimeout(M, 4));
+        return this.touchActivity(), { lyrics: p, engine: "fallback" };
+      }
+      const f = h.startsWith("[") ? h : `[verse]
+${h}`;
+      return this.touchActivity(), { lyrics: f, engine: "qwen-1.7b" };
+    } catch (r) {
+      console.warn("[QwenLyricService] Qwen lyric generation failed, activating fallback:", r);
+      const o = this.getFallbackLyrics(s);
+      for (const n of o)
+        t == null || t(n), await new Promise((a) => setTimeout(a, 4));
+      return this.touchActivity(), { lyrics: o, engine: "fallback" };
+    }
+  }
+  /**
+   * Fast rule-based genre-tailored lyrical synthesizer
+   */
+  getFallbackLyrics(e) {
+    const t = e.toLowerCase();
+    return /(medieval|celtic|harp|fantasy|bard|tavern|folk|acoustic|woodland|castle)/.test(t) ? `[verse]
+The banners fall beneath the crimson dawn,
+A bitter wind blows through the broken shield,
+The kings are buried and the armies gone,
+And silence settles on the frozen field.
+
+[chorus]
+Oh, pluck the harp and sing for what was lost,
+No golden crown can mend a hollow heart,
+The bitter iron counts the heavy cost,
+Where sorrow tore the brotherhood apart.
+
+[verse]
+The village smokes into the autumn sky,
+Cold ashes drift across the stony path,
+No victor smiles beneath the raven's cry,
+For who survives the fury of their wrath?
+
+[chorus]
+Oh, pluck the harp and sing for what was lost,
+No golden crown can mend a hollow heart,
+The bitter iron counts the heavy cost,
+Where sorrow tore the brotherhood apart.
+
+[bridge]
+Let the embers fade, let the trumpets die,
+No march remains for those who could not stand,
+Only the stars across the northern sky,
+Watching the weeping of a weary land.
+
+[outro]
+Harp strings tremble in the twilight air,
+Peace to the fallen, beyond despair...` : /(synthwave|retro|neon|cyberpunk|80s|electronic|dance|edm|techno|club|future)/.test(t) ? `[verse]
+Purple neon reflecting in the rain,
+Speedometer climbing on the open lane,
+Digital echoes through the midnight mist,
+Chasing a future that we almost missed.
+
+[chorus]
+We ride the synthwave into the dark,
+Ignite the engine, electric spark,
+The grid is open, the road is clear,
+Nothing can touch us while we are here!
+
+[verse]
+Chromed-out reflections in the driver side,
+Running on dreams that we refuse to hide,
+Flickering signals in the city breeze,
+Lost in the hum of electronic keys.
+
+[chorus]
+We ride the synthwave into the dark,
+Ignite the engine, electric spark,
+The grid is open, the road is clear,
+Nothing can touch us while we are here!
+
+[bridge]
+Accelerate past the boundary line,
+Out of the shadows into the shine,
+Analog pulses guiding the way,
+Running forever away from the day.
+
+[outro]
+Synth pads fading into the night...
+Driving forever into the light...` : /(hip hop|hip-hop|rap|trap|drill|urban|rhyme|beats|808|freestyle)/.test(t) ? `[verse]
+Step on the pavement, concrete cold,
+Writing out stories that were never told,
+Mic in my hand and the bassline deep,
+Counting my blessings while the city sleep.
+Came from the bottom with a vision in sight,
+Turning every shadow into blinding light.
+
+[chorus]
+Turn up the sound, let the rhythm ignite,
+We taking over in the dead of the night,
+They counted us out, but we rewriting the game,
+Nothing is ever gonna feel the same!
+
+[verse]
+Heavy 808s bumping through the avenue,
+Staying focused on the things I gotta do,
+Stacking up the bars like a fortress wall,
+Never gonna buckle, never gonna fall.
+
+[chorus]
+Turn up the sound, let the rhythm ignite,
+We taking over in the dead of the night,
+They counted us out, but we rewriting the game,
+Nothing is ever gonna feel the same!
+
+[bridge]
+From the underground straight to the top,
+This momentum is never gonna stop,
+Hands to the ceiling, let the speakers blow,
+Everything we got is on the show.
+
+[outro]
+Yeah... city lights fading out slow...
+Turn the volume down low...` : /(rock|metal|punk|grunge|guitar|heavy|distortion|electric)/.test(t) ? `[verse]
+Feedback screaming through an ancient amp,
+Damp dirty basement by a single lamp,
+Calloused fingers digging in the wire,
+Spitting out sparks to a roaring fire.
+
+[chorus]
+Tear down the walls, let the thunder roll,
+Something inside is taking full control,
+Turn it to eleven, break the master key,
+Tonight we're screaming till we set it free!
+
+[verse]
+Cracked leather jackets in the pouring storm,
+Breaking the mold of what they call the norm,
+Heartbeat pounding like a double kick drum,
+Waiting for the promised day to come.
+
+[chorus]
+Tear down the walls, let the thunder roll,
+Something inside is taking full control,
+Turn it to eleven, break the master key,
+Tonight we're screaming till we set it free!
+
+[bridge]
+No surrender, no giving in,
+This is where the revolution begins!
+Hear the distortion tearing the sky,
+We were born to live, not just survive!
+
+[outro]
+Power chords ring until the lights go out...
+This is what rock and roll is all about!` : /(pop|upbeat|happy|joy|bright|fun|summer|danceable)/.test(t) ? `[verse]
+Sunlight breaking through the morning trees,
+Walking down the sidewalk with a summer breeze,
+Got a brand new melody inside my head,
+Dancing through the words that we left unsaid.
+
+[chorus]
+Oh, can you feel that vibrant beat?
+Lifting everybody right up off their feet!
+Shining like gold in the afternoon sun,
+The good times have only just begun!
+
+[verse]
+Window rolled down singing every line,
+Everything is falling right in line,
+Catching your smile across the room,
+Chasing away every ounce of gloom.
+
+[chorus]
+Oh, can you feel that vibrant beat?
+Lifting everybody right up off their feet!
+Shining like gold in the afternoon sun,
+The good times have only just begun!
+
+[bridge]
+Spin me around, don't let it end,
+Here with my lover and my best friend,
+Higher and higher we're taking flight,
+We're glowing brighter than the stars tonight!
+
+[outro]
+Yeah, keep that feeling in your heart...
+A beautiful ending to a brand new start...` : `[verse]
+Raindrops running down the window pane,
+Every little memory feels so plain,
+I know that tomorrow the sun will rise,
+Yet all I can picture is your eyes.
+
+[chorus]
+And if you look back from where you are,
+Know that I'm wishing upon that star,
+That somewhere down this winding track,
+The road will guide you back.
+
+[verse]
+I still find your coffee mug on the shelf,
+Spending my evenings talking to myself,
+The hallway echoes with the words we said,
+Replaying the moments in my head.
+
+[chorus]
+And if you look back from where you are,
+Know that I'm wishing upon that star,
+That somewhere down this winding track,
+The road will guide you back.
+
+[bridge]
+Time was supposed to heal the ache,
+How much more can one spirit take?
+I whisper your name into the breeze,
+Begging my restless mind for peace.
+
+[outro]
+Piano notes linger soft and slow...
+I loved you enough to let you go...`;
+  }
+};
+A(ie, "instance");
+let ye = ie;
+function xe(m, e, t, i) {
+  const s = new ArrayBuffer(44), r = new DataView(s), o = t * (i / 8);
+  ge(r, 0, "RIFF"), r.setUint32(4, 36 + m.byteLength, !0), ge(r, 8, "WAVE"), ge(r, 12, "fmt "), r.setUint32(16, 16, !0), r.setUint16(20, 1, !0), r.setUint16(22, t, !0), r.setUint32(24, e, !0), r.setUint32(28, e * o, !0), r.setUint16(32, o, !0), r.setUint16(34, i, !0), ge(r, 36, "data"), r.setUint32(40, m.byteLength, !0);
+  const n = new Uint8Array(44 + m.byteLength);
+  return n.set(new Uint8Array(s)), n.set(m, 44), n;
 }
-function de(h, e, t) {
-  for (let s = 0; s < t.length; s++)
-    h.setUint8(e + s, t.charCodeAt(s));
+function ge(m, e, t) {
+  for (let i = 0; i < t.length; i++)
+    m.setUint8(e + i, t.charCodeAt(i));
 }
-function De(h) {
-  return `data:audio/wav;base64,${Buffer.from(h.buffer, h.byteOffset, h.byteLength).toString("base64")}`;
+function $e(m) {
+  return `data:audio/wav;base64,${Buffer.from(m.buffer, m.byteOffset, m.byteLength).toString("base64")}`;
 }
-function Le(h, e, t, s = 64) {
-  if (h.length === 0) return Array(s).fill(10);
-  const i = [];
+function Le(m, e, t, i = 64) {
+  if (m.length === 0) return Array(i).fill(10);
+  const s = [];
   if (e === 16) {
-    const r = new Int16Array(h.buffer, h.byteOffset, Math.floor(h.byteLength / 2)), o = Math.max(1, Math.floor(r.length / s));
-    for (let n = 0; n < s; n++) {
+    const r = new Int16Array(m.buffer, m.byteOffset, Math.floor(m.byteLength / 2)), o = Math.max(1, Math.floor(r.length / i));
+    for (let n = 0; n < i; n++) {
       let a = 0;
       const c = n * o, l = Math.min(r.length, c + o);
       for (let d = c; d < l; d += t) {
         const u = Math.abs(r[d]) / 32768;
         u > a && (a = u);
       }
-      i.push(Math.max(6, Math.min(98, Math.round(a * 100))));
+      s.push(Math.max(6, Math.min(98, Math.round(a * 100))));
     }
   } else if (e === 32) {
-    const r = new Float32Array(h.buffer, h.byteOffset, Math.floor(h.byteLength / 4)), o = Math.max(1, Math.floor(r.length / s));
-    for (let n = 0; n < s; n++) {
+    const r = new Float32Array(m.buffer, m.byteOffset, Math.floor(m.byteLength / 4)), o = Math.max(1, Math.floor(r.length / i));
+    for (let n = 0; n < i; n++) {
       let a = 0;
       const c = n * o, l = Math.min(r.length, c + o);
       for (let d = c; d < l; d += t) {
         const u = Math.abs(r[d]);
         u > a && (a = u);
       }
-      i.push(Math.max(6, Math.min(98, Math.round(a * 100))));
+      s.push(Math.max(6, Math.min(98, Math.round(a * 100))));
     }
   } else
-    for (let r = 0; r < s; r++)
-      i.push(Math.round(20 + Math.sin(r / 4) * 15));
-  return i;
+    for (let r = 0; r < i; r++)
+      s.push(Math.round(20 + Math.sin(r / 4) * 15));
+  return s;
 }
 class ft {
   constructor() {
-    b(this, "activeModelId");
-    b(this, "activeEngine");
-    b(this, "activeDitVariant");
-    b(this, "activeRequestIds", /* @__PURE__ */ new Map());
+    A(this, "activeModelId");
+    A(this, "activeEngine");
+    A(this, "activeDitVariant");
+    A(this, "activeRequestIds", /* @__PURE__ */ new Map());
     // taskId -> requestId
-    b(this, "musicExportsDir");
-    b(this, "logger", Se.getInstance());
+    A(this, "musicExportsDir");
+    A(this, "logger", Me.getInstance());
     var e;
     try {
-      const t = (e = U) != null && e.getPath ? U.getPath("userData") : process.cwd();
+      const t = (e = O) != null && e.getPath ? O.getPath("userData") : process.cwd();
       this.musicExportsDir = y.join(t, "music-exports"), g.existsSync(this.musicExportsDir) || g.mkdirSync(this.musicExportsDir, { recursive: !0 });
     } catch {
       this.musicExportsDir = y.join(process.cwd(), "music-exports");
@@ -2639,36 +3017,36 @@ class ft {
           ]
         }) };
       }
-      const { lmModelSrc: s, synthModelSrc: i } = this.resolveMiniMaxModelPaths();
-      return s && i ? { success: !0, data: await v.assessModelFit({
+      const { lmModelSrc: i, synthModelSrc: s } = this.resolveMiniMaxModelPaths();
+      return i && s ? { success: !0, data: await v.assessModelFit({
         models: [
           {
             modelType: "audiogen",
             modelConfig: {
               engine: "minimax",
-              lmModelSrc: s,
-              synthModelSrc: i,
+              lmModelSrc: i,
+              synthModelSrc: s,
               useGPU: !0
             }
           }
         ]
       }) } : { success: !0, message: "MiniMax assessment requires local model paths" };
-    } catch (s) {
+    } catch (i) {
       return this.logger.logFailure({
         taskId: "assess-fit",
         engine: e,
         stage: "ASSESS_FIT",
-        error: s,
+        error: i,
         options: { engine: e, ditVariant: t }
-      }), { success: !1, error: (s == null ? void 0 : s.message) || String(s) };
+      }), { success: !1, error: (i == null ? void 0 : i.message) || String(i) };
     }
   }
   /**
    * Discovers downloaded MiniMax-Music3 GGUF model files from disk cache (~/.qvac/models)
    */
   resolveMiniMaxModelPaths(e, t) {
-    let s = e, i = t;
-    const r = y.join(O.homedir(), ".qvac", "models");
+    let i = e, s = t;
+    const r = y.join(R.homedir(), ".qvac", "models");
     if (g.existsSync(r))
       try {
         const o = g.readdirSync(r);
@@ -2683,7 +3061,7 @@ class ft {
           } catch {
             continue;
           }
-          if (!s && (a.includes("mm3-lm") || a.includes("minimax") && (a.includes("lm") || a.includes("transformer"))) && !a.includes("vocoder") && !a.includes("synth")) {
+          if (!i && (a.includes("mm3-lm") || a.includes("minimax") && (a.includes("lm") || a.includes("transformer"))) && !a.includes("vocoder") && !a.includes("synth")) {
             if (n.includes("-imat.gguf")) {
               const l = n.replace("-imat.gguf", ".gguf"), d = y.join(r, l);
               if (!g.existsSync(d))
@@ -2696,18 +3074,25 @@ class ft {
                   }
                 }
               if (g.existsSync(d)) {
-                s = d;
+                i = d;
                 continue;
               }
             }
-            s = c;
+            i = c;
           }
-          !i && (a.includes("mm3-synth") || a.includes("minimax") && (a.includes("synth") || a.includes("vocoder"))) && !a.includes("transformer") && !a.includes("lm") && (i = c);
+          !s && (a.includes("mm3-synth") || a.includes("minimax") && (a.includes("synth") || a.includes("vocoder"))) && !a.includes("transformer") && !a.includes("lm") && (s = c);
         }
       } catch (o) {
         console.warn("[MusicEngineService] Error resolving MiniMax model paths:", o);
       }
-    return { lmModelSrc: s, synthModelSrc: i };
+    return { lmModelSrc: i, synthModelSrc: s };
+  }
+  /**
+   * Checks whether MiniMax Music-v3 models are installed and accessible on disk
+   */
+  areMiniMaxModelsAvailable() {
+    const { lmModelSrc: e, synthModelSrc: t } = this.resolveMiniMaxModelPaths();
+    return !!(e && t);
   }
   /**
    * Resolves the DiT model source constant based on user variant selection
@@ -2729,8 +3114,8 @@ class ft {
    * Ensures the appropriate AudioGen model is loaded in QVAC runtime
    */
   async ensureModelLoaded(e, t) {
-    const s = e.engine || "acestep", i = e.ditVariant || "turbo-q4";
-    if (this.activeModelId && this.activeEngine === s && (s === "minimax" || this.activeDitVariant === i))
+    const i = e.engine || "acestep", s = e.ditVariant || "turbo-q4";
+    if (this.activeModelId && this.activeEngine === i && (i === "minimax" || this.activeDitVariant === s))
       return this.activeModelId;
     if (this.activeModelId) {
       try {
@@ -2740,8 +3125,8 @@ class ft {
       }
       this.activeModelId = void 0;
     }
-    if (s === "acestep") {
-      const r = this.resolveDitModelSrc(i);
+    if (i === "acestep") {
+      const r = this.resolveDitModelSrc(s);
       t == null || t({
         taskId: "model-load",
         stage: "Loading Models",
@@ -2749,7 +3134,7 @@ class ft {
         total: 100,
         percentage: 0,
         message: "Preparing ACE-Step AudioGen models..."
-      }), this.logger.logMilestone("model-load", "LOAD_START", `Loading ACE-Step (${i}) into QVAC runtime`);
+      }), this.logger.logMilestone("model-load", "LOAD_START", `Loading ACE-Step (${s}) into QVAC runtime`);
       try {
         const o = await v.loadModel({
           modelType: "audiogen",
@@ -2775,7 +3160,7 @@ class ft {
             });
           }
         });
-        return this.activeModelId = o, this.activeEngine = "acestep", this.activeDitVariant = i, this.logger.logMilestone("model-load", "LOAD_SUCCESS", `ACE-Step model loaded ID: ${o}`), o;
+        return this.activeModelId = o, this.activeEngine = "acestep", this.activeDitVariant = s, this.logger.logMilestone("model-load", "LOAD_SUCCESS", `ACE-Step model loaded ID: ${o}`), o;
       } catch (o) {
         throw this.logger.logFailure({
           taskId: "model-load",
@@ -2789,12 +3174,12 @@ class ft {
     } else {
       const { lmModelSrc: r, synthModelSrc: o } = this.resolveMiniMaxModelPaths(e.lmModelSrc, e.synthModelSrc);
       if (!r || !o) {
-        const n = "MiniMax-Music3 model files are not installed. Please download the MiniMax models first.";
+        const a = "MiniMax-Music3 model files are not installed. Please download the MiniMax models first.";
         throw this.logger.logFailure({
           taskId: "model-load",
           engine: "minimax",
           stage: "RESOLVE_MINIMAX_PATHS",
-          error: new Error(n),
+          error: new Error(a),
           options: e,
           resolvedPaths: { lmModelSrc: r, synthModelSrc: o }
         }), console.error("[MusicEngineService] ✖ MiniMax Model Load Failed: missing model paths", {
@@ -2802,7 +3187,7 @@ class ft {
           synthModelSrc: o,
           optionsLm: e.lmModelSrc,
           optionsSynth: e.synthModelSrc
-        }), new Error(n);
+        }), new Error(a);
       }
       t == null || t({
         taskId: "model-load",
@@ -2811,9 +3196,15 @@ class ft {
         total: 100,
         percentage: 0,
         message: "Loading MiniMax-Music3 local GGUF models..."
-      }), this.logger.logMilestone("model-load", "LOAD_START", `Loading MiniMax models into QVAC runtime (LM: ${r}, Synth: ${o})`);
+      }), this.logger.logMilestone("model-load", "LOAD_START", `Loading MiniMax models into QVAC runtime (LM: ${r}, Synth: ${o})`), await ye.getInstance().unload();
+      const n = R.freemem() / 1024 ** 3;
+      n < 8 && (this.logger.logMilestone(
+        "model-load",
+        "LOW_MEMORY",
+        `Only ${n.toFixed(1)} GB reported free before MiniMax load; generation may be slow. Close heavy apps for best speed.`
+      ), console.warn(`[MusicEngineService] Low free memory before MiniMax load: ${n.toFixed(1)} GB`));
       try {
-        const n = await v.loadModel({
+        const a = await v.loadModel({
           modelType: "audiogen",
           modelConfig: {
             engine: "minimax",
@@ -2823,29 +3214,29 @@ class ft {
             ...e.threads !== void 0 && { threads: e.threads }
           }
         });
-        return this.activeModelId = n, this.activeEngine = "minimax", this.logger.logMilestone("model-load", "LOAD_SUCCESS", `MiniMax model loaded successfully! ID: ${n}`), n;
-      } catch (n) {
+        return this.activeModelId = a, this.activeEngine = "minimax", this.logger.logMilestone("model-load", "LOAD_SUCCESS", `MiniMax model loaded successfully! ID: ${a}`), a;
+      } catch (a) {
         throw this.logger.logFailure({
           taskId: "model-load",
           engine: "minimax",
           stage: "LOAD_MINIMAX_RUNTIME",
-          error: n,
+          error: a,
           options: e,
           resolvedPaths: { lmModelSrc: r, synthModelSrc: o }
         }), console.error("[MusicEngineService] ✖ Failed to load MiniMax models in QVAC runtime:", {
-          error: (n == null ? void 0 : n.message) || String(n),
-          code: n == null ? void 0 : n.code,
-          stack: n == null ? void 0 : n.stack,
+          error: (a == null ? void 0 : a.message) || String(a),
+          code: a == null ? void 0 : a.code,
+          stack: a == null ? void 0 : a.stack,
           lmModelSrc: r,
           synthModelSrc: o
-        }), n;
+        }), a;
       }
     }
   }
   /**
    * Generates music track based on prompt, lyrics, and musical controls
    */
-  async generate(e, t, s, i) {
+  async generate(e, t, i, s) {
     const { taskId: r, caption: o } = e;
     if (!o || !o.trim())
       return { success: !1, error: "Caption is required and cannot be empty." };
@@ -2860,12 +3251,12 @@ class ft {
       seed: e.seed
     });
     try {
-      s == null || s({ text: `▸ Initializing Music Generation: "${o}"`, stream: "system" });
+      i == null || i({ text: `▸ Initializing Music Generation: "${o}"`, stream: "system" });
       const n = await this.ensureModelLoaded(e, t);
-      if (i != null && i())
+      if (s != null && s())
         return this.logger.logMilestone(r, "CANCELLED", "Cancelled by user before synthesis started"), { success: !1, error: "Cancelled by user before synthesis started." };
-      this.logger.logMilestone(r, "MODEL_READY", `Model ID: ${n} (${e.engine || "acestep"})`), s == null || s({ text: `▸ Model loaded successfully: ${n} (Engine: ${e.engine || "acestep"})`, stream: "system" });
-      const a = e.engine || "acestep", c = pe.getInstance().sanitize({
+      this.logger.logMilestone(r, "MODEL_READY", `Model ID: ${n} (${e.engine || "acestep"})`), i == null || i({ text: `▸ Model loaded successfully: ${n} (Engine: ${e.engine || "acestep"})`, stream: "system" });
+      const a = e.engine || "acestep", c = Ee.getInstance().sanitize({
         caption: e.caption,
         lyrics: e.lyrics,
         isInstrumental: e.isInstrumental,
@@ -2884,7 +3275,7 @@ class ft {
         r,
         "SANITIZED",
         `Cleaned Caption: "${c.caption.slice(0, 80)}..." | Target Duration: ${c.duration}s | LyricsLength: ${c.lyrics.length} | Mode: ${c.isInstrumental ? "INSTRUMENTAL" : "VOCAL"}${c.vocalHintInjected ? ` | VocalInjected: "${c.vocalHintInjected}"` : ""}`
-      ), s == null || s({
+      ), i == null || i({
         text: `▸ Request Sanitized: "${c.caption.slice(0, 60)}..." (Mode: ${c.isInstrumental ? "Instrumental" : "Vocal"}, Duration: ${c.duration}s)`,
         stream: "system"
       });
@@ -2894,81 +3285,126 @@ class ft {
         lyrics: c.lyrics,
         duration: c.duration
       };
-      e.seed !== void 0 && (l.seed = e.seed), a === "acestep" && (e.simpleMode !== !1 && !c.isInstrumental && !e.lyrics ? (l.simpleMode = !0, delete l.lyrics) : c.isInstrumental && (l.simpleMode = !1, l.lyrics = "[Instrumental]"), !e.vocalLanguage && !c.isInstrumental && (l.vocalLanguage = "en")), a === "acestep" ? (e.bpm !== void 0 && (l.bpm = e.bpm), e.keyscale && (l.keyscale = e.keyscale), e.timesignature && (l.timesignature = e.timesignature), e.vocalLanguage && (l.vocalLanguage = e.vocalLanguage), e.augmentCaptionWithMetadata && (l.augmentCaptionWithMetadata = !0), l.simpleMode || e.simpleMode ? l.simpleMode = !0 : e.rewriteQuery && (l.rewriteQuery = !0), e.generateLrc && (l.generateLrc = !0), e.computeQualityScore && (l.computeQualityScore = !0), e.normalizeLoudness !== void 0 && (l.normalizeLoudness = e.normalizeLoudness), e.guidanceScale !== void 0 && (l.guidanceScale = e.guidanceScale), e.dcwEnabled !== void 0 && (l.dcwEnabled = e.dcwEnabled), e.dcwScaler !== void 0 && (l.dcwScaler = e.dcwScaler), e.dcwHighScaler !== void 0 && (l.dcwHighScaler = e.dcwHighScaler), e.inferenceSteps !== void 0 && (l.inferenceSteps = e.inferenceSteps), e.shift !== void 0 && (l.shift = e.shift), e.referenceAudio && (l.referenceAudio = e.referenceAudio), e.taskType && e.taskType !== "text2music" && (l.taskType = e.taskType, e.sourceAudio && (l.sourceAudio = e.sourceAudio), e.taskType === "cover-nofsq" ? (l.audioCoverStrength = 1, l.coverNoiseStrength = e.coverNoiseStrength ?? 0.75) : e.taskType === "lego" && e.track && (l.track = e.track))) : (l.cfgScale = e.cfgScale !== void 0 ? e.cfgScale : 1.8, e.maxFrames !== void 0 && (l.maxFrames = e.maxFrames, delete l.duration), e.inferenceSteps && e.inferenceSteps >= 16 ? l.inferenceSteps = e.inferenceSteps : l.inferenceSteps = 22), s == null || s({ text: "▸ Starting QVAC audioGen inference run...", stream: "system" });
+      if (e.seed !== void 0 && (l.seed = e.seed), a === "acestep") {
+        if (c.duration > 60) {
+          if (this.areMiniMaxModelsAvailable())
+            return this.logger.logMilestone(
+              r,
+              "ENGINE_ELEVATED",
+              `Extended duration (${c.duration}s) exceeds ACE-Step's 60s window. Seamlessly routing to MiniMax Music-v3 Global LM.`
+            ), await this.generate({
+              ...e,
+              engine: "minimax"
+            }, t, i, s);
+          this.logger.logMilestone(
+            r,
+            "DURATION_CLAMPED",
+            `ACE-Step 5Hz LM natively supports up to 60s. Clamping from ${c.duration}s to 60s to ensure successful synthesis.`
+          ), c.duration = 60, l.duration = 60;
+        }
+        e.simpleMode !== !1 && !c.isInstrumental && !e.lyrics ? (l.simpleMode = !0, delete l.lyrics) : c.isInstrumental && (l.simpleMode = !1, l.lyrics = "[Instrumental]"), !e.vocalLanguage && !c.isInstrumental && (l.vocalLanguage = "en");
+      }
+      if (a === "acestep") {
+        e.bpm !== void 0 && (l.bpm = e.bpm), e.keyscale && (l.keyscale = e.keyscale), e.timesignature && (l.timesignature = e.timesignature), e.vocalLanguage && (l.vocalLanguage = e.vocalLanguage), e.augmentCaptionWithMetadata && (l.augmentCaptionWithMetadata = !0), l.simpleMode || e.simpleMode ? l.simpleMode = !0 : e.rewriteQuery && (l.rewriteQuery = !0), e.generateLrc && (l.generateLrc = !0), e.computeQualityScore && (l.computeQualityScore = !0), e.normalizeLoudness !== void 0 ? l.normalizeLoudness = e.normalizeLoudness : l.normalizeLoudness = !0;
+        const D = !e.ditVariant || e.ditVariant.includes("turbo");
+        D ? e.guidanceScale && e.guidanceScale > 1.5 ? (console.warn(`[MusicEngineService] Clamping high guidanceScale (${e.guidanceScale}) to 1.0 on turbo DiT to prevent distortion.`), l.guidanceScale = 1) : l.guidanceScale = e.guidanceScale !== void 0 ? e.guidanceScale : 0 : l.guidanceScale = e.guidanceScale !== void 0 ? e.guidanceScale : 7, D ? e.shift && e.shift < 2 ? (console.warn(`[MusicEngineService] Correcting low shift (${e.shift}) to 3.0 on turbo DiT for acoustic clarity.`), l.shift = 3) : l.shift = e.shift !== void 0 ? e.shift : 3 : l.shift = e.shift !== void 0 ? e.shift : 1, l.dcwEnabled = e.dcwEnabled !== void 0 ? e.dcwEnabled : !0, l.dcwScaler = e.dcwScaler !== void 0 ? e.dcwScaler : 0.05, l.dcwHighScaler = e.dcwHighScaler !== void 0 ? e.dcwHighScaler : 0.02, e.inferenceSteps ? l.inferenceSteps = Math.max(D ? 8 : 30, e.inferenceSteps) : l.inferenceSteps = D ? 10 : 50, e.referenceAudio && (l.referenceAudio = e.referenceAudio), e.taskType && e.taskType !== "text2music" && (l.taskType = e.taskType, e.sourceAudio && (l.sourceAudio = e.sourceAudio), e.taskType === "cover-nofsq" ? (l.audioCoverStrength = 1, l.coverNoiseStrength = e.coverNoiseStrength ?? 0.75) : e.taskType === "lego" && e.track && (l.track = e.track));
+      } else
+        l.cfgScale = e.cfgScale !== void 0 ? e.cfgScale : 1.8, e.maxFrames !== void 0 && (l.maxFrames = e.maxFrames, delete l.duration), e.inferenceSteps && e.inferenceSteps >= 16 ? l.inferenceSteps = e.inferenceSteps : l.inferenceSteps = 22;
+      i == null || i({ text: "▸ Starting QVAC audioGen inference run...", stream: "system" });
       const d = v.audioGen(l);
-      this.activeRequestIds.set(r, d.requestId), s == null || s({ text: `▸ Assigned requestId: ${d.requestId}`, stream: "system" }), (async () => {
+      this.activeRequestIds.set(r, d.requestId), i == null || i({ text: `▸ Assigned requestId: ${d.requestId}`, stream: "system" }), (async () => {
+        const D = /* @__PURE__ */ new Map(), P = (k) => {
+          const F = Math.max(0, Math.round(k / 1e3));
+          return F >= 60 ? `${Math.floor(F / 60)}m ${F % 60}s` : `${F}s`;
+        };
         try {
-          for await (const I of d.progressStream) {
-            if (i != null && i()) break;
-            const k = I.total > 0 ? Math.round(I.step / I.total * 100) : 0, z = I.total > 0 ? `${I.stage}: step ${I.step}/${I.total}` : `${I.stage}: step ${I.step}`;
+          for await (const k of d.progressStream) {
+            if (s != null && s()) break;
+            const F = k.total > 0 ? Math.round(k.step / k.total * 100) : 0;
+            let se = k.total > 0 ? `${k.stage}: step ${k.step}/${k.total}` : `${k.stage}: step ${k.step}`;
+            D.has(k.stage) || D.set(k.stage, Date.now());
+            let de, oe;
+            const V = k.total > 12 ? 5 : 2;
+            if (k.total > 0 && k.step >= V && k.step < k.total) {
+              const ue = (Date.now() - D.get(k.stage)) / k.step * (k.total - k.step);
+              de = Math.max(1, Math.round(ue / 1e3)), oe = P(ue), se += ` · ~${oe} remaining`;
+            }
             t == null || t({
               taskId: r,
-              stage: I.stage,
-              step: I.step,
-              total: I.total,
-              percentage: k,
-              message: z
-            }), s == null || s({ text: `▸ [${I.stage}] ${I.step}/${I.total || "?"}`, stream: "stdout" });
+              stage: k.stage,
+              step: k.step,
+              total: k.total,
+              percentage: F,
+              message: se,
+              etaSeconds: de,
+              etaFormatted: oe
+            }), i == null || i({ text: `▸ [${k.stage}] ${k.step}/${k.total || "?"}`, stream: "stdout" });
           }
         } catch {
         }
       })();
-      const [u, m] = await Promise.all([d.audio, d.stats]);
+      const [u, h] = await Promise.all([d.audio, d.stats]);
       this.activeRequestIds.delete(r);
-      const f = m == null ? void 0 : m.backendId, S = f === 1 ? "Metal (Apple GPU)" : f === 2 ? "CUDA (GPU)" : f === 0 ? "CPU" : f !== void 0 ? `Backend #${f}` : "Metal (Apple GPU)", C = m == null ? void 0 : m.gpuFallbackReason;
+      const f = h == null ? void 0 : h.backendId, p = f === 1 ? "Metal (Apple GPU)" : f === 2 ? "CUDA (GPU)" : f === 0 ? "CPU" : f !== void 0 ? `Backend #${f}` : "Metal (Apple GPU)", b = h == null ? void 0 : h.gpuFallbackReason;
       this.logger.logMilestone(
         r,
         "BACKEND_STATS",
-        `Compute Backend: ${S}${C && C !== 0 ? ` (Fallback Reason: ${C})` : ""}`
-      ), s == null || s({
-        text: `▸ Compute Backend: ${S}`,
+        `Compute Backend: ${p}${b && b !== 0 ? ` (Fallback Reason: ${b})` : ""}`
+      ), i == null || i({
+        text: `▸ Compute Backend: ${p}`,
         stream: "system"
-      }), s == null || s({ text: `▸ Synthesis completed! Mastering ${u.pcm.byteLength} raw PCM bytes...`, stream: "system" });
-      const { masteredPcm: L, details: N } = ue.getInstance().masterPcm(
+      });
+      const M = h;
+      if (M && (M.arMs !== void 0 || M.flowMs !== void 0 || M.totalTimeMs !== void 0)) {
+        const D = (k) => typeof k == "number" ? `${(k / 1e3).toFixed(1)}s` : "n/a", P = `total=${D(M.totalTimeMs)} | AR=${D(M.arMs)} | condition=${D(M.conditionMs)} | flow=${D(M.flowMs)} | vocoder=${D(M.vocoderMs)} | frames=${M.emittedFrames ?? "n/a"}${M.emittedFrames ? ` (~${(M.emittedFrames / 25).toFixed(0)}s audio)` : ""} | RTF=${typeof M.realTimeFactor == "number" ? M.realTimeFactor.toFixed(2) : "n/a"}`;
+        this.logger.logMilestone(r, "STAGE_TIMINGS", P), i == null || i({ text: `▸ Stage timings: ${P}`, stream: "system" });
+      }
+      i == null || i({ text: `▸ Synthesis completed! Mastering ${u.pcm.byteLength} raw PCM bytes...`, stream: "system" });
+      const { masteredPcm: N, details: x } = fe.getInstance().masterPcm(
         u.pcm,
         u.sampleRate,
         u.channels,
         u.bitsPerSample
       );
-      this.logger.logMilestone(r, "DSP_MASTERED", N), s == null || s({ text: `▸ Audio Mastered: ${N}`, stream: "system" });
-      const _ = _e(L, u.sampleRate, u.channels, u.bitsPerSample), D = `music-${Date.now()}-${r.slice(0, 8)}.wav`, T = y.join(this.musicExportsDir, D);
-      let x = "";
+      this.logger.logMilestone(r, "DSP_MASTERED", x), i == null || i({ text: `▸ Audio Mastered: ${x}`, stream: "system" });
+      const _ = xe(N, u.sampleRate, u.channels, u.bitsPerSample), I = `music-${Date.now()}-${r.slice(0, 8)}.wav`, $ = y.join(this.musicExportsDir, I);
+      let T = "";
       try {
-        g.writeFileSync(T, Buffer.from(_.buffer, _.byteOffset, _.byteLength)), x = `echo-media://${T}`, s == null || s({ text: `▸ Exported WAV saved to: ${T}`, stream: "system" });
-      } catch (I) {
-        console.warn("[MusicEngineService] Could not write export file, falling back to data URI:", I), x = De(_);
+        g.writeFileSync($, Buffer.from(_.buffer, _.byteOffset, _.byteLength)), T = `echo-media://${$}`, i == null || i({ text: `▸ Exported WAV saved to: ${$}`, stream: "system" });
+      } catch (D) {
+        console.warn("[MusicEngineService] Could not write export file, falling back to data URI:", D), T = $e(_);
       }
-      const M = Le(u.pcm, u.bitsPerSample, u.channels, 64), E = (m == null ? void 0 : m.audioDurationMs) || Math.round(u.pcm.byteLength / (u.bitsPerSample / 8) / u.channels / u.sampleRate * 1e3), p = m == null ? void 0 : m.metadata, $ = {
+      const E = Le(u.pcm, u.bitsPerSample, u.channels, 64), L = (h == null ? void 0 : h.audioDurationMs) || Math.round(u.pcm.byteLength / (u.bitsPerSample / 8) / u.channels / u.sampleRate * 1e3), w = h == null ? void 0 : h.metadata, U = {
         id: `music_gen_${Date.now()}`,
         taskId: r,
-        caption: (p == null ? void 0 : p.caption) || o,
-        lyrics: (p == null ? void 0 : p.lyrics) || e.lyrics,
-        audioUrl: x,
-        wavFilePath: T,
-        durationMs: E,
+        caption: (w == null ? void 0 : w.caption) || o,
+        lyrics: (w == null ? void 0 : w.lyrics) || e.lyrics,
+        audioUrl: T,
+        wavFilePath: $,
+        durationMs: L,
         sampleRate: u.sampleRate,
         channels: u.channels,
         bitsPerSample: u.bitsPerSample,
-        waveform: M,
-        bpm: (p == null ? void 0 : p.bpm) ?? e.bpm,
-        keyscale: (p == null ? void 0 : p.keyscale) ?? e.keyscale,
-        timesignature: p != null && p.beatsPerBar ? `${p.beatsPerBar}/4` : e.timesignature,
-        vocalLanguage: (p == null ? void 0 : p.vocalLanguage) ?? e.vocalLanguage,
+        waveform: E,
+        bpm: (w == null ? void 0 : w.bpm) ?? e.bpm,
+        keyscale: (w == null ? void 0 : w.keyscale) ?? e.keyscale,
+        timesignature: w != null && w.beatsPerBar ? `${w.beatsPerBar}/4` : e.timesignature,
+        vocalLanguage: (w == null ? void 0 : w.vocalLanguage) ?? e.vocalLanguage,
         isInstrumental: e.isInstrumental ?? l.lyrics === "[Instrumental]",
-        seed: (p == null ? void 0 : p.seed) ?? e.seed,
+        seed: (w == null ? void 0 : w.seed) ?? e.seed,
         taskType: e.taskType || "text2music",
-        lrc: m == null ? void 0 : m.lrc,
-        lyricsScore: m == null ? void 0 : m.lyricsScore,
-        qualityScore: m == null ? void 0 : m.qualityScore,
-        qualityReport: p == null ? void 0 : p.qualityReport,
-        stats: m,
-        metadata: p,
+        lrc: h == null ? void 0 : h.lrc,
+        lyricsScore: h == null ? void 0 : h.lyricsScore,
+        qualityScore: h == null ? void 0 : h.qualityScore,
+        qualityReport: w == null ? void 0 : w.qualityReport,
+        stats: h,
+        metadata: w,
         createdAt: (/* @__PURE__ */ new Date()).toISOString()
       };
-      return this.logger.logSuccess(r, $), s == null || s({ text: `▸ Music generation finished successfully (${(E / 1e3).toFixed(1)}s)`, stream: "system" }), { success: !0, data: $ };
+      return this.logger.logSuccess(r, U), i == null || i({ text: `▸ Music generation finished successfully (${(L / 1e3).toFixed(1)}s)`, stream: "system" }), { success: !0, data: U };
     } catch (n) {
-      if (this.activeRequestIds.delete(r), n instanceof v.InferenceCancelledError || i != null && i())
-        return console.warn(`[MusicEngineService] Generation cancelled for task ${r}`), this.logger.logMilestone(r, "CANCELLED", "Generation was cancelled by user"), s == null || s({ text: "▸ Music generation cancelled.", stream: "stderr" }), { success: !1, error: "Generation was cancelled." };
+      if (this.activeRequestIds.delete(r), n instanceof v.InferenceCancelledError || s != null && s())
+        return console.warn(`[MusicEngineService] Generation cancelled for task ${r}`), this.logger.logMilestone(r, "CANCELLED", "Generation was cancelled by user"), i == null || i({ text: "▸ Music generation cancelled.", stream: "stderr" }), { success: !1, error: "Generation was cancelled." };
       const a = e.engine === "minimax" ? this.resolveMiniMaxModelPaths(e.lmModelSrc, e.synthModelSrc) : { ditModelSrc: this.resolveDitModelSrc(e.ditVariant) };
       return this.logger.logFailure({
         taskId: r,
@@ -2989,7 +3425,7 @@ class ft {
           duration: e.duration,
           ditVariant: e.ditVariant
         }
-      }), s == null || s({
+      }), i == null || i({
         text: `✖ Generation Failed: ${(n == null ? void 0 : n.message) || String(n)}${n != null && n.stack ? `
 ${n.stack}` : ""}`,
         stream: "stderr"
@@ -3009,14 +3445,14 @@ ${n.stack}` : ""}`,
   /**
    * Edits an existing recording using ACE-Step Flow-Edit or Repaint operations
    */
-  async edit(e, t, s, i) {
+  async edit(e, t, i, s) {
     const { taskId: r, sourceAudio: o, operations: n } = e;
     if (!o)
       return { success: !1, error: "sourceAudio is required for editing." };
     if (!n || n.length === 0)
       return { success: !1, error: "At least one edit operation is required." };
     try {
-      s == null || s({ text: `▸ Starting Audio Edit with ${n.length} operation(s)...`, stream: "system" });
+      i == null || i({ text: `▸ Starting Audio Edit with ${n.length} operation(s)...`, stream: "system" });
       const c = {
         modelId: await this.ensureModelLoaded({ engine: "acestep", ditVariant: "turbo-q4", useGPU: e.useGPU }, t),
         sourceAudio: o,
@@ -3036,16 +3472,16 @@ ${n.stack}` : ""}`,
       }, l = v.audioEdit(c);
       this.activeRequestIds.set(r, l.requestId), (async () => {
         try {
-          for await (const T of l.progressStream) {
-            if (i != null && i()) break;
-            const x = T.total > 0 ? Math.round(T.step / T.total * 100) : 0;
+          for await (const I of l.progressStream) {
+            if (s != null && s()) break;
+            const $ = I.total > 0 ? Math.round(I.step / I.total * 100) : 0;
             t == null || t({
               taskId: r,
-              stage: T.stage,
-              step: T.step,
-              total: T.total,
-              percentage: x,
-              message: `${T.stage}: ${T.step}/${T.total}`
+              stage: I.stage,
+              step: I.step,
+              total: I.total,
+              percentage: $,
+              message: `${I.stage}: ${I.step}/${I.total}`
             });
           }
         } catch {
@@ -3053,26 +3489,26 @@ ${n.stack}` : ""}`,
       })();
       const [d, u] = await Promise.all([l.audio, l.stats]);
       this.activeRequestIds.delete(r);
-      const { masteredPcm: m } = ue.getInstance().masterPcm(
+      const { masteredPcm: h } = fe.getInstance().masterPcm(
         d.pcm,
         d.sampleRate,
         d.channels,
         d.bitsPerSample
-      ), f = _e(m, d.sampleRate, d.channels, d.bitsPerSample), S = `music-edit-${Date.now()}-${r.slice(0, 8)}.wav`, C = y.join(this.musicExportsDir, S);
-      let L = "";
+      ), f = xe(h, d.sampleRate, d.channels, d.bitsPerSample), p = `music-edit-${Date.now()}-${r.slice(0, 8)}.wav`, b = y.join(this.musicExportsDir, p);
+      let M = "";
       try {
-        g.writeFileSync(C, Buffer.from(f.buffer, f.byteOffset, f.byteLength)), L = `echo-media://${C}`;
+        g.writeFileSync(b, Buffer.from(f.buffer, f.byteOffset, f.byteLength)), M = `echo-media://${b}`;
       } catch {
-        L = De(f);
+        M = $e(f);
       }
-      const N = Le(d.pcm, d.bitsPerSample, d.channels, 64), _ = (u == null ? void 0 : u.audioDurationMs) || Math.round(d.pcm.byteLength / (d.bitsPerSample / 8) / d.channels / d.sampleRate * 1e3);
+      const N = Le(d.pcm, d.bitsPerSample, d.channels, 64), x = (u == null ? void 0 : u.audioDurationMs) || Math.round(d.pcm.byteLength / (d.bitsPerSample / 8) / d.channels / d.sampleRate * 1e3);
       return { success: !0, data: {
         id: `music_edit_${Date.now()}`,
         taskId: r,
-        caption: `Edit (${n.map((T) => T.type).join(" + ")})`,
-        audioUrl: L,
-        wavFilePath: C,
-        durationMs: _,
+        caption: `Edit (${n.map((I) => I.type).join(" + ")})`,
+        audioUrl: M,
+        wavFilePath: b,
+        durationMs: x,
         sampleRate: d.sampleRate,
         channels: d.channels,
         bitsPerSample: d.bitsPerSample,
@@ -3081,18 +3517,18 @@ ${n.stack}` : ""}`,
         createdAt: (/* @__PURE__ */ new Date()).toISOString()
       } };
     } catch (a) {
-      return this.activeRequestIds.delete(r), a instanceof v.InferenceCancelledError || i != null && i() ? { success: !1, error: "Edit was cancelled." } : { success: !1, error: (a == null ? void 0 : a.message) || "Audio edit failed." };
+      return this.activeRequestIds.delete(r), a instanceof v.InferenceCancelledError || s != null && s() ? { success: !1, error: "Edit was cancelled." } : { success: !1, error: (a == null ? void 0 : a.message) || "Audio edit failed." };
     }
   }
   /**
    * Describes an existing recording using ACE-Step reverse analysis pipeline
    */
-  async understand(e, t, s) {
-    const { taskId: i, sourceAudio: r, vocalLanguage: o, seed: n } = e;
+  async understand(e, t, i) {
+    const { taskId: s, sourceAudio: r, vocalLanguage: o, seed: n } = e;
     if (!r)
       return { success: !1, error: "sourceAudio is required for audio understand." };
     try {
-      s == null || s({ text: "▸ Analyzing audio recording with ACE-Step AudioUnderstand...", stream: "system" });
+      i == null || i({ text: "▸ Analyzing audio recording with ACE-Step AudioUnderstand...", stream: "system" });
       const c = {
         modelId: await this.ensureModelLoaded({ engine: "acestep", ditVariant: "turbo-q4" }, t),
         sourceAudio: r,
@@ -3102,16 +3538,16 @@ ${n.stack}` : ""}`,
         ...e.lmTopP !== void 0 && { lmTopP: e.lmTopP },
         ...e.lmTopK !== void 0 && { lmTopK: e.lmTopK }
       }, l = v.audioUnderstand(c);
-      this.activeRequestIds.set(i, l.requestId), (async () => {
+      this.activeRequestIds.set(s, l.requestId), (async () => {
         try {
           for await (const u of l.progressStream) {
-            const m = u.total > 0 ? Math.round(u.step / u.total * 100) : 0;
+            const h = u.total > 0 ? Math.round(u.step / u.total * 100) : 0;
             t == null || t({
-              taskId: i,
+              taskId: s,
               stage: u.stage,
               step: u.step,
               total: u.total,
-              percentage: m,
+              percentage: h,
               message: `${u.stage}: ${u.step}/${u.total}`
             });
           }
@@ -3119,7 +3555,7 @@ ${n.stack}` : ""}`,
         }
       })();
       const d = await l.description;
-      return this.activeRequestIds.delete(i), s == null || s({ text: `▸ Analysis complete! Detected: ${d.bpm} BPM, ${d.keyscale}, ${d.timesignature}`, stream: "system" }), {
+      return this.activeRequestIds.delete(s), i == null || i({ text: `▸ Analysis complete! Detected: ${d.bpm} BPM, ${d.keyscale}, ${d.timesignature}`, stream: "system" }), {
         success: !0,
         data: {
           caption: d.caption,
@@ -3133,7 +3569,7 @@ ${n.stack}` : ""}`,
         }
       };
     } catch (a) {
-      return this.activeRequestIds.delete(i), { success: !1, error: (a == null ? void 0 : a.message) || "Audio analysis failed." };
+      return this.activeRequestIds.delete(s), { success: !1, error: (a == null ? void 0 : a.message) || "Audio analysis failed." };
     }
   }
   /**
@@ -3144,8 +3580,8 @@ ${n.stack}` : ""}`,
     if (t)
       try {
         return v.cancel({ requestId: t }), this.activeRequestIds.delete(e), !0;
-      } catch (s) {
-        console.warn(`[MusicEngineService] Failed to cancel request ${t}:`, s);
+      } catch (i) {
+        console.warn(`[MusicEngineService] Failed to cancel request ${t}:`, i);
       }
     return !1;
   }
@@ -3230,14 +3666,14 @@ ${n.stack}` : ""}`,
 }
 class yt {
   constructor() {
-    b(this, "activeTasks", /* @__PURE__ */ new Set());
-    b(this, "engineService");
-    b(this, "historyFilePath");
-    b(this, "historyCache", []);
+    A(this, "activeTasks", /* @__PURE__ */ new Set());
+    A(this, "engineService");
+    A(this, "historyFilePath");
+    A(this, "historyCache", []);
     var e;
     this.engineService = new ft();
     try {
-      const t = (e = U) != null && e.getPath ? U.getPath("userData") : process.cwd();
+      const t = (e = O) != null && e.getPath ? O.getPath("userData") : process.cwd();
       this.historyFilePath = y.join(t, "music-history.json"), this.loadHistoryFromDisk();
     } catch {
       this.historyFilePath = y.join(process.cwd(), "music-history.json");
@@ -3251,7 +3687,7 @@ class yt {
     try {
       if (g.existsSync(this.historyFilePath)) {
         const e = g.readFileSync(this.historyFilePath, "utf-8"), t = JSON.parse(e);
-        Array.isArray(t) && (this.historyCache = t.map((s) => this.sanitizeItem(s)));
+        Array.isArray(t) && (this.historyCache = t.map((i) => this.sanitizeItem(i)));
       }
     } catch (e) {
       console.warn("[MusicService] Could not read music history:", e), this.historyCache = [];
@@ -3280,38 +3716,38 @@ class yt {
   isCancelled(e) {
     return !this.activeTasks.has(e);
   }
-  async generateMusic(e, t, s) {
-    const { taskId: i } = e;
-    this.activeTasks.add(i);
+  async generateMusic(e, t, i) {
+    const { taskId: s } = e;
+    this.activeTasks.add(s);
     try {
       const r = await this.engineService.generate(
         e,
         t,
-        s,
-        () => this.isCancelled(i)
+        i,
+        () => this.isCancelled(s)
       );
       return r.success && r.data && (this.historyCache.unshift(r.data), this.saveHistoryToDisk()), r;
     } finally {
-      this.activeTasks.delete(i);
+      this.activeTasks.delete(s);
     }
   }
-  async editMusic(e, t, s) {
-    const { taskId: i } = e;
-    this.activeTasks.add(i);
+  async editMusic(e, t, i) {
+    const { taskId: s } = e;
+    this.activeTasks.add(s);
     try {
       const r = await this.engineService.edit(
         e,
         t,
-        s,
-        () => this.isCancelled(i)
+        i,
+        () => this.isCancelled(s)
       );
       return r.success && r.data && (this.historyCache.unshift(r.data), this.saveHistoryToDisk()), r;
     } finally {
-      this.activeTasks.delete(i);
+      this.activeTasks.delete(s);
     }
   }
-  async understandMusic(e, t, s) {
-    return this.engineService.understand(e, t, s);
+  async understandMusic(e, t, i) {
+    return this.engineService.understand(e, t, i);
   }
   listHistory() {
     return this.historyCache;
@@ -3320,12 +3756,12 @@ class yt {
     return this.historyCache.find((t) => t.id === e || t.taskId === e);
   }
   saveHistoryItem(e) {
-    const t = this.historyCache.findIndex((s) => s.id === e.id);
+    const t = this.historyCache.findIndex((i) => i.id === e.id);
     return t >= 0 ? this.historyCache[t] = e : this.historyCache.unshift(e), this.saveHistoryToDisk(), !0;
   }
   deleteHistoryItem(e) {
     const t = this.historyCache.length;
-    return this.historyCache = this.historyCache.filter((s) => s.id !== e), this.historyCache.length !== t ? (this.saveHistoryToDisk(), !0) : !1;
+    return this.historyCache = this.historyCache.filter((i) => i.id !== e), this.historyCache.length !== t ? (this.saveHistoryToDisk(), !0) : !1;
   }
   clearHistory() {
     return this.historyCache = [], this.saveHistoryToDisk(), !0;
@@ -3337,206 +3773,23 @@ class yt {
     return this.engineService.clearLogs();
   }
 }
-const te = class te {
-  constructor() {
-    b(this, "activeModelId", null);
-    b(this, "isLoadingModel", !1);
-  }
-  static getInstance() {
-    return te.instance || (te.instance = new te()), te.instance;
-  }
-  /**
-   * Ensures the Qwen3-1.7B Instruct model is loaded into memory on Apple Metal GPU.
-   */
-  async ensureModelLoaded(e) {
-    if (this.activeModelId)
-      return this.activeModelId;
-    if (this.isLoadingModel) {
-      for (; this.isLoadingModel; )
-        await new Promise((t) => setTimeout(t, 100));
-      if (this.activeModelId) return this.activeModelId;
-    }
-    this.isLoadingModel = !0;
-    try {
-      console.log("[QwenLyricService] ▸ Loading Qwen3-1.7B Instruct LLM for lyric generation...");
-      const t = await v.loadModel({
-        modelSrc: v.QWEN3_1_7B_INST_Q4,
-        onProgress: (s) => {
-          e == null || e(s);
-        }
-      });
-      return this.activeModelId = t, console.log(`[QwenLyricService] ✓ Qwen3-1.7B loaded successfully with ID: ${t}`), t;
-    } catch (t) {
-      throw console.error("[QwenLyricService] ✖ Failed to load Qwen3-1.7B:", t), t;
-    } finally {
-      this.isLoadingModel = !1;
-    }
-  }
-  /**
-   * Generates song lyrics from a description, streaming tokens in real time.
-   */
-  async generateLyricsStream(e, t, s) {
-    const i = (e || "").trim() || "A soulful, emotional song about life and hope";
-    try {
-      const r = await this.ensureModelLoaded(s), o = `You are an elite, Grammy-award winning songwriter.
-Write complete, poetic, rhyming song lyrics based on the user's musical song description.
-
-Formatting Rules:
-1. Organize into canonical musical sections with tags:
-[verse]
-[chorus]
-[verse]
-[bridge]
-[chorus]
-[outro]
-2. Output ONLY the lyrics and section tags. Never output conversational remarks, intros, or commentary.
-3. Use natural rhyming (AABB or ABAB) and musical meter that is easy to sing.
-4. Capture the exact mood, imagery, and style requested in the description.`, n = `Write song lyrics for this description: "${i}"`, a = v.completion({
-        modelId: r,
-        history: [
-          { role: "system", content: o },
-          { role: "user", content: n }
-        ],
-        captureThinking: !0,
-        stream: !0
-      });
-      let c = "";
-      for await (const m of a.events)
-        m.type === "contentDelta" && m.text && (c += m.text, t == null || t(m.text));
-      const d = ((await a.final).contentText || c).trim();
-      return { lyrics: d.startsWith("[") ? d : `[verse]
-${d}`, engine: "qwen-1.7b" };
-    } catch (r) {
-      console.warn("[QwenLyricService] Qwen streaming failed, using fallback lyric generator:", r);
-      const o = this.getFallbackLyrics(i);
-      for (const n of o)
-        t == null || t(n), await new Promise((a) => setTimeout(a, 6));
-      return { lyrics: o, engine: "fallback" };
-    }
-  }
-  /**
-   * Fast rule-based fallback if LLM is unreachable or offline
-   */
-  getFallbackLyrics(e) {
-    const t = e.toLowerCase();
-    return /(medieval|celtic|harp|fantasy|bard|tavern|folk)/.test(t) ? `[verse]
-The banners fall beneath the crimson dawn,
-A bitter wind blows through the broken shield,
-The kings are buried and the armies gone,
-And silence settles on the frozen field.
-
-[chorus]
-Oh, pluck the harp and sing for what was lost,
-No golden crown can mend a hollow heart,
-The bitter iron counts the heavy cost,
-Where sorrow tore the brotherhood apart.
-
-[verse]
-The village smokes into the autumn sky,
-Cold ashes drift across the stony path,
-No victor smiles beneath the raven's cry,
-For who survives the fury of their wrath?
-
-[chorus]
-Oh, pluck the harp and sing for what was lost,
-No golden crown can mend a hollow heart,
-The bitter iron counts the heavy cost,
-Where sorrow tore the brotherhood apart.
-
-[bridge]
-Let the embers fade, let the trumpets die,
-No march remains for those who could not stand,
-Only the stars across the northern sky,
-Watching the weeping of a weary land.
-
-[outro]
-Harp strings tremble in the twilight air,
-Peace to the fallen, beyond despair...` : /(synthwave|retro|neon|cyberpunk|80s)/.test(t) ? `[verse]
-Purple neon reflecting in the rain,
-Speedometer climbing on the open lane,
-Digital echoes through the midnight mist,
-Chasing a future that we almost missed.
-
-[chorus]
-We ride the synthwave into the dark,
-Ignite the engine, electric spark,
-The grid is open, the road is clear,
-Nothing can touch us while we are here!
-
-[verse]
-Chromed-out reflections in the driver side,
-Running on dreams that we refuse to hide,
-Flickering signals in the city breeze,
-Lost in the hum of electronic keys.
-
-[chorus]
-We ride the synthwave into the dark,
-Ignite the engine, electric spark,
-The grid is open, the road is clear,
-Nothing can touch us while we are here!
-
-[bridge]
-Accelerate past the boundary line,
-Out of the shadows into the shine,
-Analog pulses guiding the way,
-Running forever away from the day.
-
-[outro]
-Synth pads fading into the night...
-Driving forever into the light...` : `[verse]
-Raindrops running down the window pane,
-Every little memory feels so plain,
-I know that tomorrow the sun will rise,
-Yet all I can picture is your eyes.
-
-[chorus]
-And if you look back from where you are,
-Know that I'm wishing upon that star,
-That somewhere down this winding track,
-The road will guide you back.
-
-[verse]
-I still find your coffee mug on the shelf,
-Spending my evenings talking to myself,
-The hallway echoes with the words we said,
-Replaying the moments in my head.
-
-[chorus]
-And if you look back from where you are,
-Know that I'm wishing upon that star,
-That somewhere down this winding track,
-The road will guide you back.
-
-[bridge]
-Time was supposed to heal the ache,
-How much more can one spirit take?
-I whisper your name into the breeze,
-Begging my restless mind for peace.
-
-[outro]
-Piano notes linger soft and slow...
-I loved you enough to let you go...`;
-  }
-};
-b(te, "instance");
-let we = te;
-class vt extends ie {
+class vt extends ne {
   constructor(e, t) {
     super(), this.musicService = e, this.activityRepo = t;
   }
   init() {
-    A.handle(
-      w.MUSIC_GENERATE,
+    C.handle(
+      S.MUSIC_GENERATE,
       async (e, t) => {
-        const s = (o) => {
+        const i = (o) => {
           try {
-            e.sender.isDestroyed() || e.sender.send(w.MUSIC_PROGRESS, o);
+            e.sender.isDestroyed() || e.sender.send(S.MUSIC_PROGRESS, o);
           } catch (n) {
             console.warn("[MusicController] Failed to send progress event:", n);
           }
-        }, i = (o) => {
+        }, s = (o) => {
           try {
-            e.sender.isDestroyed() || e.sender.send(w.TERMINAL_LOG, {
+            e.sender.isDestroyed() || e.sender.send(S.TERMINAL_LOG, {
               projectId: "echo-ai",
               text: o.text,
               stream: o.stream,
@@ -3545,11 +3798,11 @@ class vt extends ie {
           } catch (n) {
             console.warn("[MusicController] Failed to send log event:", n);
           }
-        }, r = await this.musicService.generateMusic(t, s, i);
+        }, r = await this.musicService.generateMusic(t, i, s);
         if (r.success && r.data) {
           this.saveMusicActivity(r.data);
           try {
-            e.sender.isDestroyed() || e.sender.send(w.MUSIC_COMPLETE, {
+            e.sender.isDestroyed() || e.sender.send(S.MUSIC_COMPLETE, {
               taskId: t.taskId,
               generation: r.data
             });
@@ -3560,12 +3813,12 @@ class vt extends ie {
           console.error(
             `[MusicController] ✖ Music generation failed for taskId ${t.taskId} (Engine: ${t.engine || "acestep"}):`,
             r.error
-          ), i({
+          ), s({
             text: `✖ Music Generation Failed: ${r.error}`,
             stream: "stderr"
           });
           try {
-            e.sender.isDestroyed() || e.sender.send(w.MUSIC_ERROR, {
+            e.sender.isDestroyed() || e.sender.send(S.MUSIC_ERROR, {
               taskId: t.taskId,
               error: r.error || "Music generation failed",
               details: r.errorDetails
@@ -3576,21 +3829,21 @@ class vt extends ie {
         }
         return r;
       }
-    ), A.handle(
-      w.MUSIC_CANCEL,
+    ), C.handle(
+      S.MUSIC_CANCEL,
       async (e, { taskId: t }) => ({ success: this.musicService.cancelGeneration(t), taskId: t })
-    ), A.handle(
-      w.MUSIC_EDIT,
+    ), C.handle(
+      S.MUSIC_EDIT,
       async (e, t) => {
-        const s = (o) => {
+        const i = (o) => {
           try {
-            e.sender.isDestroyed() || e.sender.send(w.MUSIC_PROGRESS, o);
+            e.sender.isDestroyed() || e.sender.send(S.MUSIC_PROGRESS, o);
           } catch (n) {
             console.warn("[MusicController] Failed to send progress event:", n);
           }
-        }, i = (o) => {
+        }, s = (o) => {
           try {
-            e.sender.isDestroyed() || e.sender.send(w.TERMINAL_LOG, {
+            e.sender.isDestroyed() || e.sender.send(S.TERMINAL_LOG, {
               projectId: "echo-ai",
               text: o.text,
               stream: o.stream,
@@ -3599,21 +3852,21 @@ class vt extends ie {
           } catch (n) {
             console.warn("[MusicController] Failed to send log event:", n);
           }
-        }, r = await this.musicService.editMusic(t, s, i);
+        }, r = await this.musicService.editMusic(t, i, s);
         return r.success && r.data && this.saveMusicActivity(r.data), r;
       }
-    ), A.handle(
-      w.MUSIC_UNDERSTAND,
+    ), C.handle(
+      S.MUSIC_UNDERSTAND,
       async (e, t) => {
-        const s = (o) => {
+        const i = (o) => {
           try {
-            e.sender.isDestroyed() || e.sender.send(w.MUSIC_PROGRESS, o);
+            e.sender.isDestroyed() || e.sender.send(S.MUSIC_PROGRESS, o);
           } catch (n) {
             console.warn("[MusicController] Failed to send progress event:", n);
           }
-        }, i = (o) => {
+        }, s = (o) => {
           try {
-            e.sender.isDestroyed() || e.sender.send(w.TERMINAL_LOG, {
+            e.sender.isDestroyed() || e.sender.send(S.TERMINAL_LOG, {
               projectId: "echo-ai",
               text: o.text,
               stream: o.stream,
@@ -3623,54 +3876,54 @@ class vt extends ie {
             console.warn("[MusicController] Failed to send log event:", n);
           }
         };
-        return await this.musicService.understandMusic(t, s, i);
+        return await this.musicService.understandMusic(t, i, s);
       }
-    ), A.handle(w.MUSIC_MODEL_STATUS, async () => ({
+    ), C.handle(S.MUSIC_MODEL_STATUS, async () => ({
       success: !0,
       data: this.musicService.getModelStatus()
-    })), A.handle(
-      w.MUSIC_ASSESS_FIT,
+    })), C.handle(
+      S.MUSIC_ASSESS_FIT,
       async (e, t) => this.musicService.assessFit(t == null ? void 0 : t.engine, t == null ? void 0 : t.ditVariant)
-    ), A.handle(w.MUSIC_UNLOAD_MODEL, async () => ({ success: await this.musicService.unloadModel() })), A.handle(w.MUSIC_HISTORY_LIST, async () => ({
+    ), C.handle(S.MUSIC_UNLOAD_MODEL, async () => ({ success: await this.musicService.unloadModel() })), C.handle(S.MUSIC_HISTORY_LIST, async () => ({
       success: !0,
       data: this.musicService.listHistory()
-    })), A.handle(
-      w.MUSIC_HISTORY_SAVE,
+    })), C.handle(
+      S.MUSIC_HISTORY_SAVE,
       async (e, t) => {
-        const s = this.musicService.saveHistoryItem(t);
-        return s && this.saveMusicActivity(t), { success: s };
+        const i = this.musicService.saveHistoryItem(t);
+        return i && this.saveMusicActivity(t), { success: i };
       }
-    ), A.handle(
-      w.MUSIC_HISTORY_DELETE,
+    ), C.handle(
+      S.MUSIC_HISTORY_DELETE,
       async (e, { id: t }) => {
-        const s = this.musicService.deleteHistoryItem(t);
-        return this.activityRepo && this.activityRepo.deleteActivity(`act-music-${t}`).catch(console.error), { success: s };
+        const i = this.musicService.deleteHistoryItem(t);
+        return this.activityRepo && this.activityRepo.deleteActivity(`act-music-${t}`).catch(console.error), { success: i };
       }
-    ), A.handle(w.MUSIC_HISTORY_CLEAR, async () => ({ success: this.musicService.clearHistory() })), A.handle(w.MUSIC_GET_LOGS, async (e, t) => ({ success: !0, data: this.musicService.getGenerationLogs(t) })), A.handle(w.MUSIC_CLEAR_LOGS, async () => ({ success: this.musicService.clearGenerationLogs() })), A.handle(
-      w.MUSIC_GENERATE_LYRICS,
+    ), C.handle(S.MUSIC_HISTORY_CLEAR, async () => ({ success: this.musicService.clearHistory() })), C.handle(S.MUSIC_GET_LOGS, async (e, t) => ({ success: !0, data: this.musicService.getGenerationLogs(t) })), C.handle(S.MUSIC_CLEAR_LOGS, async () => ({ success: this.musicService.clearGenerationLogs() })), C.handle(
+      S.MUSIC_GENERATE_LYRICS,
       async (e, t) => {
-        const s = t.taskId || `lyric_task_${Date.now()}`, i = (r) => {
+        const i = t.taskId || `lyric_task_${Date.now()}`, s = (r) => {
           try {
-            e.sender.isDestroyed() || e.sender.send(w.MUSIC_LYRICS_TOKEN, { taskId: s, token: r });
+            e.sender.isDestroyed() || e.sender.send(S.MUSIC_LYRICS_TOKEN, { taskId: i, token: r });
           } catch {
           }
         };
         try {
-          const r = await we.getInstance().generateLyricsStream(t.prompt, i);
-          return { success: !0, lyrics: r.lyrics, engine: r.engine, taskId: s };
+          const r = await ye.getInstance().generateLyricsStream(t.prompt, s);
+          return { success: !0, lyrics: r.lyrics, engine: r.engine, taskId: i };
         } catch (r) {
-          return console.error("[MusicController] Error generating lyrics with Qwen:", r), { success: !1, error: (r == null ? void 0 : r.message) || "Failed to generate lyrics", taskId: s };
+          return console.error("[MusicController] Error generating lyrics with Qwen:", r), { success: !1, error: (r == null ? void 0 : r.message) || "Failed to generate lyrics", taskId: i };
         }
       }
     );
   }
   saveMusicActivity(e) {
     if (!this.activityRepo) return;
-    const t = e.caption || "Music Track", s = t.length > 50 ? `${t.slice(0, 47)}...` : t, i = e.wavFilePath ? `echo-media://${e.wavFilePath}` : e.audioUrl && e.audioUrl.length > 5e4 ? "" : e.audioUrl;
+    const t = e.caption || "Music Track", i = t.length > 50 ? `${t.slice(0, 47)}...` : t, s = e.wavFilePath ? `echo-media://${e.wavFilePath}` : e.audioUrl && e.audioUrl.length > 5e4 ? "" : e.audioUrl;
     this.activityRepo.saveActivity({
       id: `act-music-${e.id}`,
       type: "music",
-      title: s,
+      title: i,
       description: e.lyrics ? e.lyrics.slice(0, 160) : e.caption,
       category: "Music Generation",
       subCategory: "AudioGen",
@@ -3680,7 +3933,7 @@ class vt extends ie {
         taskId: e.taskId,
         caption: e.caption,
         lyrics: e.lyrics,
-        audioUrl: i,
+        audioUrl: s,
         wavFilePath: e.wavFilePath,
         durationMs: e.durationMs,
         duration: e.durationMs ? `${Math.round(e.durationMs / 1e3)}s` : "Audio",
@@ -3695,10 +3948,10 @@ class vt extends ie {
     }).catch((r) => console.error("[MusicController] Failed to auto-save activity:", r));
   }
 }
-class St {
+class pt {
   constructor(e, t) {
-    b(this, "db");
-    b(this, "musicService");
+    A(this, "db");
+    A(this, "musicService");
     this.db = e, this.musicService = t;
   }
   /**
@@ -3716,7 +3969,7 @@ class St {
       } catch {
         t = void 0;
       }
-    const s = e.conversation ? {
+    const i = e.conversation ? {
       id: e.conversation.id,
       text: e.conversation.text,
       previewSnippet: e.conversation.previewSnippet || e.conversation.text,
@@ -3762,11 +4015,11 @@ class St {
       speakerCount: t.speakerCount || 1,
       rounds: Array.isArray(t.rounds) ? t.rounds : []
     } : void 0;
-    let i;
+    let s;
     if (e.type === "music") {
       const a = e.originId || e.id.replace(/^act-music-/, "").replace(/^act-/, ""), c = (n = this.musicService) == null ? void 0 : n.getHistoryItem(a), l = (c == null ? void 0 : c.wavFilePath) || (t == null ? void 0 : t.wavFilePath);
       let d = l ? `echo-media://${l}` : (c == null ? void 0 : c.audioUrl) || (t == null ? void 0 : t.audioUrl);
-      d && d.startsWith("data:") && d.length > 5e4 && (d = void 0), i = {
+      d && d.startsWith("data:") && d.length > 5e4 && (d = void 0), s = {
         id: a,
         taskId: (c == null ? void 0 : c.taskId) || (t == null ? void 0 : t.taskId) || void 0,
         title: e.title,
@@ -3807,7 +4060,7 @@ class St {
       backgroundMusicUrl: (t == null ? void 0 : t.backgroundMusicUrl) || void 0,
       createdAt: e.createdAt instanceof Date ? e.createdAt.toISOString() : e.createdAt
     });
-    const o = s || i || r || (t ? { ...t } : void 0);
+    const o = i || s || r || (t ? { ...t } : void 0);
     return {
       id: e.id,
       type: e.type,
@@ -3824,8 +4077,8 @@ class St {
       // Related origin data returned when fetching activities
       data: o,
       origin: o,
-      tts: s,
-      music: i,
+      tts: i,
+      music: s,
       story: r
     };
   }
@@ -3843,11 +4096,11 @@ class St {
           originId: !0
         }
       }), t = /* @__PURE__ */ new Set();
-      for (const i of e) {
-        const r = i;
+      for (const s of e) {
+        const r = s;
         r.conversationId && t.add(r.conversationId), r.originId && t.add(r.originId);
       }
-      const s = await this.db.client.conversation.findMany({
+      const i = await this.db.client.conversation.findMany({
         where: t.size > 0 ? {
           id: {
             notIn: Array.from(t)
@@ -3859,39 +4112,39 @@ class St {
           }
         }
       });
-      for (const i of s) {
-        const o = (i.previewSnippet || i.text || "").replace(/\s+/g, " ").trim(), n = o ? o.length > 55 ? `${o.slice(0, 52)}...` : o : `${i.voiceName || "Speech Synthesis"} Turn`;
+      for (const s of i) {
+        const o = (s.previewSnippet || s.text || "").replace(/\s+/g, " ").trim(), n = o ? o.length > 55 ? `${o.slice(0, 52)}...` : o : `${s.voiceName || "Speech Synthesis"} Turn`;
         let a = n, c = 1;
         for (; await this.db.client.activity.findUnique({ where: { title: a } }); )
           c++, a = `${n} #${c}`;
         const l = JSON.stringify({
-          model: i.model,
-          engine: i.engine,
-          duration: i.duration,
-          durationSec: i.durationSec,
-          emotion: i.emotion,
-          audioUrl: i.audioUrl,
-          waveform: i.waveform ? JSON.parse(i.waveform) : [],
-          speakerCount: i.speakerCount
+          model: s.model,
+          engine: s.engine,
+          duration: s.duration,
+          durationSec: s.durationSec,
+          emotion: s.emotion,
+          audioUrl: s.audioUrl,
+          waveform: s.waveform ? JSON.parse(s.waveform) : [],
+          speakerCount: s.speakerCount
         });
         await this.db.client.activity.create({
           data: {
-            id: `act-${i.id}`,
+            id: `act-${s.id}`,
             type: "tts",
             title: a,
             category: "Text to Speech",
-            subCategory: i.speakerCount > 1 ? `${i.speakerCount} Speakers Diarized` : i.voiceName,
+            subCategory: s.speakerCount > 1 ? `${s.speakerCount} Speakers Diarized` : s.voiceName,
             description: o ? o.slice(0, 160) : null,
-            originId: i.id,
+            originId: s.id,
             originType: "conversation",
-            conversationId: i.id,
+            conversationId: s.id,
             metadata: l
           }
         });
       }
       if (this.musicService) {
-        const i = this.musicService.listHistory();
-        for (const r of i) {
+        const s = this.musicService.listHistory();
+        for (const r of s) {
           const o = `act-music-${r.id}`;
           if (!await this.db.client.activity.findFirst({
             where: {
@@ -4015,18 +4268,18 @@ class St {
     await this.db.init();
     try {
       const t = e.metadata ? typeof e.metadata == "string" ? e.metadata : JSON.stringify(e.metadata) : null;
-      let s = e.title.trim(), i = 1, r = !1;
+      let i = e.title.trim(), s = 1, r = !1;
       for (; !r; ) {
         const a = await this.db.client.activity.findUnique({
-          where: { title: s }
+          where: { title: i }
         });
-        !a || a.id === e.id ? r = !0 : (i++, s = `${e.title.trim()} #${i}`);
+        !a || a.id === e.id ? r = !0 : (s++, i = `${e.title.trim()} #${s}`);
       }
       const o = e.category || (e.type === "music" ? "Music Generation" : "Text to Speech"), n = await this.db.client.activity.upsert({
         where: { id: e.id },
         update: {
           type: e.type,
-          title: s,
+          title: i,
           description: e.description || null,
           category: o,
           subCategory: e.subCategory || null,
@@ -4038,7 +4291,7 @@ class St {
         create: {
           id: e.id,
           type: e.type,
-          title: s,
+          title: i,
           description: e.description || null,
           category: o,
           subCategory: e.subCategory || null,
@@ -4067,63 +4320,63 @@ class St {
     }
   }
 }
-class pt extends ie {
+class St extends ne {
   constructor(e) {
     super(), this.activityRepo = e;
   }
   init() {
-    A.handle(w.ACTIVITY_LIST, async () => {
+    C.handle(S.ACTIVITY_LIST, async () => {
       try {
         return { success: !0, data: await this.activityRepo.listActivities() };
       } catch (e) {
         return { success: !1, error: e instanceof Error ? e.message : String(e) };
       }
-    }), A.handle(w.ACTIVITY_GET, async (e, t) => {
+    }), C.handle(S.ACTIVITY_GET, async (e, t) => {
       try {
-        const s = typeof t == "string" ? t : t.id;
-        return { success: !0, data: await this.activityRepo.getActivityById(s) };
-      } catch (s) {
-        return { success: !1, error: s instanceof Error ? s.message : String(s) };
+        const i = typeof t == "string" ? t : t.id;
+        return { success: !0, data: await this.activityRepo.getActivityById(i) };
+      } catch (i) {
+        return { success: !1, error: i instanceof Error ? i.message : String(i) };
       }
-    }), A.handle(
-      w.ACTIVITY_GET_BY_ORIGIN,
+    }), C.handle(
+      S.ACTIVITY_GET_BY_ORIGIN,
       async (e, t) => {
         try {
-          const s = typeof t == "string" ? t : t.originId;
-          return { success: !0, data: await this.activityRepo.getActivityByOrigin(s) };
-        } catch (s) {
-          return { success: !1, error: s instanceof Error ? s.message : String(s) };
+          const i = typeof t == "string" ? t : t.originId;
+          return { success: !0, data: await this.activityRepo.getActivityByOrigin(i) };
+        } catch (i) {
+          return { success: !1, error: i instanceof Error ? i.message : String(i) };
         }
       }
-    ), A.handle(w.ACTIVITY_SAVE, async (e, t) => {
+    ), C.handle(S.ACTIVITY_SAVE, async (e, t) => {
       try {
         return await this.activityRepo.saveActivity(t);
-      } catch (s) {
-        return { success: !1, error: s instanceof Error ? s.message : String(s) };
+      } catch (i) {
+        return { success: !1, error: i instanceof Error ? i.message : String(i) };
       }
-    }), A.handle(w.ACTIVITY_DELETE, async (e, t) => {
+    }), C.handle(S.ACTIVITY_DELETE, async (e, t) => {
       try {
-        const s = typeof t == "string" ? t : t.id;
-        return await this.activityRepo.deleteActivity(s);
-      } catch (s) {
-        return { success: !1, error: s instanceof Error ? s.message : String(s) };
+        const i = typeof t == "string" ? t : t.id;
+        return await this.activityRepo.deleteActivity(i);
+      } catch (i) {
+        return { success: !1, error: i instanceof Error ? i.message : String(i) };
       }
     });
   }
 }
-const wt = Ke(import.meta.url), { PrismaClient: Et } = wt("@prisma/client");
-class Tt {
+const wt = Ke(import.meta.url), { PrismaClient: Tt } = wt("@prisma/client");
+class Mt {
   constructor() {
-    b(this, "prisma");
-    b(this, "initialized", !1);
-    b(this, "initPromise", null);
-    const t = (U ? U.isPackaged : !1) ? U.getPath("userData") : y.join(process.cwd(), "prisma");
+    A(this, "prisma");
+    A(this, "initialized", !1);
+    A(this, "initPromise", null);
+    const t = (O ? O.isPackaged : !1) ? O.getPath("userData") : y.join(process.cwd(), "prisma");
     g.existsSync(t) || g.mkdirSync(t, { recursive: !0 });
-    const s = y.join(t, "echo.db"), i = `file:${s}`;
-    process.env.DATABASE_URL = i, console.log(`[DatabaseService] SQLite DB initialized at: ${s}`), this.prisma = new Et({
+    const i = y.join(t, "echo.db"), s = `file:${i}`;
+    process.env.DATABASE_URL = s, console.log(`[DatabaseService] SQLite DB initialized at: ${i}`), this.prisma = new Tt({
       datasources: {
         db: {
-          url: i
+          url: s
         }
       },
       log: ["warn", "error"]
@@ -4243,14 +4496,14 @@ class Tt {
     }
   }
 }
-function Mt() {
-  const h = new Tt(), e = new Ze(), t = new Te(), s = new yt(), i = new it(h), r = new mt(h), o = new St(h, s), n = new st(i), a = new ht(t, r), c = [
+function Et() {
+  const m = new Mt(), e = new Ze(), t = new Ie(), i = new yt(), s = new st(m), r = new mt(m), o = new pt(m, i), n = new it(s), a = new ht(t, r), c = [
     new et(e),
     new tt(t),
     new rt(n),
     new gt(a),
-    new vt(s, o),
-    new pt(o)
+    new vt(i, o),
+    new St(o)
   ];
   for (const l of c)
     l.init();
@@ -4259,13 +4512,13 @@ function Mt() {
     modelsService: t,
     voiceService: n,
     ttsService: a,
-    musicService: s,
+    musicService: i,
     activityRepository: o,
-    dbService: h,
+    dbService: m,
     controllers: c
   };
 }
-xe.registerSchemesAsPrivileged([
+Ne.registerSchemesAsPrivileged([
   {
     scheme: "echo-media",
     privileges: {
@@ -4278,60 +4531,60 @@ xe.registerSchemesAsPrivileged([
     }
   }
 ]);
-const ke = y.dirname(Qe(import.meta.url));
-process.env.APP_ROOT = y.join(ke, "..");
-const Ee = process.env.VITE_DEV_SERVER_URL, kt = y.join(process.env.APP_ROOT, "dist-electron"), Ue = y.join(process.env.APP_ROOT, "dist");
-process.env.VITE_PUBLIC = Ee ? y.join(process.env.APP_ROOT, "public") : Ue;
-const Ut = Mt();
-let G = null;
-function Oe() {
-  G = new Ne({
+const Re = y.dirname(Qe(import.meta.url));
+process.env.APP_ROOT = y.join(Re, "..");
+const be = process.env.VITE_DEV_SERVER_URL, Nt = y.join(process.env.APP_ROOT, "dist-electron"), Fe = y.join(process.env.APP_ROOT, "dist");
+process.env.VITE_PUBLIC = be ? y.join(process.env.APP_ROOT, "public") : Fe;
+const Ut = Et();
+let j = null;
+function Pe() {
+  j = new Ue({
     icon: y.join(process.env.VITE_PUBLIC, "electron-vite.svg"),
     trafficLightPosition: { x: 14, y: 12 },
     webPreferences: {
-      preload: y.join(ke, "preload.mjs")
+      preload: y.join(Re, "preload.mjs")
     }
-  }), G.webContents.on("console-message", (h, ...e) => {
-    if (typeof h == "object" && h !== null && "message" in h) {
-      const t = h.sourceId ? y.basename(h.sourceId) : "renderer";
-      console.log(`[Renderer ${t}:${h.lineNumber}] ${h.message}`);
+  }), j.webContents.on("console-message", (m, ...e) => {
+    if (typeof m == "object" && m !== null && "message" in m) {
+      const t = m.sourceId ? y.basename(m.sourceId) : "renderer";
+      console.log(`[Renderer ${t}:${m.lineNumber}] ${m.message}`);
     } else {
-      const [t, s, i, r] = e, o = r ? y.basename(r) : "renderer";
-      console.log(`[Renderer ${o}:${i}] ${s}`);
+      const [t, i, s, r] = e, o = r ? y.basename(r) : "renderer";
+      console.log(`[Renderer ${o}:${s}] ${i}`);
     }
-  }), G.webContents.on("render-process-gone", (h, e) => {
+  }), j.webContents.on("render-process-gone", (m, e) => {
     console.error("[Renderer Crashed]:", e);
-  }), G.webContents.on("did-finish-load", () => {
-    G == null || G.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
-  }), Ee ? G.loadURL(Ee) : G.loadFile(y.join(Ue, "index.html"));
+  }), j.webContents.on("did-finish-load", () => {
+    j == null || j.webContents.send("main-process-message", (/* @__PURE__ */ new Date()).toLocaleString());
+  }), be ? j.loadURL(be) : j.loadFile(y.join(Fe, "index.html"));
 }
-U.on("window-all-closed", () => {
-  process.platform !== "darwin" && (U.quit(), G = null);
+O.on("window-all-closed", () => {
+  process.platform !== "darwin" && (O.quit(), j = null);
 });
-U.on("activate", () => {
-  Ne.getAllWindows().length === 0 && Oe();
+O.on("activate", () => {
+  Ue.getAllWindows().length === 0 && Pe();
 });
-U.whenReady().then(() => {
-  xe.handle("echo-media", async (h) => {
+O.whenReady().then(() => {
+  Ne.handle("echo-media", async (m) => {
     try {
-      const e = h.url.replace(/^echo-media:\/\//, "");
+      const e = m.url.replace(/^echo-media:\/\//, "");
       let t = decodeURIComponent(e.startsWith("/") ? e : "/" + e);
       if (process.platform === "win32" && t.startsWith("/") && (t = t.slice(1)), !g.existsSync(t))
         return new Response("Media not found", { status: 404 });
-      const s = g.statSync(t).size, i = t.endsWith(".mp3") ? "audio/mpeg" : t.endsWith(".wav") ? "audio/wav" : "application/octet-stream", r = new Headers({
+      const i = g.statSync(t).size, s = t.endsWith(".mp3") ? "audio/mpeg" : t.endsWith(".wav") ? "audio/wav" : "application/octet-stream", r = new Headers({
         "Access-Control-Allow-Origin": "*",
         "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
         "Access-Control-Allow-Headers": "*",
         "Accept-Ranges": "bytes",
-        "Content-Type": i
-      }), o = h.headers.get("range"), n = o ? /bytes=(\d*)-(\d*)/.exec(o) : null;
-      let a = 0, c = s - 1, l = 200;
+        "Content-Type": s
+      }), o = m.headers.get("range"), n = o ? /bytes=(\d*)-(\d*)/.exec(o) : null;
+      let a = 0, c = i - 1, l = 200;
       if (n && (n[1] !== "" || n[2] !== "")) {
-        if (n[1] === "" ? a = Math.max(0, s - parseInt(n[2], 10)) : (a = parseInt(n[1], 10), n[2] !== "" && (c = Math.min(c, parseInt(n[2], 10)))), a >= s || a > c)
-          return r.set("Content-Range", `bytes */${s}`), new Response(null, { status: 416, headers: r });
-        l = 206, r.set("Content-Range", `bytes ${a}-${c}/${s}`);
+        if (n[1] === "" ? a = Math.max(0, i - parseInt(n[2], 10)) : (a = parseInt(n[1], 10), n[2] !== "" && (c = Math.min(c, parseInt(n[2], 10)))), a >= i || a > c)
+          return r.set("Content-Range", `bytes */${i}`), new Response(null, { status: 416, headers: r });
+        l = 206, r.set("Content-Range", `bytes ${a}-${c}/${i}`);
       }
-      if (r.set("Content-Length", String(c - a + 1)), h.method === "HEAD")
+      if (r.set("Content-Length", String(c - a + 1)), m.method === "HEAD")
         return new Response(null, { status: l, headers: r });
       const d = Ye.toWeb(
         g.createReadStream(t, { start: a, end: c })
@@ -4340,13 +4593,13 @@ U.whenReady().then(() => {
     } catch (e) {
       return console.error("[echo-media protocol] Error loading media:", e), new Response("Error loading media", { status: 500 });
     }
-  }), Oe();
+  }), Pe();
 });
 console.log("Electron:", process.versions.electron);
 console.log("Chromium:", process.versions.chrome);
 export {
-  kt as MAIN_DIST,
-  Ue as RENDERER_DIST,
-  Ee as VITE_DEV_SERVER_URL,
+  Nt as MAIN_DIST,
+  Fe as RENDERER_DIST,
+  be as VITE_DEV_SERVER_URL,
   Ut as core
 };

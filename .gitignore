@@ -37,3 +37,4 @@ assets/
 # Custom cloned voice recordings
 public/voices/custom/*
 !public/voices/custom/.gitkeep
+*.tsbuildinfo

@@ -255,7 +255,14 @@ export const MusicControlsDrawer: React.FC = () => {
             <label className="font-semibold text-muted-foreground flex items-center gap-1.5">
               <Clock className="size-3.5 text-emerald-500" /> Target Duration
             </label>
-            <span className="font-mono font-bold text-foreground">~{duration} seconds</span>
+            <div className="flex items-center gap-2">
+              <span className="font-mono font-bold text-foreground">~{duration}s</span>
+              <span className="text-[10px] text-muted-foreground bg-muted/40 px-1.5 py-0.5 rounded border border-border/40 font-mono">
+                {engine === 'minimax'
+                  ? `Est: ~${Math.max(1, Math.round((duration / 60) * 5.5))}m`
+                  : `Est: ~${Math.max(5, Math.round(duration * 0.7))}s`}
+              </span>
+            </div>
           </div>
           <Slider
             value={[duration]}

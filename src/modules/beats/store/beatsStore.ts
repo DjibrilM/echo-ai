@@ -121,9 +121,12 @@ export const beatTimeSignatureAtom = atom<string>('4/4');
 export const beatDurationAtom = atom<number>(30);
 export const beatSeedAtom = atom<number>(-1);
 export const beatDitVariantAtom = atom<BeatDitVariant>('turbo-q4');
-export const beatGuidanceScaleAtom = atom<number>(4.5);
-export const beatInferenceStepsAtom = atom<number>(8);
-export const beatShiftAtom = atom<number>(1.0);
+export const beatGuidanceScaleAtom = atom<number>(1.0); // 1.0 for distilled turbo DiT (prevents CFG distortion)
+export const beatInferenceStepsAtom = atom<number>(10); // 10 steps provides crisp transient definition
+export const beatShiftAtom = atom<number>(3.0); // 3.0 is official turbo DiT timestep shift for crisp highs
+export const beatDcwEnabledAtom = atom<boolean>(true);
+export const beatDcwScalerAtom = atom<number>(0.05);
+export const beatDcwHighScalerAtom = atom<number>(0.02);
 
 export const isBeatGeneratingAtom = atom<boolean>(false);
 export const beatGenerationProgressAtom = atom<BeatProgressState | null>(null);

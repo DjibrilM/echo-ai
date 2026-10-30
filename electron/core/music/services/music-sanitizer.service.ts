@@ -87,6 +87,11 @@ export class MusicSanitizerService {
         sanitizedCaption = `${sanitizedCaption}, no vocals`;
       }
 
+      // Acoustic clarity steering for ACE-Step DiT latent embeddings
+      if (engine === 'acestep' && !/(studio quality|clean mix|crisp|high fidelity|mastered|clear audio)/i.test(sanitizedCaption)) {
+        sanitizedCaption = `${sanitizedCaption}, studio quality mix, crisp clear audio, punchy transients`;
+      }
+
       sanitizedLyrics = '[Instrumental]';
       vocalHintInjected = undefined;
     } else {
@@ -175,10 +180,23 @@ export class MusicSanitizerService {
 
     // Clean up trailing commas and spacing
     sanitizedCaption = sanitizedCaption
-      .replace(/\s*,\s*,+/g, ',')
+      .replace(/\s*,\s*,+/g, ', ')
       .replace(/,\s*$/g, '')
       .replace(/\s{2,}/g, ' ')
       .trim();
+
+    // 5. For ACE-Step: Condense oversized multi-paragraph prompts (>450 chars)
+    // ACE-Step's 0.6B LM is trained on concise 20-60 word musical tags; feeding massive 3,000-char
+    // essays causes the 5Hz LM context to overflow or emit EOS immediately (0 audio codes).
+    if (engine === 'acestep' && sanitizedCaption.length > 450) {
+      const truncated = sanitizedCaption.slice(0, 450);
+      const lastComma = truncated.lastIndexOf(',');
+      sanitizedCaption = (lastComma > 250 ? truncated.slice(0, lastComma) : truncated).trim();
+      // Ensure essential instrumental tag remains
+      if (isInstrumental && !/\b(instrumental|no vocals)\b/i.test(sanitizedCaption)) {
+        sanitizedCaption = `${sanitizedCaption}, instrumental, no vocals`;
+      }
+    }
 
     // 5. Calculate MiniMax frames (25 fps)
     const maxFrames = engine === 'minimax' ? Math.max(750, Math.round(duration * 25)) : undefined;
@@ -195,11 +213,27 @@ export class MusicSanitizerService {
 
   /**
    * Strips conversational filler like "generate a...", "make a song about..."
+   * as well as markdown formatting, bullet points, and LLM-generated section headers.
    */
   private stripConversationalMeta(text: string): string {
     let clean = text.trim();
 
-    // Regex for conversational openings
+    // 1. Remove markdown bold/italics and header hashtags
+    clean = clean.replace(/\*\*(.*?)\*\*/g, '$1');
+    clean = clean.replace(/\*(.*?)\*/g, '$1');
+    clean = clean.replace(/#{1,6}\s*/g, '');
+
+    // 2. Remove list numbering and bullet points (e.g. "1. First Violins", "- Realistic acoustic")
+    clean = clean.replace(/^\s*\d+\.\s+/gm, '');
+    clean = clean.replace(/^\s*[-*•]\s+/gm, '');
+
+    // 3. Remove LLM prompt section headers like "Musical arrangement and instrumentation:", "Composition and progression:", etc.
+    clean = clean.replace(/(?:Musical arrangement and instrumentation|Composition and progression|Performance and sound characteristics|Production quality|Instrumentation|Arrangement|Sound characteristics|Style and mood)\s*:\s*/gi, '');
+
+    // 4. Remove conversational AI instructions like "Create a...", "Build the composition around...", "Keep the arrangement...", "The composition should sound like..."
+    clean = clean.replace(/\b(?:The composition should sound like|The final composition should sound like|Build the composition around|Keep the arrangement entirely|Develop the musical theme|Begin with a|Include several)\b[^.,;\n]*/gi, '');
+
+    // 5. Regex for conversational openings
     const conversationalPrefixes = [
       /^(?:can\s+you\s+)?(?:please\s+)?(?:generate|create|make|write|compose|produce)\s+(?:me\s+)?(?:a|an|the|some)?\s+/i,
       /^(?:i\s+(?:want|need|would\s+like)\s+(?:to\s+have\s+)?(?:a|an|the|some)?\s+)/i,
@@ -212,13 +246,17 @@ export class MusicSanitizerService {
       clean = clean.replace(prefix, '');
     }
 
-    // Capitalize first letter
+    // 6. Clean newlines into comma-separated phrases
+    clean = clean.replace(/[\r\n]+/g, ', ');
+
+    // 7. Deduplicate commas and clean spaces
+    clean = clean.replace(/\s*,\s*,+/g, ', ').replace(/,\s*,/g, ', ').replace(/\s{2,}/g, ' ').trim();
+    clean = clean.replace(/^,\s*/, '').replace(/,\s*$/, '');
+
+    // 8. Capitalize first letter
     if (clean.length > 0) {
       clean = clean.charAt(0).toUpperCase() + clean.slice(1);
     }
-
-    // Clean multiple spaces and commas
-    clean = clean.replace(/\s*,\s*,+/g, ',').replace(/\s{2,}/g, ' ');
 
     return clean;
   }

@@ -38,5 +38,6 @@ export interface BeatProgressState {
   total: number;
   percentage: number;
   message?: string;
+  etaFormatted?: string;
 }
 

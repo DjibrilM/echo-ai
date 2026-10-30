@@ -19,6 +19,9 @@ export interface GenerateBeatParams {
   inferenceSteps?: number;
   shift?: number;
   seed?: number;
+  dcwEnabled?: boolean;
+  dcwScaler?: number;
+  dcwHighScaler?: number;
 }
 
 export async function generateBeat(params: GenerateBeatParams) {
@@ -28,6 +31,12 @@ export async function generateBeat(params: GenerateBeatParams) {
     isInstrumental: true,
     vocalMode: 'instrumental',
     normalizeLoudness: true,
+    guidanceScale: params.guidanceScale ?? 1.0,
+    shift: params.shift ?? 3.0,
+    inferenceSteps: params.inferenceSteps ?? 10,
+    dcwEnabled: params.dcwEnabled ?? true,
+    dcwScaler: params.dcwScaler ?? 0.05,
+    dcwHighScaler: params.dcwHighScaler ?? 0.02,
   });
 }
 
