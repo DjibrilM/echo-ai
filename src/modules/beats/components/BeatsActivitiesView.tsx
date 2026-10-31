@@ -16,7 +16,6 @@ const CURATED_BEAT_TRACKS: MusicTrackItemData[] = [
     subCategory: 'Echo Studio · 140 BPM · F minor',
     duration: '0:30',
     durationSec: 30,
-    cover: '/covers/star_fox_dream.jpg',
     waveform: [15, 35, 50, 70, 80, 90, 75, 65, 70, 85, 80, 65, 50, 35, 30, 45, 60, 75, 50, 25],
   },
   {
@@ -26,7 +25,6 @@ const CURATED_BEAT_TRACKS: MusicTrackItemData[] = [
     subCategory: 'Echo Studio · 82 BPM · Eb major',
     duration: '0:30',
     durationSec: 30,
-    cover: '/covers/stardust_visitor.jpg',
     waveform: [25, 45, 60, 75, 65, 50, 70, 85, 60, 45, 75, 90, 70, 50, 35, 45, 60, 75, 55, 35],
   },
   {
@@ -36,7 +34,6 @@ const CURATED_BEAT_TRACKS: MusicTrackItemData[] = [
     subCategory: 'Echo Studio · 120 BPM · D minor',
     duration: '0:30',
     durationSec: 30,
-    cover: '/covers/got/knight_oath.jpg',
     waveform: [30, 50, 70, 85, 95, 80, 65, 75, 90, 80, 65, 70, 85, 60, 45, 55, 75, 85, 65, 40],
   },
 ]
@@ -102,7 +99,6 @@ export const BeatsActivitiesView: React.FC<BeatsActivitiesViewProps> = ({
                 subCategory: a.subCategory || String(music?.caption || 'ACE-Step 1.5 Instrumental'),
                 duration: dur,
                 durationSec: durSec,
-                cover: String(music?.cover || '/covers/stardust_visitor.jpg'),
                 waveform: wf,
                 audioUrl: typeof music?.audioUrl === 'string' ? music.audioUrl : undefined,
               }
@@ -123,7 +119,6 @@ export const BeatsActivitiesView: React.FC<BeatsActivitiesViewProps> = ({
       subCategory: `${h.bpm || 140} BPM · ${h.keyscale || 'F minor'} · ACE-Step 1.5`,
       duration: `${Math.floor(durSec / 60)}:${durSec % 60 < 10 ? '0' : ''}${durSec % 60}`,
       durationSec: durSec,
-      cover: '/covers/stardust_visitor.jpg',
       waveform: h.waveform || [25, 45, 60, 75, 50, 40],
       audioUrl: h.audioUrl,
     }
@@ -159,12 +154,12 @@ export const BeatsActivitiesView: React.FC<BeatsActivitiesViewProps> = ({
 
   return (
     <div className="relative flex flex-col items-center w-full max-w-7xl mx-auto px-4 sm:px-8 pt-4 pb-20">
-      {/* Dynamic Ambient Background Glow - matching Songs screen */}
+      {/* Dynamic Ambient Background Glow - matching base background #0f0f10 */}
       <div className="absolute top-0 left-0 right-0 h-[480px] overflow-hidden pointer-events-none select-none z-0">
-        <div className="absolute -top-[120px] left-1/2 -translate-x-1/2 w-[1100px] h-[360px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-600/25 via-orange-700/12 to-transparent blur-[80px]" />
-        <div className="absolute -top-[40px] right-[8%] w-[480px] h-[280px] bg-gradient-to-br from-rose-500/18 via-red-600/10 to-transparent blur-[80px] rounded-full" />
-        <div className="absolute -top-[60px] left-[6%] w-[500px] h-[300px] bg-gradient-to-tr from-purple-800/16 via-amber-950/10 to-transparent blur-[90px] rounded-full" />
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0e0e11]/30 to-[#0e0e11]" />
+        <div className="absolute -top-[120px] left-1/2 -translate-x-1/2 w-[1100px] h-[360px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-amber-600/20 via-orange-700/10 to-transparent blur-[80px]" />
+        <div className="absolute -top-[40px] right-[8%] w-[480px] h-[280px] bg-gradient-to-br from-rose-500/15 via-amber-600/10 to-transparent blur-[80px] rounded-full" />
+        <div className="absolute -top-[60px] left-[6%] w-[500px] h-[300px] bg-gradient-to-tr from-amber-700/15 via-orange-950/10 to-transparent blur-[90px] rounded-full" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0f0f10]/40 to-[#0f0f10]" />
       </div>
 
       {/* 1. Prompt Hero Card Section */}
@@ -239,7 +234,6 @@ export const BeatsActivitiesView: React.FC<BeatsActivitiesViewProps> = ({
                   subtitle: t.subCategory,
                   artist: t.category,
                   category: t.category,
-                  cover: t.cover,
                   audioUrl: t.audioUrl || '',
                   duration: t.durationSec,
                   durationFormatted: t.duration ? String(t.duration) : undefined,

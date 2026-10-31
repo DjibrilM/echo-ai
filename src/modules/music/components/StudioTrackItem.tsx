@@ -2,7 +2,6 @@ import React from 'react'
 import {
   Play,
   Pause,
-  Star,
   Download,
   Trash2,
 } from 'lucide-react'
@@ -13,19 +12,17 @@ import type { MusicGenerationOutput } from '../types'
 export interface StudioTrackItemProps {
   item: MusicGenerationOutput
   isThisPlaying: boolean
-  isFav: boolean
+  isFav?: boolean
   onPlay: () => void
   onOpenEditModal?: () => void
-  onToggleFavorite: (id: string, e: React.MouseEvent) => void
+  onToggleFavorite?: (id: string, e: React.MouseEvent) => void
   onDeleteTrack?: (id: string) => void
 }
 
 export const StudioTrackItem: React.FC<StudioTrackItemProps> = ({
   item,
   isThisPlaying,
-  isFav,
   onPlay,
-  onToggleFavorite,
   onDeleteTrack,
 }) => {
   const formattedDuration = formatDuration(item.durationMs ? item.durationMs / 1000 : 60)
@@ -107,20 +104,6 @@ export const StudioTrackItem: React.FC<StudioTrackItemProps> = ({
         <span className="text-xs font-mono text-zinc-400 shrink-0 tabular-nums">
           {formattedDuration}
         </span>
-
-        {/* Favorite / Star */}
-        <button
-          type="button"
-          onClick={(e) => onToggleFavorite(item.id, e)}
-          className={`p-1.5 rounded transition-colors cursor-pointer shrink-0 ${
-            isFav
-              ? 'text-white'
-              : 'text-zinc-500 hover:text-white opacity-0 group-hover:opacity-100'
-          }`}
-          title={isFav ? 'Remove from favorites' : 'Add to favorites'}
-        >
-          <Star className={`size-3.5 ${isFav ? 'fill-current text-white' : 'text-zinc-400'}`} />
-        </button>
 
         {/* Download */}
         <button

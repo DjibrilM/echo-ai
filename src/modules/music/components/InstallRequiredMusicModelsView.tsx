@@ -1,8 +1,7 @@
 import React, { useState } from 'react'
-import { Download, CheckCircle2, ArrowRight } from 'lucide-react'
+import { Download, CheckCircle2 } from 'lucide-react'
 import { useMusicModels } from '../store/musicModelsStore'
 import { Button } from '@/components/ui/button'
-import { cn } from '@/lib/utils'
 
 export interface InstallRequiredMusicModelsViewProps {
   onBack?: () => void
@@ -15,10 +14,7 @@ export const InstallRequiredMusicModelsView: React.FC<InstallRequiredMusicModels
 }) => {
   const {
     minimaxModels,
-    totalSuiteSizeFormatted,
     remainingSizeFormatted,
-    downloadedCount,
-    totalCount,
     allRequiredReady,
     downloadingModels,
     downloadModel,
@@ -46,47 +42,28 @@ export const InstallRequiredMusicModelsView: React.FC<InstallRequiredMusicModels
     }
   }
 
-  const title = 'Set up MiniMax Songs Models'
-  const description =
-    'Download MiniMax Music-v3 neural models and Qwen lyric generator (~8.2 GB) for high-fidelity human vocals, lyric generation, and complete song composition.'
+  const handleContinue = () => {
+    if (onContinue) {
+      onContinue()
+    } else if (onBack) {
+      onBack()
+    }
+  }
 
   return (
-    <div className="flex h-full w-full flex-1 items-center justify-center overflow-y-auto p-6">
+    <div className="flex h-full w-full flex-1 items-center justify-center overflow-y-auto p-6 select-none bg-[#0f0f10] text-[#f4f4f5]">
       <div className="flex w-full max-w-xl flex-col gap-6">
         <header className="space-y-2">
           <h1 className="text-xl font-semibold tracking-tight text-foreground">
-            {title}
+            Set up Songs Engine Models
           </h1>
 
           <p className="text-sm text-muted-foreground">
-            {description}
+            Download MiniMax Music-v3 neural models and Qwen lyric generator for high-fidelity human vocals, lyric generation, and complete song composition.
           </p>
-
-          {/* Engine Banner - MiniMax for Songs */}
-          <div className="grid grid-cols-1 pt-2">
-            <div
-              className={cn(
-                'flex flex-col items-start gap-1 p-3 rounded-xl border text-left',
-                'border-white/30 bg-white/10 text-white shadow-sm'
-              )}
-            >
-              <div className="flex items-center gap-1.5 font-medium text-xs">
-                <span>MiniMax Music-v3 (Songs Engine)</span>
-              </div>
-              <span className="text-[11px] text-zinc-400 leading-tight">
-                Neural Music3 Transformer, Vocoder & Lyric LLM ({totalCount} models &bull; {totalSuiteSizeFormatted}
-                {downloadedCount > 0 && !allRequiredReady && (
-                  <span className="text-emerald-400 ml-1">
-                    &bull; {downloadedCount}/{totalCount} ready ({remainingSizeFormatted} remaining)
-                  </span>
-                )}
-                )
-              </span>
-            </div>
-          </div>
         </header>
 
-        {/* Model Cards List */}
+        {/* Model Cards List matching TTS and Story download UI */}
         <div className="space-y-2">
           {minimaxModels.map((model) => {
             const download = downloadingModels[model.id]
@@ -100,70 +77,52 @@ export const InstallRequiredMusicModelsView: React.FC<InstallRequiredMusicModels
             return (
               <div
                 key={model.id}
-                className={cn(
-                  'flex flex-col gap-3 rounded-xl border p-4 transition-colors',
-                  isReady
-                    ? 'border-emerald-500/20 bg-emerald-500/5'
-                    : isDownloading
-                      ? 'border-primary/30 bg-primary/5'
-                      : 'border-border/60 bg-card/40'
-                )}
+                className="rounded-lg border border-border bg-background p-4"
               >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="space-y-1 min-w-0">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-foreground">
                       {model.name}
                     </p>
 
-                    <p className="line-clamp-2 text-xs text-muted-foreground">
-                      {model.description}
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {model.sizeFormatted} &bull; {model.description}
                     </p>
-
-                    <div className="flex items-center gap-2 pt-1 text-[11px] text-muted-foreground">
-                      <span>{model.sizeFormatted}</span>
-                      <span>&bull;</span>
-                      <span className="uppercase">{model.category}</span>
-                      <span>&bull;</span>
-                      <span className="font-mono text-zinc-400">{model.id}</span>
-                    </div>
                   </div>
 
-                  <div className="flex shrink-0 items-center gap-2">
-                    {isReady ? (
-                      <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-500">
-                        <CheckCircle2 className="size-4" />
-                        <span>Ready</span>
-                      </span>
-                    ) : isDownloading ? (
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => cancelDownload(model.id)}
-                        className="text-xs text-muted-foreground hover:text-foreground"
-                      >
-                        Cancel
-                      </Button>
-                    ) : (
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="outline"
-                        onClick={() => downloadModel(model.id)}
-                        className="gap-1.5 text-xs"
-                      >
-                        <Download className="size-3.5" />
-                        <span>Download</span>
-                      </Button>
-                    )}
-                  </div>
+                  {isReady ? (
+                    <span className="flex shrink-0 items-center gap-1.5 text-xs text-white font-medium">
+                      <CheckCircle2 className="size-4 text-white" />
+                      Ready
+                    </span>
+                  ) : isDownloading ? (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => cancelDownload(model.id)}
+                      className="shrink-0 text-muted-foreground hover:text-white"
+                    >
+                      Cancel
+                    </Button>
+                  ) : (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => downloadModel(model.id)}
+                      className="shrink-0 text-white"
+                    >
+                      <Download className="mr-1.5 size-3.5 text-white" />
+                      Download
+                    </Button>
+                  )}
                 </div>
 
-                {/* Progress bar when downloading */}
                 {isDownloading && (
-                  <div className="space-y-1 pt-1">
+                  <div className="mt-3 space-y-1.5">
                     <div
-                      className="h-1.5 w-full overflow-hidden rounded-full bg-secondary"
+                      className="h-1.5 w-full overflow-hidden rounded-full bg-muted"
                       role="progressbar"
                       aria-label={`Downloading ${model.name}`}
                       aria-valuemin={0}
@@ -171,7 +130,7 @@ export const InstallRequiredMusicModelsView: React.FC<InstallRequiredMusicModels
                       aria-valuenow={progress}
                     >
                       <div
-                        className="h-full rounded-full bg-emerald-500 transition-[width] duration-200"
+                        className="h-full rounded-full bg-white transition-[width] duration-200"
                         style={{ width: `${progress}%` }}
                       />
                     </div>
@@ -190,37 +149,26 @@ export const InstallRequiredMusicModelsView: React.FC<InstallRequiredMusicModels
         </div>
 
         {/* Master Action Button */}
-        <div className="space-y-2">
+        {allRequiredReady ? (
+          <Button
+            type="button"
+            onClick={handleContinue}
+            className="w-full bg-white hover:bg-zinc-200 text-black font-medium"
+          >
+            Continue to Songs
+          </Button>
+        ) : (
           <Button
             type="button"
             onClick={handleInstallAll}
             disabled={isStartingAll || anyDownloading}
-            className="w-full font-medium"
+            className="w-full"
           >
-            {allRequiredReady ? (
-              <span className="flex items-center gap-1.5">
-                <span>All models ready &bull; Continue to Songs</span>
-                <ArrowRight className="size-4" />
-              </span>
-            ) : isStartingAll ? (
-              'Starting downloads...'
-            ) : downloadedCount > 0 ? (
-              `Download remaining ${totalCount - downloadedCount} models (${remainingSizeFormatted} of ${totalSuiteSizeFormatted})`
-            ) : (
-              `Download all models (${totalSuiteSizeFormatted})`
-            )}
+            {isStartingAll
+              ? 'Starting downloads...'
+              : `Download all (${remainingSizeFormatted})`}
           </Button>
-
-          {onBack && (
-            <button
-              type="button"
-              onClick={onBack}
-              className="w-full text-center text-xs text-zinc-500 hover:text-zinc-300 transition-colors py-1 cursor-pointer select-none"
-            >
-              {allRequiredReady ? 'Return to Activities' : 'Return to previous screen'}
-            </button>
-          )}
-        </div>
+        )}
       </div>
     </div>
   )

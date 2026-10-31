@@ -44,7 +44,6 @@ export const MusicPlayerBar: React.FC = () => {
           ? `${activeTrack.bpm} BPM${activeTrack.keyscale ? ` • ${activeTrack.keyscale}` : ''}`
           : '120 BPM'
       }
-      cover={activeTrack.cover || '/covers/stardust_visitor.jpg'}
       audioUrl={activeTrack.audioUrl}
       videoUrl={activeTrack.videoUrl}
       isPlaying={isPlaying}

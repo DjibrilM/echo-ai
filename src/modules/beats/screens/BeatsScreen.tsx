@@ -42,7 +42,7 @@ export const BeatsScreen: React.FC = () => {
   // STRICT REQUIREMENT: User must NEVER see the creation interfaces before having all models in place
   if (!allRequiredReady) {
     return (
-      <div className="flex flex-col h-full w-full min-h-0 overflow-hidden bg-[#0e0e11] text-foreground select-none relative">
+      <div className="flex flex-col h-full w-full min-h-0 overflow-hidden bg-[#0f0f10] text-[#f4f4f5] select-none relative">
         <BeatsTopSubHeader
           activeTab="models"
           onSelectTab={() => {}}
@@ -111,7 +111,7 @@ export const BeatsScreen: React.FC = () => {
   }
 
   return (
-    <div className="flex flex-col h-full w-full min-h-0 overflow-hidden bg-[#0e0e11] text-foreground select-none relative">
+    <div className="flex flex-col h-full w-full min-h-0 overflow-hidden bg-[#0f0f10] text-[#f4f4f5] select-none relative">
       {/* 1. Minimalistic Top SubHeader */}
       <BeatsTopSubHeader
         activeTab={showModelsView ? 'models' : activeTab}

@@ -13,7 +13,7 @@ export interface MusicTrack {
   genre: string
   bpm: number
   model: string
-  cover: string
+  cover?: string
   trackNumber: string
   duration: string
   createdAt: string
@@ -28,7 +28,7 @@ export interface ActivityItem {
   type: 'audio' | 'stories' | 'texts'
   duration: string
   plays: string
-  cover: string
+  cover?: string
   waveform?: number[]
   wordsCount?: string
   textExcerpt?: string
@@ -39,7 +39,7 @@ export interface ActiveMedia {
   id: string
   title: string
   subtitle: string
-  cover: string
+  cover?: string
   duration: string
   type: 'story' | 'music' | 'activity'
 }

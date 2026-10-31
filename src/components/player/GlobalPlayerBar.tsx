@@ -79,15 +79,10 @@ export const GlobalPlayerBar: React.FC = () => {
       {/* 1. UP NEXT Playlist Queue Floating Panel */}
       <PlaylistQueuePanel />
 
-      {/* 2. Persistent Bottom Player Bar (YouTube Music Aesthetic) */}
-      <div
-        className="w-full shrink-0 bg-[#0c0c0e]/95 backdrop-blur-xl border-t border-white/10  pt-0 pb-2.5 flex flex-col justify-center select-none relative z-40 shadow-2xl transition-all"
-        style={{
-          boxShadow: '0 -10px 25px -5px rgba(0, 0, 0, 0.5), 0 -1px 0 rgba(255, 255, 255, 0.05)',
-        }}
-      >
+      {/* 2. Persistent Bottom Player Bar */}
+      <div className="w-full shrink-0 bg-[#0f0f10] border-t border-white/10 pt-0 pb-2.5 flex flex-col justify-center select-none relative z-40 transition-all">
         {/* Scrubber Progress Bar with live tracking of playback time */}
-        <div className="w-full mb-3   relative">
+        <div className="w-full mb-3 relative">
           <ScrubBarContainer
             duration={effectiveDuration || 60}
             value={currentTime}
@@ -107,22 +102,11 @@ export const GlobalPlayerBar: React.FC = () => {
 
         {/* Bottom Controls Section */}
         <div className="w-full flex px-4 sm:px-6 items-center justify-between">
-          {/* Left Section: Cover, Title, Artist, Like */}
+          {/* Left Section: Audio Tile, Title, Artist, Like */}
           <div className="flex items-center gap-3 min-w-0 max-w-[30%] sm:max-w-[35%]">
-            {/* Thumbnail */}
-            <div className="size-11 rounded-lg overflow-hidden bg-black/50 border border-white/10 shrink-0 flex items-center justify-center shadow-md">
-              {currentTrack.cover || currentTrack.coverUrl ? (
-                <img
-                  src={currentTrack.cover || currentTrack.coverUrl}
-                  alt={currentTrack.title}
-                  className="size-full object-cover"
-                  onError={(e) => {
-                    e.currentTarget.style.display = 'none'
-                  }}
-                />
-              ) : (
-                <Music className="size-5 text-zinc-400" />
-              )}
+            {/* Audio Indicator Tile (Music does not come with images) */}
+            <div className="size-10 rounded-lg bg-white/5 border border-white/10 shrink-0 flex items-center justify-center">
+              <Music className="size-5 text-white" />
             </div>
 
             {/* Title and Subtitle */}

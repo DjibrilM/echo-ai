@@ -47,11 +47,17 @@ export function FloatingMiniPlayer({
     <div className="fixed bottom-4 left-6 right-6 md:left-[270px] z-50 rounded-2xl bg-[#18181b]/95 backdrop-blur-xl border border-white/[0.12] p-3 shadow-2xl flex items-center justify-between gap-4 animate-in fade-in slide-in-from-bottom-4 duration-300">
       {/* Left: Thumbnail & Details */}
       <div className="flex items-center gap-3 min-w-0">
-        <img
-          src={activeMedia.cover}
-          alt={activeMedia.title}
-          className="size-12 rounded-xl object-cover shrink-0 border border-white/10"
-        />
+        {activeMedia.cover ? (
+          <img
+            src={activeMedia.cover}
+            alt={activeMedia.title}
+            className="size-12 rounded-xl object-cover shrink-0 border border-white/10"
+          />
+        ) : (
+          <div className="size-12 rounded-xl bg-white/[0.06] border border-white/10 flex items-center justify-center shrink-0">
+            <Music2 className="size-5 text-zinc-400" />
+          </div>
+        )}
         <div className="flex flex-col min-w-0">
           <span className="text-sm font-semibold text-white truncate tracking-tight">
             {activeMedia.title}

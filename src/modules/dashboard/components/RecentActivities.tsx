@@ -52,9 +52,8 @@ export function RecentActivities({
             itemType = 'texts'
           }
 
-          let cover = '/covers/got/winterfell.jpg'
+          let cover: string | undefined = undefined
           if (story?.cover) cover = story.cover
-          else if (music?.cover) cover = music.cover
           else if (tts?.voiceAvatarUrl) cover = tts.voiceAvatarUrl
 
           let duration = 'Audio'
@@ -208,16 +207,8 @@ export function RecentActivities({
           isText ? 'cursor-default' : 'cursor-pointer'
         )}
       >
-        {/* Left: Cover thumbnail + Play button (or document icon for texts) + Title + Category breadcrumb */}
+        {/* Left: Play button (or document icon for texts) + Title + Category breadcrumb */}
         <div className="flex items-center gap-3 sm:gap-3.5 min-w-0 flex-1">
-          {activity.type === 'stories' && activity.cover && (
-            <img
-              src={activity.cover}
-              alt={activity.title}
-              className="size-10 sm:size-11 rounded-lg object-cover shrink-0 border border-white/10 shadow-sm"
-            />
-          )}
-
           {isText ? (
             <div
               className="size-8 sm:size-9 rounded-full flex items-center justify-center shrink-0 bg-white/[0.06] text-zinc-400 border border-white/[0.06]"

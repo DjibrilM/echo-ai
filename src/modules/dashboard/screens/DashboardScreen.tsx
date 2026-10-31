@@ -49,8 +49,6 @@ export function DashboardScreen() {
         id: t.id,
         title: t.title,
         artist: `${t.genre} • ${t.bpm} BPM • ${t.model}`,
-        cover: t.cover,
-        coverUrl: t.cover,
         audioUrl: '',
         duration: 120,
       }))

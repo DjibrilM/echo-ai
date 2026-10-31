@@ -6,7 +6,6 @@ import { app } from 'electron'
 import * as qvacSdk from '@qvac/sdk'
 
 import type {
-  VoiceEngineType,
   AnyEngineType,
   VoiceModelInfo,
   VoiceModelStatusResult,
@@ -213,6 +212,19 @@ export class ModelsService {
         'Local 1.7B Instruct LLM for composing rhyming song lyrics, verse/chorus structures, and stylistic themes from prompts.',
       category: 'lm',
       engine: 'minimax',
+      required: true,
+    },
+    // Story Generation & Narrative Engine Models
+    {
+      id: 'gemma-4-4b-multimodal-q6_k',
+      name: 'Gemma 4 Multimodal 4B (Q6_K GGUF)',
+      descriptorName: 'GEMMA4_4B_MULTIMODAL_Q6_K',
+      sizeBytes: 3410000000,
+      sizeFormatted: '3.41 GB',
+      description:
+        'Local Gemma 4 multimodal model for multi-agent narrative orchestration, world building, and dialogue generation.',
+      category: 'lm',
+      engine: 'story',
       required: true,
     },
   ]
@@ -449,12 +461,15 @@ export class ModelsService {
       // CosyVoice 3 requires core models (flow-fp16 is an optional high-precision upgrade).
       // Chatterbox requires backbone and companion vocoder.
       // ACE-Step and MiniMax require their respective engine models.
+      // Story engine requires Gemma 4 LLM and CosyVoice 3 voice suite.
       const isRequired = selectedEngine
-        ? selectedEngine === 'cosyvoice3'
-          ? (def.engine === 'cosyvoice3' && def.id !== 'cosyvoice3-flow-fp16') || def.engine === 'shared'
-          : selectedEngine === 'chatterbox'
-            ? def.engine === 'chatterbox' && (def.id === 'chatterbox-t3-turbo-q8_0' || def.id === 'chatterbox-s3gen-q8_0')
-            : def.engine === selectedEngine
+        ? selectedEngine === 'story'
+          ? def.engine === 'story' || (def.engine === 'cosyvoice3' && def.id !== 'cosyvoice3-flow-fp16') || def.id === 'lavasr-enhancer'
+          : selectedEngine === 'cosyvoice3'
+            ? (def.engine === 'cosyvoice3' && def.id !== 'cosyvoice3-flow-fp16') || def.engine === 'shared'
+            : selectedEngine === 'chatterbox'
+              ? def.engine === 'chatterbox' && (def.id === 'chatterbox-t3-turbo-q8_0' || def.id === 'chatterbox-s3gen-q8_0')
+              : def.engine === selectedEngine
         : def.category === 'backbone'
 
       return {
@@ -494,7 +509,7 @@ export class ModelsService {
   /**
    * Helper to check if an engine is fully ready for speech synthesis
    */
-  public areAllRequiredModelsDownloaded(selectedEngine: VoiceEngineType = 'cosyvoice3'): boolean {
+  public areAllRequiredModelsDownloaded(selectedEngine: AnyEngineType = 'cosyvoice3'): boolean {
     const status = this.getStatus(selectedEngine)
     return status.allRequiredDownloaded
   }

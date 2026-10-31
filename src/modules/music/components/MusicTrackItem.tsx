@@ -44,16 +44,8 @@ export const MusicTrackItem: React.FC<MusicTrackItemProps> = ({
         className
       )}
     >
-      {/* Left: Cover thumbnail + Play button + Title + Category breadcrumb */}
+      {/* Left: Play button + Title + Category breadcrumb */}
       <div className="flex items-center gap-3 sm:gap-3.5 min-w-0 flex-1">
-        {track.cover && (
-          <img
-            src={track.cover}
-            alt={track.title}
-            className="size-10 sm:size-11 rounded-lg object-cover shrink-0 border border-white/10 shadow-sm"
-          />
-        )}
-
         <button
           type="button"
           onClick={(e) => {

@@ -15,7 +15,7 @@ export interface MusicMarketplaceTrack {
   subCategory: string
   duration: string
   durationSec: number
-  cover: string
+  cover?: string
   waveform: number[]
   audioUrl?: string
 }
@@ -49,7 +49,6 @@ const DEFAULT_TRACKS: MusicMarketplaceTrack[] = [
     subCategory: 'Colours · Cinematic, Classical',
     duration: '1:00',
     durationSec: 60,
-    cover: '/covers/stardust_visitor.jpg',
     waveform: [20, 35, 60, 80, 50, 40, 75, 90, 65, 45, 80, 95, 70, 50, 30, 45, 65, 85, 55, 40],
   },
   {
@@ -59,7 +58,6 @@ const DEFAULT_TRACKS: MusicMarketplaceTrack[] = [
     subCategory: 'Good Music · Orchestral Climaxes',
     duration: '1:00',
     durationSec: 60,
-    cover: '/covers/got/valyrian_blade.jpg',
     waveform: [15, 25, 40, 65, 85, 90, 95, 70, 60, 75, 90, 85, 60, 40, 30, 50, 70, 85, 60, 35],
   },
   {
@@ -69,7 +67,6 @@ const DEFAULT_TRACKS: MusicMarketplaceTrack[] = [
     subCategory: 'Samuel · Pop, Piano Music',
     duration: '1:00',
     durationSec: 60,
-    cover: '/covers/got/iron_crown.jpg',
     waveform: [25, 40, 50, 55, 70, 65, 80, 75, 60, 65, 70, 85, 65, 50, 40, 35, 50, 65, 55, 30],
   },
   {
@@ -79,7 +76,6 @@ const DEFAULT_TRACKS: MusicMarketplaceTrack[] = [
     subCategory: 'Quang Anh · Classical Cello & Synth',
     duration: '1:00',
     durationSec: 60,
-    cover: '/covers/got/ashen_fortress.jpg',
     waveform: [30, 45, 65, 80, 70, 85, 90, 75, 60, 50, 70, 85, 90, 75, 55, 40, 60, 75, 50, 35],
   },
   {
@@ -89,7 +85,6 @@ const DEFAULT_TRACKS: MusicMarketplaceTrack[] = [
     subCategory: 'Hoa Nguyen · Commercial Pop',
     duration: '0:30',
     durationSec: 30,
-    cover: '/covers/cloud_kingdom.jpg',
     waveform: [10, 20, 35, 55, 75, 85, 70, 60, 75, 80, 85, 65, 50, 40, 30, 45, 60, 75, 50, 30],
   },
   {
@@ -99,7 +94,6 @@ const DEFAULT_TRACKS: MusicMarketplaceTrack[] = [
     subCategory: 'Lê Anh · Epic Orchestral Brass',
     duration: '1:00',
     durationSec: 60,
-    cover: '/covers/got/knight_oath.jpg',
     waveform: [20, 30, 45, 60, 75, 90, 85, 70, 80, 95, 85, 70, 50, 40, 35, 50, 65, 80, 55, 30],
   },
   {
@@ -109,7 +103,6 @@ const DEFAULT_TRACKS: MusicMarketplaceTrack[] = [
     subCategory: 'quangtonle · Electronic Tech Beat',
     duration: '0:30',
     durationSec: 30,
-    cover: '/covers/star_fox_dream.jpg',
     waveform: [15, 35, 50, 70, 80, 90, 75, 65, 70, 85, 80, 65, 50, 35, 30, 45, 60, 75, 50, 25],
   },
   {
@@ -119,7 +112,6 @@ const DEFAULT_TRACKS: MusicMarketplaceTrack[] = [
     subCategory: 'Echo Studio · 80s Synthwave & Drums',
     duration: '3:42',
     durationSec: 222,
-    cover: '/covers/stardust_visitor.jpg',
     waveform: [35, 55, 70, 90, 80, 60, 75, 85, 70, 55, 65, 80, 95, 70, 50, 45, 65, 80, 60, 40],
   },
 ]
@@ -179,7 +171,6 @@ export const MusicActivitiesView: React.FC<MusicActivitiesViewProps> = ({
                 subCategory: a.subCategory || String(music?.caption || 'ACE-Step v1.5'),
                 duration: dur,
                 durationSec: durSec,
-                cover: String(music?.cover || '/covers/stardust_visitor.jpg'),
                 waveform: wf,
                 audioUrl: typeof music?.audioUrl === 'string' ? music.audioUrl : undefined,
               }
@@ -216,7 +207,6 @@ export const MusicActivitiesView: React.FC<MusicActivitiesViewProps> = ({
         subCategory: h.keyscale ? `${h.keyscale} · ${h.bpm || 120} BPM` : 'Original Track',
         duration: formatDuration(durSec),
         durationSec: durSec,
-        cover: '/covers/stardust_visitor.jpg',
         waveform: h.waveform?.length ? h.waveform.slice(0, 32) : [30, 45, 60, 75, 50, 40, 65, 80],
         audioUrl: h.audioUrl,
       }
@@ -253,10 +243,10 @@ export const MusicActivitiesView: React.FC<MusicActivitiesViewProps> = ({
         <div className="absolute -top-[40px] right-[8%] w-[480px] h-[280px] bg-gradient-to-br from-amber-500/18 via-orange-600/10 to-transparent blur-[80px] rounded-full" />
 
         {/* Layer 3: Left-hand deep plum / burgundy accent */}
-        <div className="absolute -top-[60px] left-[6%] w-[500px] h-[300px] bg-gradient-to-tr from-purple-800/16 via-rose-950/10 to-transparent blur-[90px] rounded-full" />
+        <div className="absolute -top-[60px] left-[6%] w-[500px] h-[300px] bg-gradient-to-tr from-rose-900/15 via-rose-950/10 to-transparent blur-[90px] rounded-full" />
 
         {/* Layer 4: Clean dissolve to solid background BEFORE activities list */}
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0e0e11]/30 to-[#0e0e11]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#0f0f10]/40 to-[#0f0f10]" />
       </div>
 
       {/* 1. Prompt Hero Card Section */}
@@ -336,7 +326,6 @@ export const MusicActivitiesView: React.FC<MusicActivitiesViewProps> = ({
                   subtitle: t.subCategory,
                   artist: t.category,
                   category: t.category,
-                  cover: t.cover,
                   audioUrl: t.audioUrl || '',
                   duration: t.durationSec,
                   durationFormatted: t.duration,

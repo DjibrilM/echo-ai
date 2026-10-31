@@ -69,7 +69,6 @@ export const BottomPlayerBar: React.FC<BottomPlayerBarProps> = ({
   track,
   title: propTitle,
   subtitle: propSubtitle,
-  cover: propCover,
   audioUrl: propAudioUrl,
   videoUrl: propVideoUrl,
 
@@ -94,7 +93,6 @@ export const BottomPlayerBar: React.FC<BottomPlayerBarProps> = ({
 
   const title = propTitle || track?.title || 'Active Track'
   const subtitle = propSubtitle || track?.subtitle || (track?.bpm ? `${track.bpm} BPM` : 'Media Audio')
-  const cover = propCover || track?.cover
   const audioUrl = propAudioUrl || track?.audioUrl
   const videoUrl = propVideoUrl || track?.videoUrl
   const hasVideo = Boolean(videoUrl)
@@ -144,7 +142,7 @@ export const BottomPlayerBar: React.FC<BottomPlayerBarProps> = ({
     <>
       <div
         className={`${isAbsolute ? 'absolute bottom-0 left-0 right-0' : 'relative w-full'
-          } border-t border-[#1f1f23] bg-[#0c0c0e] px-6 flex items-center justify-between z-20 select-none ${className}`}
+          } border-t border-[#1f1f23] bg-[#0f0f10] px-6 flex items-center justify-between z-20 select-none ${className}`}
       >
         {/* Left: Active snippet & Media Thumbnail (Audio / Video) */}
         <div className="flex items-center gap-3 min-w-[200px] max-w-[280px]">
@@ -169,10 +167,8 @@ export const BottomPlayerBar: React.FC<BottomPlayerBarProps> = ({
                   <Video className="size-3.5 text-white/90" />
                 </div>
               </>
-            ) : cover ? (
-              <img src={cover} alt={title} className="size-full object-cover" />
             ) : (
-              <Music2 className="size-4 text-zinc-400" />
+              <Music2 className="size-4 text-white" />
             )}
           </div>
 

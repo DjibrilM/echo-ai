@@ -118,27 +118,22 @@ export function MusicGenerationCarousel({
                     onClick={() => onPlayTrack(track)}
                     className="group flex items-center justify-between p-2 rounded-xl hover:bg-white/[0.06] transition-colors cursor-pointer"
                   >
-                    {/* Left: Thumbnail + Track Index + Title & AI Generation Details */}
+                    {/* Left: Play button + Track Index + Title & AI Generation Details */}
                     <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                      {/* Album Cover Thumbnail */}
-                      <div className="relative size-12 rounded-lg overflow-hidden shrink-0 bg-zinc-800 border border-white/[0.06] shadow-xs">
-                        <img
-                          src={track.cover}
-                          alt={track.title}
-                          className="size-full object-cover group-hover:scale-105 transition-transform duration-300"
-                        />
-                        <div
-                          className={clsx(
-                            'absolute inset-0 bg-black/50 flex items-center justify-center transition-opacity',
-                            isThisPlaying ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
-                          )}
-                        >
-                          {isThisPlaying ? (
-                            <Pause className="size-4 fill-white text-white" />
-                          ) : (
-                            <Play className="size-4 fill-white text-white ml-0.5" />
-                          )}
-                        </div>
+                      {/* Audio Play Button */}
+                      <div
+                        className={clsx(
+                          'size-9 rounded-full flex items-center justify-center shrink-0 transition-all cursor-pointer',
+                          isThisPlaying
+                            ? 'bg-white text-black shadow-md scale-105'
+                            : 'bg-white/[0.08] group-hover:bg-white/[0.16] text-zinc-300 group-hover:text-white'
+                        )}
+                      >
+                        {isThisPlaying ? (
+                          <Pause className="size-4 fill-current text-current" />
+                        ) : (
+                          <Play className="size-4 fill-current text-current ml-0.5" />
+                        )}
                       </div>
 
                       {/* Track Sequence Index */}
@@ -147,7 +142,7 @@ export function MusicGenerationCarousel({
                           className={clsx(
                             'font-mono text-xs tabular-nums transition-colors',
                             isThisPlaying
-                              ? 'text-amber-400 font-bold'
+                              ? 'text-white font-bold'
                               : 'text-zinc-500 group-hover:text-zinc-300'
                           )}
                         >
@@ -180,7 +175,7 @@ export function MusicGenerationCarousel({
                         <button
                           type="button"
                           onClick={(e) => e.stopPropagation()}
-                          className="size-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-zinc-400 hover:text-amber-300 transition-colors"
+                          className="size-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-zinc-400 hover:text-white transition-colors"
                           title="Generate variations"
                         >
                           <Sparkles className="size-3.5" />

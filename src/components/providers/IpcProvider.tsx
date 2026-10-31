@@ -18,6 +18,9 @@ export const musicProgressListeners = new Map<string, (data: any) => void>()
 export const musicCompleteListeners = new Map<string, (data: any) => void>()
 export const musicErrorListeners = new Map<string, (data: any) => void>()
 export const musicLyricTokenListeners = new Map<string, (data: { taskId: string; token: string }) => void>()
+export const storyProgressListeners = new Map<string, (data: any) => void>()
+export const storyCompleteListeners = new Map<string, (data: any) => void>()
+export const storyErrorListeners = new Map<string, (data: any) => void>()
 export const modelsDownloadProgressListeners = new Map<string, (data: ModelDownloadProgressPayload) => void>()
 export const terminalLogListeners = new Map<string, (data: TerminalLogMessage) => void>()
 
@@ -224,6 +227,18 @@ export const IpcProvider: React.FC<IpcProviderProps> = ({ children }) => {
       musicLyricTokenListeners.forEach((listener) => listener(data))
     }
 
+    const onStoryProgress = (_event: any, data: any) => {
+      storyProgressListeners.forEach((listener) => listener(data))
+    }
+
+    const onStoryComplete = (_event: any, data: any) => {
+      storyCompleteListeners.forEach((listener) => listener(data))
+    }
+
+    const onStoryError = (_event: any, data: any) => {
+      storyErrorListeners.forEach((listener) => listener(data))
+    }
+
     ipc.on('tts:progress', onTtsProgress)
     ipc.on('tts:complete', onTtsComplete)
     ipc.on('tts:error', onTtsError)
@@ -231,6 +246,9 @@ export const IpcProvider: React.FC<IpcProviderProps> = ({ children }) => {
     ipc.on('music:complete', onMusicComplete)
     ipc.on('music:error', onMusicError)
     ipc.on('music:lyrics-token', onMusicLyricToken)
+    ipc.on('story:progress', onStoryProgress)
+    ipc.on('story:complete', onStoryComplete)
+    ipc.on('story:error', onStoryError)
     ipc.on('models:download-progress', onModelsDownloadProgress)
     ipc.on('terminal:log', onTerminalLog)
 
@@ -242,6 +260,9 @@ export const IpcProvider: React.FC<IpcProviderProps> = ({ children }) => {
       ipc.off('music:complete', onMusicComplete)
       ipc.off('music:error', onMusicError)
       ipc.off('music:lyrics-token', onMusicLyricToken)
+      ipc.off('story:progress', onStoryProgress)
+      ipc.off('story:complete', onStoryComplete)
+      ipc.off('story:error', onStoryError)
       ipc.off('models:download-progress', onModelsDownloadProgress)
       ipc.off('terminal:log', onTerminalLog)
     }

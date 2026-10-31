@@ -222,11 +222,11 @@ export const MusicStudioView: React.FC<MusicStudioViewProps> = ({
   return (
     <ResizablePanelGroup
       orientation="horizontal"
-      className="flex-1 h-full min-h-0 bg-[#0e0e11] overflow-hidden select-none"
+      className="flex-1 h-full min-h-0 bg-[#0f0f10] overflow-hidden select-none"
     >
       {/* LEFT PANEL: Song Generation Console */}
       <ResizablePanel defaultSize="42%" minSize="30%" maxSize="60%">
-        <div className="h-full overflow-y-auto sidebar-scrollbar p-5 sm:p-6 flex flex-col gap-4 bg-[#111114]">
+        <div className="h-full overflow-y-auto sidebar-scrollbar p-5 sm:p-6 flex flex-col gap-4 bg-[#0f0f10]">
         {/* Header: Song Description & Clear */}
         <div className="flex items-center justify-between gap-2">
           <h2 className="text-sm font-semibold text-zinc-200">
@@ -328,7 +328,7 @@ export const MusicStudioView: React.FC<MusicStudioViewProps> = ({
                     type="button"
                     onMouseDown={(e) => e.preventDefault()}
                     onClick={() => handleInsertTagAtCursor(tag)}
-                    className="px-2 py-0.5 rounded text-[10.5px] font-mono bg-[#0e0e11] hover:bg-[#202026] text-zinc-300 hover:text-white transition-colors cursor-pointer border border-[#27272a]"
+                    className="px-2 py-0.5 rounded text-[10.5px] font-mono bg-[#141416] hover:bg-[#202026] text-zinc-300 hover:text-white transition-colors cursor-pointer border border-[#27272a]"
                     title={`Insert ${tag} at cursor`}
                   >
                     {tag}
@@ -338,7 +338,7 @@ export const MusicStudioView: React.FC<MusicStudioViewProps> = ({
                   <button
                     type="button"
                     onClick={() => onChangeLyrics('')}
-                    className="size-5 rounded ml-1 bg-[#0e0e11] hover:bg-[#202026] flex items-center justify-center text-zinc-400 hover:text-white transition-colors cursor-pointer"
+                    className="size-5 rounded ml-1 bg-[#141416] hover:bg-[#202026] flex items-center justify-center text-zinc-400 hover:text-white transition-colors cursor-pointer"
                     title="Clear lyrics"
                   >
                     <X className="size-3 text-white" />
@@ -406,7 +406,7 @@ export const MusicStudioView: React.FC<MusicStudioViewProps> = ({
             </div>
 
             {/* Progress Bar - Clean monochrome white */}
-            <div className="w-full h-1.5 bg-[#0e0e11] rounded-full overflow-hidden border border-white/5">
+            <div className="w-full h-1.5 bg-[#141416] rounded-full overflow-hidden border border-white/5">
               <div
                 className="h-full bg-white transition-all duration-300"
                 style={{ width: `${generationProgress?.percentage || 5}%` }}
@@ -491,9 +491,9 @@ export const MusicStudioView: React.FC<MusicStudioViewProps> = ({
 
       {/* RIGHT PANEL: Studio Generations & Active Track List */}
       <ResizablePanel defaultSize="58%" minSize="40%">
-        <div className="flex flex-col h-full min-h-0 bg-[#0e0e11] overflow-hidden">
+        <div className="flex flex-col h-full min-h-0 bg-[#0f0f10] overflow-hidden">
           {/* Search & Sort Controls Header - Touching Sub Main Header Directly */}
-          <div className="shrink-0 border-b border-[#1f1f23] bg-[#0e0e11] px-5 sm:px-6 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 z-10">
+          <div className="shrink-0 border-b border-[#1f1f23] bg-[#0f0f10] px-5 sm:px-6 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 z-10">
             <div className="relative flex-1">
               <Search className="size-3.5 text-white absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input
@@ -557,7 +557,6 @@ export const MusicStudioView: React.FC<MusicStudioViewProps> = ({
                           subtitle: t.keyscale ? `${t.keyscale} · ${t.bpm || 120} BPM` : 'MiniMax-Music3',
                           artist: 'Studio',
                           category: 'Studio',
-                          cover: '/covers/stardust_visitor.jpg',
                           audioUrl: t.audioUrl,
                           duration: t.durationMs ? Math.round(t.durationMs / 1000) : 60,
                           durationFormatted: formatDuration(t.durationMs ? t.durationMs / 1000 : 60),

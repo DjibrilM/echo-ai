@@ -108,8 +108,8 @@ export const InstallRequiredModelsView: React.FC = () => {
                   </div>
 
                   {isReady ? (
-                    <span className="flex shrink-0 items-center gap-1.5 text-xs text-emerald-400 font-medium">
-                      <CheckCircle2 className="size-4 text-emerald-400" />
+                    <span className="flex shrink-0 items-center gap-1.5 text-xs text-white font-medium">
+                      <CheckCircle2 className="size-4 text-white" />
                       Ready
                     </span>
                   ) : isDownloading ? (
@@ -128,9 +128,9 @@ export const InstallRequiredModelsView: React.FC = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => downloadModel(model.id)}
-                      className="shrink-0"
+                      className="shrink-0 text-white"
                     >
-                      <Download className="mr-1.5 size-3.5" />
+                      <Download className="mr-1.5 size-3.5 text-white" />
                       Download
                     </Button>
                   )}
@@ -147,7 +147,7 @@ export const InstallRequiredModelsView: React.FC = () => {
                       aria-valuenow={progress}
                     >
                       <div
-                        className="h-full rounded-full bg-emerald-500 transition-[width] duration-200"
+                        className="h-full rounded-full bg-white transition-[width] duration-200"
                         style={{ width: `${progress}%` }}
                       />
                     </div>

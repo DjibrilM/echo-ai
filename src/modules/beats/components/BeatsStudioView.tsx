@@ -101,11 +101,11 @@ export const BeatsStudioView: React.FC<BeatsStudioViewProps> = ({
   return (
     <ResizablePanelGroup
       orientation="horizontal"
-      className="flex-1 h-full min-h-0 bg-[#0e0e11] overflow-hidden"
+      className="flex-1 h-full min-h-0 bg-[#0f0f10] overflow-hidden"
     >
       {/* LEFT PANEL: Beat Generation Console */}
       <ResizablePanel defaultSize="42%" minSize="30%" maxSize="60%">
-        <div className="h-full overflow-y-auto sidebar-scrollbar p-5 sm:p-6 flex flex-col gap-5 bg-[#111114]">
+        <div className="h-full overflow-y-auto sidebar-scrollbar p-5 sm:p-6 flex flex-col gap-5 bg-[#0f0f10]">
         {/* Header: Beat Description & Engine Info */}
         <div className="flex items-center justify-between gap-2">
           <h2 className="text-sm font-semibold text-zinc-200">
@@ -248,7 +248,7 @@ export const BeatsStudioView: React.FC<BeatsStudioViewProps> = ({
             </div>
 
             {/* Progress Bar - Clean monochrome white */}
-            <div className="w-full h-1.5 bg-[#0e0e11] rounded-full overflow-hidden border border-white/5">
+            <div className="w-full h-1.5 bg-[#141416] rounded-full overflow-hidden border border-white/5">
               <div
                 className="h-full bg-white transition-all duration-300"
                 style={{ width: `${generationProgress?.percentage || 5}%` }}
@@ -297,9 +297,9 @@ export const BeatsStudioView: React.FC<BeatsStudioViewProps> = ({
 
       {/* RIGHT PANEL: Studio Generations & Active Track List */}
       <ResizablePanel defaultSize="58%" minSize="40%">
-        <div className="flex flex-col h-full min-h-0 bg-[#0e0e11] overflow-hidden">
+        <div className="flex flex-col h-full min-h-0 bg-[#0f0f10] overflow-hidden">
           {/* Search Header - Touching Sub Main Header Directly */}
-          <div className="shrink-0 border-b border-[#1f1f23] bg-[#0e0e11] px-5 sm:px-6 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 z-10">
+          <div className="shrink-0 border-b border-[#1f1f23] bg-[#0f0f10] px-5 sm:px-6 py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 z-10">
             <div className="relative flex-1">
               <Search className="size-3.5 text-white absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
               <input

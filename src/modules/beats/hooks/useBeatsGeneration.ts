@@ -70,7 +70,6 @@ export function useBeatsGeneration() {
           id: trackItem.id,
           title: trackItem.caption || 'Generated Beat',
           artist: trackItem.keyscale ? `${trackItem.keyscale} · ${trackItem.bpm || 140} BPM · ACE-Step` : 'ACE-Step v1.5 Beat',
-          coverUrl: '/covers/stardust_visitor.jpg',
           audioUrl: trackItem.audioUrl,
           waveform: trackItem.waveform,
           duration: trackItem.durationMs ? Math.round(trackItem.durationMs / 1000) : 30,

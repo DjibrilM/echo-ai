@@ -1,6 +1,7 @@
 export type VoiceEngineType = 'cosyvoice3' | 'chatterbox'
 export type MusicEngineType = 'acestep' | 'minimax'
-export type AnyEngineType = VoiceEngineType | MusicEngineType
+export type StoryEngineType = 'story'
+export type AnyEngineType = VoiceEngineType | MusicEngineType | StoryEngineType
 
 export type ModelCategory =
   | 'backbone'

@@ -135,30 +135,16 @@ export const PlaylistQueuePanel: React.FC = () => {
               >
                 {/* Left: Thumbnail + Title + Artist */}
                 <div className="flex items-center gap-3 min-w-0 pr-2">
-                  {/* Thumbnail / Indicator */}
-                  <div className="relative size-10 rounded-lg overflow-hidden bg-black/40 shrink-0 border border-white/5 flex items-center justify-center">
-                    {item.cover || item.coverUrl ? (
-                      <img
-                        src={item.cover || item.coverUrl}
-                        alt={item.title}
-                        className="size-full object-cover"
-                        onError={(e) => {
-                          e.currentTarget.style.display = 'none'
-                        }}
-                      />
+                  {/* Audio Indicator */}
+                  <div className="relative size-10 rounded-lg bg-white/5 shrink-0 border border-white/10 flex items-center justify-center">
+                    {isCurrent ? (
+                      isPlaying ? (
+                        <Volume2 className="size-4 text-white animate-pulse" />
+                      ) : (
+                        <Play className="size-3.5 text-white fill-white ml-0.5" />
+                      )
                     ) : (
-                      <Music className="size-4 text-zinc-500" />
-                    )}
-
-                    {/* Playing Icon Overlay or Soundwave (YouTube Music style) */}
-                    {isCurrent && (
-                      <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                        {isPlaying ? (
-                          <Volume2 className="size-4 text-white animate-pulse" />
-                        ) : (
-                          <Play className="size-3.5 text-white fill-white ml-0.5" />
-                        )}
-                      </div>
+                      <Music className="size-4 text-white" />
                     )}
                   </div>
 

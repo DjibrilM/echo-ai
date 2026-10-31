@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { MusicScreen } from '@/modules/music'
 import { BeatsScreen } from '@/modules/beats'
+import { StoryGenerationScreen } from '@/modules/story-generation'
 import {
   TextToSpeechIcon,
   VoiceCreationIcon,
@@ -27,7 +28,8 @@ import { Play, Mic, Upload, Volume2, BookOpen, Camera, User } from 'lucide-react
 
 export const VoiceCloningPage = VoiceCreationPage
 export const VoiceChangingPage = VoiceChangerPage
-export const StoriesPage = AudiobooksPage
+export const StoriesPage = StoryGenerationScreen
+export { StoryGenerationScreen }
 
 export function TextToSpeechPage() {
   const [text, setText] = useState(

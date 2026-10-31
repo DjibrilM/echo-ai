@@ -46,6 +46,13 @@ export const IPC_CHANNELS = {
   MUSIC_GENERATE_LYRICS: 'music:generate-lyrics',
   MUSIC_LYRICS_TOKEN: 'music:lyrics-token',
 
+  // Story generation domain (Gemma 4 narrative orchestration & CosyVoice 3 natural audio)
+  STORY_GENERATE: 'story:generate',
+  STORY_CANCEL: 'story:cancel',
+  STORY_PROGRESS: 'story:progress',
+  STORY_COMPLETE: 'story:complete',
+  STORY_ERROR: 'story:error',
+
   // Models management domain (Echo Voice Engine weights)
   MODELS_GET_STATUS: 'models:get-status',
   MODELS_GET_INFO: 'models:get-info',

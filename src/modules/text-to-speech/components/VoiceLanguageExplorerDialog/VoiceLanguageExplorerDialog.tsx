@@ -246,7 +246,7 @@ export function VoiceLanguageExplorerDialog({
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
         showCloseButton={false}
-        className="sm:max-w-4xl w-[96vw] h-[640px] max-h-[92vh] bg-[#0e0e11] border border-white/10 text-white p-0 shadow-2xl rounded-2xl flex flex-col overflow-hidden"
+        className="sm:max-w-4xl w-[96vw] h-[640px] max-h-[92vh] bg-[#0f0f10] border border-white/10 text-white p-0 shadow-2xl rounded-2xl flex flex-col overflow-hidden"
       >
         {/* Hidden screen-reader accessibility header */}
         <DialogHeader className="sr-only">
@@ -272,7 +272,7 @@ export function VoiceLanguageExplorerDialog({
           />
 
           {/* RIGHT MAIN PANEL */}
-          <main className="flex-1 flex flex-col min-w-0 bg-[#0e0e11] overflow-hidden">
+          <main className="flex-1 flex flex-col min-w-0 bg-[#0f0f10] overflow-hidden">
             {/* Top Toolbar */}
             <VoiceExplorerToolbar
               activeTab={activeTab}
